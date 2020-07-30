@@ -7,6 +7,7 @@ type Rules []rule
 type rule struct {
 	dst, src []byte
 	getter   *GetterFn
+	callback *CallbackFn
 	static   bool
 	mod      []mod
 	arg      []*arg
@@ -28,18 +29,23 @@ func (r *Rules) HumanReadable() []byte {
 
 func (r *Rules) hrHelper(buf *bytes.Buffer) {
 	for _, rule := range *r {
-		buf.WriteString("dst: ")
-		buf.Write(rule.dst)
-		buf.WriteString(" <- src: ")
-		if rule.static {
-			buf.WriteByte('"')
-			buf.Write(rule.src)
-			buf.WriteByte('"')
+		if rule.callback == nil {
+			buf.WriteString("dst: ")
+			buf.Write(rule.dst)
+			buf.WriteString(" <- src: ")
+			if rule.static {
+				buf.WriteByte('"')
+				buf.Write(rule.src)
+				buf.WriteByte('"')
+			} else {
+				buf.Write(rule.src)
+			}
 		} else {
+			buf.WriteString("cb: ")
 			buf.Write(rule.src)
 		}
 
-		if rule.getter != nil {
+		if rule.getter != nil || rule.callback != nil {
 			buf.WriteByte('(')
 			for i, a := range rule.arg {
 				if i > 0 {

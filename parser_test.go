@@ -11,7 +11,7 @@ dst.Name = "John Ruth"
 dst.Finance.Balance = obj.cost.total
 dst.Weight = 12.45`)
 	v2vEx0Expect = []byte(`dst: dst.ID <- src: obj.user_id
-dst: dst.Name <- src: "Jonh Ruth"
+dst: dst.Name <- src: "John Ruth"
 dst: dst.Finance.Balance <- src: obj.cost.total
 dst: dst.Weight <- src: "12.45"
 `)
@@ -26,6 +26,13 @@ bid.Ext.Processed = response.Done|default(false)`)
 	f2vEx0Expect = []byte(`dst: bid.Id <- src: "1"
 dst: bid.Ext.HSum <- src: crc32(response.title, response.val)
 dst: bid.Ext.Processed <- src: response.Done mod default("false")
+`)
+	cb = []byte(`user.Registered = 1
+foo(user, req, true)
+user.Status = 15`)
+	cbExpect = []byte(`dst: user.Registered <- src: "1"
+cb: foo(user, req, "true")
+dst: user.Status <- src: "15"
 `)
 )
 
@@ -44,7 +51,6 @@ func TestParse_V2V(t *testing.T) {
 		t.Errorf("v2v example 0 test failed\nexp: %s\ngot: %s", v2vEx0Expect, r)
 	}
 
-	rules, err = Parse(v2vEx1)
 	if rules, err = Parse(v2vEx1); err != nil {
 		t.Error(err)
 	}
@@ -61,12 +67,27 @@ func TestParse_F2V(t *testing.T) {
 		r     []byte
 	)
 
-	rules, err = Parse(f2vEx0)
 	if rules, err = Parse(f2vEx0); err != nil {
 		t.Error(err)
 	}
 	r = rules.HumanReadable()
 	if !bytes.Equal(r, f2vEx0Expect) {
 		t.Errorf("f2v example 0 test failed\nexp: %s\ngot: %s", f2vEx0Expect, r)
+	}
+}
+
+func TestParse_Cb(t *testing.T) {
+	var (
+		rules Rules
+		err   error
+		r     []byte
+	)
+
+	if rules, err = Parse(cb); err != nil {
+		t.Error(err)
+	}
+	r = rules.HumanReadable()
+	if !bytes.Equal(r, cbExpect) {
+		t.Errorf("callback example 0 test failed\nexp: %s\ngot: %s", cbExpect, r)
 	}
 }

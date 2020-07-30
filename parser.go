@@ -52,6 +52,15 @@ func Parse(src []byte) (rules Rules, err error) {
 			continue
 		}
 		if m := reFunction.FindSubmatch(line); m != nil {
+			rule.src = m[1]
+			fn := GetCallbackFn(fastconv.B2S(m[1]))
+			if fn == nil {
+				err = fmt.Errorf("unknown callback function '%s' at line %d", m[1], i)
+				break
+			}
+			rule.callback = fn
+			rule.arg = extractArgs(m[2])
+
 			rules = append(rules, rule)
 			continue
 		}
