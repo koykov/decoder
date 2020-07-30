@@ -17,7 +17,9 @@ dst: dst.Weight <- src: "12.45"
 `)
 	v2vEx1 = []byte(`person.Gender = request.gender|default("male")
 person.Owner = false`)
-	v2vEx1Expect = []byte(``)
+	v2vEx1Expect = []byte(`dst: person.Gender <- src: request.gender mod default("male")
+dst: person.Owner <- src: "false"
+`)
 )
 
 func TestParse_V2V(t *testing.T) {
@@ -36,7 +38,7 @@ func TestParse_V2V(t *testing.T) {
 	}
 
 	rules, err = Parse(v2vEx1)
-	if rules, err = Parse(v2vEx0); err != nil {
+	if rules, err = Parse(v2vEx1); err != nil {
 		t.Error(err)
 	}
 	r = rules.HumanReadable()
