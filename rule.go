@@ -6,8 +6,10 @@ type Rules []rule
 
 type rule struct {
 	dst, src []byte
+	getter   *GetterFn
 	static   bool
 	mod      []mod
+	arg      []*arg
 }
 
 type arg struct {
@@ -35,6 +37,24 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 			buf.WriteByte('"')
 		} else {
 			buf.Write(rule.src)
+		}
+
+		if rule.getter != nil {
+			buf.WriteByte('(')
+			for i, a := range rule.arg {
+				if i > 0 {
+					buf.WriteByte(',')
+					buf.WriteByte(' ')
+				}
+				if a.static {
+					buf.WriteByte('"')
+					buf.Write(a.val)
+					buf.WriteByte('"')
+				} else {
+					buf.Write(a.val)
+				}
+			}
+			buf.WriteByte(')')
 		}
 
 		if len(rule.mod) > 0 {

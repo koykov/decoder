@@ -31,7 +31,15 @@ func Parse(src []byte) (rules Rules, err error) {
 		line = bytealg.Trim(line, noFmt)
 		if reAssignV2V.Match(line) {
 			if m := reAssignF2V.FindSubmatch(line); m != nil {
-				//
+				rule.dst = m[1]
+				rule.src = m[2]
+				fn := GetGetterFn(fastconv.B2S(m[2]))
+				if fn == nil {
+					err = fmt.Errorf("unknown getter function '%s' at line %d", m[2], i)
+					break
+				}
+				rule.getter = fn
+				rule.arg = extractArgs(m[3])
 			} else if m := reAssignV2V.FindSubmatch(line); m != nil {
 				rule.dst = m[1]
 				if rule.static = isStatic(m[2]); rule.static {
