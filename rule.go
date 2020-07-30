@@ -7,6 +7,12 @@ type Rules []rule
 type rule struct {
 	dst, src []byte
 	static   bool
+	mod      []mod
+}
+
+type arg struct {
+	val    []byte
+	static bool
 }
 
 func (r *Rules) HumanReadable() []byte {
@@ -30,6 +36,35 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 		} else {
 			buf.Write(rule.src)
 		}
+
+		if len(rule.mod) > 0 {
+			buf.WriteString(" mod")
+			for i, mod := range rule.mod {
+				if i > 0 {
+					buf.WriteByte(',')
+				}
+				buf.WriteByte(' ')
+				buf.Write(mod.id)
+				if len(mod.arg) > 0 {
+					buf.WriteByte('(')
+					for j, a := range mod.arg {
+						if j > 0 {
+							buf.WriteByte(',')
+							buf.WriteByte(' ')
+						}
+						if a.static {
+							buf.WriteByte('"')
+							buf.Write(a.val)
+							buf.WriteByte('"')
+						} else {
+							buf.Write(a.val)
+						}
+					}
+					buf.WriteByte(')')
+				}
+			}
+		}
+
 		buf.WriteByte('\n')
 	}
 }
