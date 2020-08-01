@@ -20,10 +20,10 @@ person.Owner = false`)
 	v2vEx1Expect = []byte(`dst: person.Gender <- src: request.gender mod default("male")
 dst: person.Owner <- src: "false"
 `)
-	f2vEx0 = []byte(`bid.Id = 1
+	f2v = []byte(`bid.Id = 1
 bid.Ext.HSum = crc32(response.title, response.val)
 bid.Ext.Processed = response.Done|default(false)`)
-	f2vEx0Expect = []byte(`dst: bid.Id <- src: "1"
+	f2vExpect = []byte(`dst: bid.Id <- src: "1"
 dst: bid.Ext.HSum <- src: crc32(response.title, response.val)
 dst: bid.Ext.Processed <- src: response.Done mod default("false")
 `)
@@ -67,12 +67,12 @@ func TestParse_F2V(t *testing.T) {
 		r     []byte
 	)
 
-	if rules, err = Parse(f2vEx0); err != nil {
+	if rules, err = Parse(f2v); err != nil {
 		t.Error(err)
 	}
 	r = rules.HumanReadable()
-	if !bytes.Equal(r, f2vEx0Expect) {
-		t.Errorf("f2v example 0 test failed\nexp: %s\ngot: %s", f2vEx0Expect, r)
+	if !bytes.Equal(r, f2vExpect) {
+		t.Errorf("f2v example 0 test failed\nexp: %s\ngot: %s", f2vExpect, r)
 	}
 }
 
