@@ -52,7 +52,11 @@ func TestDecode0(t *testing.T) {
 	pretest(t)
 	ctx := NewCtx()
 	ctx.Set("obj", &testobj.TestObject{}, &testobj_ins.TestObjectInspector{})
-	err := Decode("decTest0", ctx)
+	err := ctx.SetJson("jso", decTestSrc0)
+	if err != nil {
+		t.Error(err)
+	}
+	err = Decode("decTest0", ctx)
 	if err != nil {
 		t.Error(err)
 	}

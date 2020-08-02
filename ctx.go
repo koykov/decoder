@@ -8,14 +8,14 @@ import (
 )
 
 type Ctx struct {
+	vars []ctxVar
+	ln   int
+
 	p *jsonvector.Vector
 
 	bufX interface{}
 	bufS []string
 	bufA []interface{}
-
-	vars []ctxVar
-	ln   int
 
 	Err error
 }
@@ -29,6 +29,7 @@ type ctxVar struct {
 
 func NewCtx() *Ctx {
 	ctx := Ctx{
+		p:    jsonvector.NewVector(),
 		vars: make([]ctxVar, 0),
 		bufS: make([]string, 0),
 		bufA: make([]interface{}, 0),
