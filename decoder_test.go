@@ -1,6 +1,7 @@
 package jsondecoder
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/koykov/inspector/testobj"
@@ -50,8 +51,9 @@ func pretest(t testing.TB) {
 
 func TestDecode0(t *testing.T) {
 	pretest(t)
+	obj := &testobj.TestObject{}
 	ctx := NewCtx()
-	ctx.Set("obj", &testobj.TestObject{}, &testobj_ins.TestObjectInspector{})
+	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
 	err := ctx.SetJson("jso", decTestSrc0)
 	if err != nil {
 		t.Error(err)
@@ -59,5 +61,20 @@ func TestDecode0(t *testing.T) {
 	err = Decode("decTest0", ctx)
 	if err != nil {
 		t.Error(err)
+	}
+	if obj.Id != "xf44e" {
+		t.Error("decode 0 id test failed")
+	}
+	if !bytes.Equal(obj.Name, []byte("Marquis Warren")) {
+		t.Error("decode 0 name test failed")
+	}
+	if obj.Status != 67 {
+		t.Error("decode 0 status test failed")
+	}
+	if obj.Cost != 164.5962 {
+		t.Error("decode 0 cost test failed")
+	}
+	if obj.Finance.AllowBuy != true {
+		t.Error("decode 0 finance.allowBuy test failed")
 	}
 }
