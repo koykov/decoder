@@ -13,6 +13,7 @@ type Ctx struct {
 
 	p *jsonvector.Vector
 
+	buf  []byte
 	bufX interface{}
 	bufS []string
 	bufA []interface{}
@@ -124,7 +125,7 @@ func (c *Ctx) get(path []byte) interface{} {
 	return nil
 }
 
-func (c *Ctx) set(path []byte, val interface{}) interface{} {
+func (c *Ctx) set(path []byte, val interface{}) error {
 	if len(path) == 0 {
 		return nil
 	}
@@ -136,13 +137,26 @@ func (c *Ctx) set(path []byte, val interface{}) interface{} {
 		}
 		if v.key == c.bufS[0] {
 			if v.ins != nil {
-				c.Err = v.ins.Set(v.val, val, c.bufS[1:]...)
+				c.bufX = val
+				c.Err = v.ins.Set(v.val, c.bufX, c.bufS[1:]...)
 				if c.Err != nil {
-					return nil
+					return c.Err
 				}
-				return c.bufX
 			}
 		}
 	}
 	return nil
+}
+
+func (c *Ctx) Reset() {
+	c.p.Reset()
+	for i := 0; i < c.ln; i++ {
+		c.vars[i].jsn = nil
+	}
+	c.ln = 0
+	c.Err = nil
+	c.bufX = nil
+	c.buf = c.buf[:0]
+	c.bufS = c.bufS[:0]
+	c.bufA = c.bufA[:0]
 }

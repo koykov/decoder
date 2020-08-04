@@ -73,8 +73,11 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 		if err != nil {
 			return
 		}
-		ctx.set(rule.dst, ctx.bufX)
-	case len(rule.dst) > 0 && len(rule.src) > 0:
+		err = ctx.set(rule.dst, ctx.bufX)
+	case len(rule.dst) > 0 && len(rule.src) > 0 && rule.static:
+		ctx.buf = append(ctx.buf[:0], rule.src...)
+		err = ctx.set(rule.dst, &ctx.buf)
+	case len(rule.dst) > 0 && len(rule.src) > 0 && !rule.static:
 		raw := ctx.get(rule.src)
 		if ctx.Err != nil {
 			err = ctx.Err
@@ -106,7 +109,7 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 		if ctx.Err != nil {
 			return
 		}
-		ctx.set(rule.dst, raw)
+		err = ctx.set(rule.dst, raw)
 	}
 	return
 }
