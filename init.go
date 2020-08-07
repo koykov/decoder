@@ -6,6 +6,7 @@ func init() {
 	RegisterModFn("default", "def", modDefault)
 
 	RegisterGetterFn("crc32", "", getterCrc32)
+	RegisterGetterFn("appendTestHistory", "", getterAppendTestHistory)
 
 	RegisterCallbackFn("foo", "", cbFoo)
 

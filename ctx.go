@@ -143,6 +143,7 @@ func (c *Ctx) set(path []byte, val interface{}) error {
 					return c.Err
 				}
 			}
+			break
 		}
 	}
 	return nil
