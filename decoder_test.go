@@ -91,6 +91,18 @@ func assertTest1(t testing.TB, obj *testobj.TestObject) {
 	}
 }
 
+func assertTest2(t testing.TB, obj *testobj.TestObject) {
+	if len(obj.Finance.History) != 2 {
+		t.Error("decode 2 history len mismatch")
+	}
+	if obj.Finance.History[0].Cost != 13.1415 {
+		t.Error("decode 2 history row 0 cost mismatch")
+	}
+	if obj.Finance.History[1].Cost != 164.5962 {
+		t.Error("decode 2 history row 1 cost mismatch")
+	}
+}
+
 func TestDecode0(t *testing.T) {
 	pretest(t)
 	obj := &testobj.TestObject{}
@@ -163,15 +175,7 @@ func TestDecode2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if len(obj.Finance.History) != 2 {
-		t.Error("decode 2 history len mismatch")
-	}
-	if obj.Finance.History[0].Cost != 13.1415 {
-		t.Error("decode 2 history row 0 cost mismatch")
-	}
-	if obj.Finance.History[1].Cost != 164.5962 {
-		t.Error("decode 2 history row 1 cost mismatch")
-	}
+	assertTest2(t, obj)
 }
 
 func BenchmarkDecode1(b *testing.B) {
@@ -191,6 +195,28 @@ func BenchmarkDecode1(b *testing.B) {
 			b.Error(err)
 		}
 		assertTest1(b, obj)
+		ctx.Reset()
+		obj.Clear()
+	}
+}
+
+func BenchmarkDecode2(b *testing.B) {
+	pretest(b)
+	obj := &testobj.TestObject{}
+	ctx := NewCtx()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
+		err := ctx.SetJson("jso", decTestSrc)
+		if err != nil {
+			b.Error(err)
+		}
+		err = Decode("decTest2", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		assertTest2(b, obj)
 		ctx.Reset()
 		obj.Clear()
 	}
