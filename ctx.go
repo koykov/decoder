@@ -11,7 +11,8 @@ type Ctx struct {
 	vars []ctxVar
 	ln   int
 
-	p *jsonvector.Vector
+	p  []*jsonvector.Vector
+	pl int
 
 	buf  []byte
 	bufX interface{}
@@ -30,7 +31,7 @@ type ctxVar struct {
 
 func NewCtx() *Ctx {
 	ctx := Ctx{
-		p:    jsonvector.NewVector(),
+		// p:    jsonvector.NewVector(),
 		vars: make([]ctxVar, 0),
 		bufS: make([]string, 0),
 		bufA: make([]interface{}, 0),
@@ -67,10 +68,11 @@ func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 }
 
 func (c *Ctx) SetJson(key string, data []byte) (err error) {
-	if err = c.p.Parse(data); err != nil {
+	vec := c.getParser()
+	if err = vec.Parse(data); err != nil {
 		return
 	}
-	jsn := c.p.Get()
+	jsn := vec.Get()
 
 	for i := 0; i < c.ln; i++ {
 		if c.vars[i].key == key {
@@ -149,12 +151,29 @@ func (c *Ctx) set(path []byte, val interface{}) error {
 	return nil
 }
 
+func (c *Ctx) getParser() *jsonvector.Vector {
+	var v *jsonvector.Vector
+	if c.pl < len(c.p) {
+		v = c.p[c.pl]
+	} else {
+		v = jsonvector.NewVector()
+		c.p = append(c.p, v)
+	}
+	c.pl++
+	return v
+}
+
 func (c *Ctx) Reset() {
-	c.p.Reset()
 	for i := 0; i < c.ln; i++ {
 		c.vars[i].jsn = nil
 	}
 	c.ln = 0
+
+	for i := 0; i < c.pl; i++ {
+		c.p[i].Reset()
+	}
+	c.pl = 0
+
 	c.Err = nil
 	c.bufX = nil
 	c.buf = c.buf[:0]

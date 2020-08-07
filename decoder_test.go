@@ -9,6 +9,8 @@ import (
 )
 
 var (
+	buf []byte
+
 	decTestSrc = []byte(`{
   "identifier": "xf44e",
   "person": {
@@ -26,6 +28,11 @@ var (
   "ext": {
     "perm": [false, true, true]
   }
+}`)
+	decTestNestedJsonSrc = []byte(`{
+	"id":"xFF45",
+	"nickname":"Chris Mannix",
+	"prop":"{\"id\":1,\"name\":\"Foo\",\"price\":123,\"tags\":[\"Bar\",\"Eek\"],\"stock\":{\"warehouse\":300,\"retail\":20}}"
 }`)
 
 	decTest0 = []byte(`obj.Id = jso.identifier
@@ -47,6 +54,10 @@ obj.Finance.MoneyOut = jso.person.last_buy
 obj.Finance.Balance = jso.finance.balance_total`)
 	decTest2 = []byte(`obj.Finance.History = appendTestHistory(obj.Finance.History, 13.1415, jso.person.full_name)
 obj.Finance.History = appendTestHistory(obj.Finance.History, jso.finance.balance, "foobar")`)
+	decTest3 = []byte(`obj.Id = jso.id
+obj.Name = jso.nickname
+jsonParse(jso.prop, "properties")
+obj.Cost = properties.price`)
 )
 
 func pretest(t testing.TB) {
@@ -54,11 +65,13 @@ func pretest(t testing.TB) {
 		"decTest0": decTest0,
 		"decTest1": decTest1,
 		"decTest2": decTest2,
+		"decTest3": decTest3,
 	}
 	for id, body := range dec {
 		rules, err := Parse(body)
 		if err != nil {
 			t.Errorf("%s parse error %s", id, err)
+			continue
 		}
 		RegisterDecoder(id, rules)
 	}
@@ -100,6 +113,15 @@ func assertTest2(t testing.TB, obj *testobj.TestObject) {
 	}
 	if obj.Finance.History[1].Cost != 164.5962 {
 		t.Error("decode 2 history row 1 cost mismatch")
+	}
+}
+
+func assertTest3(t testing.TB, obj *testobj.TestObject) {
+	if obj.Id != "xFF45" {
+		t.Error("decode 3 id test failed")
+	}
+	if obj.Cost != 123 {
+		t.Error("decode 3 cost mismatch")
 	}
 }
 
@@ -178,6 +200,22 @@ func TestDecode2(t *testing.T) {
 	assertTest2(t, obj)
 }
 
+func TestDecode3(t *testing.T) {
+	pretest(t)
+	obj := &testobj.TestObject{}
+	ctx := NewCtx()
+	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
+	err := ctx.SetJson("jso", decTestNestedJsonSrc)
+	if err != nil {
+		t.Error(err)
+	}
+	err = Decode("decTest3", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	assertTest3(t, obj)
+}
+
 func BenchmarkDecode1(b *testing.B) {
 	pretest(b)
 	obj := &testobj.TestObject{}
@@ -217,6 +255,30 @@ func BenchmarkDecode2(b *testing.B) {
 			b.Error(err)
 		}
 		assertTest2(b, obj)
+		ctx.Reset()
+		obj.Clear()
+	}
+}
+
+func BenchmarkDecode3(b *testing.B) {
+	pretest(b)
+	obj := &testobj.TestObject{}
+	ctx := NewCtx()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		buf = append(buf[:0], decTestNestedJsonSrc...)
+
+		ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
+		err := ctx.SetJson("jso", buf)
+		if err != nil {
+			b.Error(err)
+		}
+		err = Decode("decTest3", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		assertTest3(b, obj)
 		ctx.Reset()
 		obj.Clear()
 	}
