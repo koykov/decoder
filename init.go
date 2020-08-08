@@ -9,7 +9,7 @@ func init() {
 	RegisterGetterFn("appendTestHistory", "", getterAppendTestHistory)
 
 	RegisterCallbackFn("foo", "", cbFoo)
-	RegisterCallbackFn("jsonParse", "", cbJsonParse)
+	RegisterCallbackFn("jsonParseAs", "jsonParse", cbJsonParse)
 
 	inspector.RegisterAssignFn(AssignJsonNode)
 }

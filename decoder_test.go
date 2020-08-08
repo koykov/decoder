@@ -56,7 +56,7 @@ obj.Finance.Balance = jso.finance.balance_total`)
 obj.Finance.History = appendTestHistory(obj.Finance.History, jso.finance.balance, "foobar")`)
 	decTest3 = []byte(`obj.Id = jso.id
 obj.Name = jso.nickname
-jsonParse(jso.prop, "properties")
+jsonParseAs(jso.prop, "properties")
 obj.Cost = properties.price`)
 )
 
