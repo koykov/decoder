@@ -72,32 +72,36 @@ func (c *Ctx) SetJson(key string, data []byte) (err error) {
 	if err = vec.Parse(data); err != nil {
 		return
 	}
-	jsn := vec.Get()
+	node := vec.Get()
+	err = c.SetJsonNode(key, node)
+	return
+}
 
+func (c *Ctx) SetJsonNode(key string, node *jsonvector.Node) error {
 	for i := 0; i < c.ln; i++ {
 		if c.vars[i].key == key {
 			// Update existing variable.
-			c.vars[i].jsn = jsn
+			c.vars[i].jsn = node
 			c.vars[i].val, c.vars[i].ins = nil, nil
-			return
+			return nil
 		}
 	}
 	// Add new variable.
 	if c.ln < len(c.vars) {
 		// Use existing item in variable list..
 		c.vars[c.ln].key = key
-		c.vars[c.ln].jsn = jsn
+		c.vars[c.ln].jsn = node
 		c.vars[c.ln].val, c.vars[c.ln].ins = nil, nil
 	} else {
 		// Extend the variable list with new one.
 		c.vars = append(c.vars, ctxVar{
 			key: key,
-			jsn: jsn,
+			jsn: node,
 		})
 	}
 	// Increase variables count.
 	c.ln++
-	return
+	return nil
 }
 
 func (c *Ctx) get(path []byte) interface{} {
