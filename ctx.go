@@ -31,7 +31,6 @@ type ctxVar struct {
 
 func NewCtx() *Ctx {
 	ctx := Ctx{
-		// p:    jsonvector.NewVector(),
 		vars: make([]ctxVar, 0),
 		bufS: make([]string, 0),
 		bufA: make([]interface{}, 0),
@@ -78,6 +77,9 @@ func (c *Ctx) SetJson(key string, data []byte) (err error) {
 }
 
 func (c *Ctx) SetJsonNode(key string, node *jsonvector.Node) error {
+	if node == nil {
+		return ErrEmptyNode
+	}
 	for i := 0; i < c.ln; i++ {
 		if c.vars[i].key == key {
 			// Update existing variable.
