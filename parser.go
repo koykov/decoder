@@ -25,6 +25,7 @@ var (
 	reAssignF2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(|]+)\(([^)]*)\)`)
 	reFunction  = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod       = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
+	reSet       = regexp.MustCompile(`(.*)\.{([^}]+)}`)
 )
 
 func Parse(src []byte) (rules Rules, err error) {
@@ -50,7 +51,7 @@ func Parse(src []byte) (rules Rules, err error) {
 					rule.src = bytealg.Trim(m[2], quotes)
 				} else {
 					rule.src, rule.mod = extractMods(m[2])
-					rule.src = replaceQB(rule.src)
+					rule.src, rule.set = extractSet(rule.src)
 				}
 			}
 			rules = append(rules, rule)
@@ -107,19 +108,29 @@ func extractArgs(l []byte) []*arg {
 	}
 	args := bytes.Split(l, comma)
 	for _, a := range args {
+		var set [][]byte
 		a = bytealg.Trim(a, space)
 		static := isStatic(a)
 		if !static {
-			a = replaceQB(a)
+			a, set = extractSet(a)
 		} else {
 			a = bytealg.Trim(a, quotes)
 		}
 		r = append(r, &arg{
 			val:    a,
+			set:    set,
 			static: static,
 		})
 	}
 	return r
+}
+
+func extractSet(p []byte) ([]byte, [][]byte) {
+	p = replaceQB(p)
+	if m := reSet.FindSubmatch(p); m != nil {
+		return m[1], bytes.Split(m[2], vline)
+	}
+	return p, nil
 }
 
 func replaceQB(p []byte) []byte {

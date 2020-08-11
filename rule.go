@@ -6,6 +6,7 @@ type Rules []rule
 
 type rule struct {
 	dst, src []byte
+	set      [][]byte
 	getter   *GetterFn
 	callback *CallbackFn
 	static   bool
@@ -15,6 +16,7 @@ type rule struct {
 
 type arg struct {
 	val    []byte
+	set    [][]byte
 	static bool
 }
 
