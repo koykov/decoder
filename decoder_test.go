@@ -58,6 +58,8 @@ obj.Finance.History = appendTestHistory(obj.Finance.History, jso.finance.balance
 obj.Name = jso.nickname
 jsonParseAs(jso.prop, "properties")
 obj.Cost = properties.price`)
+	decTest4    = []byte(`obj.Name = crc32(jso.person.{id|nickname|full_name})`)
+	crc32Expect = []byte(`2677594116`)
 )
 
 func pretest(t testing.TB) {
@@ -66,6 +68,7 @@ func pretest(t testing.TB) {
 		"decTest1": decTest1,
 		"decTest2": decTest2,
 		"decTest3": decTest3,
+		"decTest4": decTest4,
 	}
 	for id, body := range dec {
 		rules, err := Parse(body)
@@ -122,6 +125,12 @@ func assertTest3(t testing.TB, obj *testobj.TestObject) {
 	}
 	if obj.Cost != 123 {
 		t.Error("decode 3 cost mismatch")
+	}
+}
+
+func assertTest4(t testing.TB, obj *testobj.TestObject) {
+	if !bytes.Equal(obj.Name, crc32Expect) {
+		t.Error("decode 4 id test failed")
 	}
 }
 
@@ -216,6 +225,22 @@ func TestDecode3(t *testing.T) {
 	assertTest3(t, obj)
 }
 
+func TestDecode4(t *testing.T) {
+	pretest(t)
+	obj := &testobj.TestObject{}
+	ctx := NewCtx()
+	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
+	err := ctx.SetJson("jso", decTestSrc)
+	if err != nil {
+		t.Error(err)
+	}
+	err = Decode("decTest4", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	assertTest4(t, obj)
+}
+
 func BenchmarkDecode1(b *testing.B) {
 	pretest(b)
 	obj := &testobj.TestObject{}
@@ -279,6 +304,30 @@ func BenchmarkDecode3(b *testing.B) {
 			b.Error(err)
 		}
 		assertTest3(b, obj)
+		ctx.Reset()
+		obj.Clear()
+	}
+}
+
+func BenchmarkDecode4(b *testing.B) {
+	pretest(b)
+	obj := &testobj.TestObject{}
+	ctx := NewCtx()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		buf = append(buf[:0], decTestSrc...)
+
+		ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
+		err := ctx.SetJson("jso", buf)
+		if err != nil {
+			b.Error(err)
+		}
+		err = Decode("decTest4", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		assertTest4(b, obj)
 		ctx.Reset()
 		obj.Clear()
 	}

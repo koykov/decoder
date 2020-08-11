@@ -15,9 +15,12 @@ type Ctx struct {
 	pl int
 
 	buf  []byte
-	bufX interface{}
 	bufS []string
+	bufI int
+	bufX interface{}
 	bufA []interface{}
+
+	Buf, Buf1, Buf2 bytealg.ChainBuf
 
 	Err error
 }
@@ -123,7 +126,8 @@ func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 					for _, tail := range subset {
 						if len(tail) > 0 {
 							c.bufS[len(c.bufS)-1] = fastconv.B2S(tail)
-							if c.bufX = v.jsn.Get(c.bufS[1:]...); c.bufX != nil {
+							c.bufX = v.jsn.Get(c.bufS[1:]...)
+							if n, ok := c.bufX.(*jsonvector.Node); ok && n != nil {
 								break
 							}
 						}
@@ -197,4 +201,7 @@ func (c *Ctx) Reset() {
 	c.buf = c.buf[:0]
 	c.bufS = c.bufS[:0]
 	c.bufA = c.bufA[:0]
+	c.Buf.Reset()
+	c.Buf1.Reset()
+	c.Buf2.Reset()
 }
