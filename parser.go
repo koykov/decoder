@@ -51,7 +51,7 @@ func Parse(src []byte) (rules Rules, err error) {
 					rule.src = bytealg.Trim(m[2], quotes)
 				} else {
 					rule.src, rule.mod = extractMods(m[2])
-					rule.src, rule.set = extractSet(rule.src)
+					rule.src, rule.subset = extractSet(rule.src)
 				}
 			}
 			rules = append(rules, rule)
@@ -118,7 +118,7 @@ func extractArgs(l []byte) []*arg {
 		}
 		r = append(r, &arg{
 			val:    a,
-			set:    set,
+			subset: set,
 			static: static,
 		})
 	}

@@ -106,7 +106,7 @@ func (c *Ctx) SetJsonNode(key string, node *jsonvector.Node) error {
 	return nil
 }
 
-func (c *Ctx) get(path []byte) interface{} {
+func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 	if len(path) == 0 {
 		return nil
 	}
@@ -118,7 +118,19 @@ func (c *Ctx) get(path []byte) interface{} {
 		}
 		if v.key == c.bufS[0] {
 			if v.jsn != nil {
-				c.bufX = v.jsn.Get(c.bufS[1:]...)
+				if len(subset) > 0 {
+					c.bufS = append(c.bufS, "")
+					for _, tail := range subset {
+						if len(tail) > 0 {
+							c.bufS[len(c.bufS)-1] = fastconv.B2S(tail)
+							if c.bufX = v.jsn.Get(c.bufS[1:]...); c.bufX != nil {
+								break
+							}
+						}
+					}
+				} else {
+					c.bufX = v.jsn.Get(c.bufS[1:]...)
+				}
 				return c.bufX
 			}
 			if v.ins != nil {

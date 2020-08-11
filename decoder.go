@@ -51,7 +51,7 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 				if arg.static {
 					ctx.bufA = append(ctx.bufA, &arg.val)
 				} else {
-					val := ctx.get(arg.val)
+					val := ctx.get(arg.val, arg.subset)
 					ctx.bufA = append(ctx.bufA, val)
 				}
 			}
@@ -64,7 +64,7 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 				if arg.static {
 					ctx.bufA = append(ctx.bufA, &arg.val)
 				} else {
-					val := ctx.get(arg.val)
+					val := ctx.get(arg.val, arg.subset)
 					ctx.bufA = append(ctx.bufA, val)
 				}
 			}
@@ -78,7 +78,7 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 		ctx.buf = append(ctx.buf[:0], rule.src...)
 		err = ctx.set(rule.dst, &ctx.buf)
 	case len(rule.dst) > 0 && len(rule.src) > 0 && !rule.static:
-		raw := ctx.get(rule.src)
+		raw := ctx.get(rule.src, rule.subset)
 		if ctx.Err != nil {
 			err = ctx.Err
 			return
@@ -92,7 +92,7 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 						if arg.static {
 							ctx.bufA = append(ctx.bufA, &arg.val)
 						} else {
-							val := ctx.get(arg.val)
+							val := ctx.get(arg.val, arg.subset)
 							ctx.bufA = append(ctx.bufA, val)
 						}
 					}

@@ -6,7 +6,7 @@ type Rules []rule
 
 type rule struct {
 	dst, src []byte
-	set      [][]byte
+	subset   [][]byte
 	getter   *GetterFn
 	callback *CallbackFn
 	static   bool
@@ -16,7 +16,7 @@ type rule struct {
 
 type arg struct {
 	val    []byte
-	set    [][]byte
+	subset [][]byte
 	static bool
 }
 
@@ -40,7 +40,7 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 				buf.Write(rule.src)
 				buf.WriteByte('"')
 			} else {
-				r.hrVal(buf, rule.src, rule.set)
+				r.hrVal(buf, rule.src, rule.subset)
 			}
 		} else {
 			buf.WriteString("cb: ")
@@ -59,7 +59,7 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 					buf.Write(a.val)
 					buf.WriteByte('"')
 				} else {
-					r.hrVal(buf, a.val, a.set)
+					r.hrVal(buf, a.val, a.subset)
 				}
 			}
 			buf.WriteByte(')')
