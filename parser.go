@@ -77,7 +77,7 @@ func Parse(src []byte) (rules Rules, err error) {
 }
 
 func extractMods(p []byte) ([]byte, []mod) {
-	if bytes.Contains(p, vline) {
+	if bytes.Contains(p, vline) && !reSet.Match(p) {
 		// First try to extract suffix mods, like ...|default(0).
 		mods := make([]mod, 0)
 		chunks := bytes.Split(p, vline)

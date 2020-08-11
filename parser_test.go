@@ -20,6 +20,15 @@ person.Owner = false`)
 	v2vEx1Expect = []byte(`dst: person.Gender <- src: request.gender mod default("male")
 dst: person.Owner <- src: "false"
 `)
+	v2vEx2 = []byte(`dst.Id = src.id
+dst.Status = src.{state|closed|expired}
+dst.Hash = crc32("q", src.{id|title|descr})
+foo(src.{a|b|c})`)
+	v2vEx2Expect = []byte(`dst: dst.Id <- src: src.id
+dst: dst.Status <- src: src.{state, closed, expired}
+dst: dst.Hash <- src: crc32("q", src.{id, title, descr})
+cb: foo(src.{a, b, c})
+`)
 	f2v = []byte(`bid.Id = 1
 bid.Ext.HSum = crc32(response.title, response.val)
 bid.Ext.Processed = response.Done|default(false)`)
@@ -57,6 +66,14 @@ func TestParse_V2V(t *testing.T) {
 	r = rules.HumanReadable()
 	if !bytes.Equal(r, v2vEx1Expect) {
 		t.Errorf("v2v example 1 test failed\nexp: %s\ngot: %s", v2vEx1Expect, r)
+	}
+
+	if rules, err = Parse(v2vEx2); err != nil {
+		t.Error(err)
+	}
+	r = rules.HumanReadable()
+	if !bytes.Equal(r, v2vEx2Expect) {
+		t.Errorf("v2v example 2 test failed\nexp: %s\ngot: %s", v2vEx2Expect, r)
 	}
 }
 

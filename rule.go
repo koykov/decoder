@@ -40,7 +40,7 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 				buf.Write(rule.src)
 				buf.WriteByte('"')
 			} else {
-				buf.Write(rule.src)
+				r.hrVal(buf, rule.src, rule.set)
 			}
 		} else {
 			buf.WriteString("cb: ")
@@ -59,7 +59,7 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 					buf.Write(a.val)
 					buf.WriteByte('"')
 				} else {
-					buf.Write(a.val)
+					r.hrVal(buf, a.val, a.set)
 				}
 			}
 			buf.WriteByte(')')
@@ -94,5 +94,19 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 		}
 
 		buf.WriteByte('\n')
+	}
+}
+
+func (r *Rules) hrVal(buf *bytes.Buffer, v []byte, set [][]byte) {
+	buf.Write(v)
+	if len(set) > 0 {
+		buf.WriteString(".{")
+		for i, s := range set {
+			if i > 0 {
+				buf.WriteString(", ")
+			}
+			buf.Write(s)
+		}
+		buf.WriteByte('}')
 	}
 }
