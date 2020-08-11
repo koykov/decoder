@@ -1,6 +1,7 @@
 package jsondecoder
 
 import (
+	"hash/crc32"
 	"strconv"
 	"time"
 
@@ -9,8 +10,30 @@ import (
 	"github.com/koykov/jsonvector"
 )
 
-func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) error {
-	// todo implement me
+func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+	if len(args) == 0 {
+		err = ErrGetterPoorArgs
+		return
+	}
+	ctx.Buf.Reset()
+	for _, a := range args {
+		switch a.(type) {
+		case []byte:
+			ctx.Buf.Write(a.([]byte))
+		case *[]byte:
+			ctx.Buf.Write(*a.(*[]byte))
+		case string:
+			ctx.Buf.WriteStr(a.(string))
+		case *string:
+			ctx.Buf.WriteStr(*a.(*string))
+		case *jsonvector.Node:
+			ctx.Buf.Write(a.(*jsonvector.Node).Bytes())
+		}
+	}
+	if ctx.Buf.Len() > 0 {
+		ctx.bufI = int(crc32.ChecksumIEEE(ctx.Buf.Bytes()))
+		*buf = &ctx.bufI
+	}
 	return nil
 }
 
