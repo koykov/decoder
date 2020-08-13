@@ -29,11 +29,11 @@ func Decode(id string, ctx *Ctx) error {
 	if !ok {
 		return ErrDecoderNotFound
 	}
-	return decode(decoder, ctx)
+	return DecodeRules(decoder.rules, ctx)
 }
 
-func decode(decoder *Decoder, ctx *Ctx) (err error) {
-	for _, rule := range decoder.rules {
+func DecodeRules(rules Rules, ctx *Ctx) (err error) {
+	for _, rule := range rules {
 		err = followRule(&rule, ctx)
 		if err != nil {
 			return
