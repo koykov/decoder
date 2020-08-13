@@ -32,6 +32,9 @@ func Parse(src []byte) (rules Rules, err error) {
 	lines := bytes.Split(src, nl)
 	rules = make(Rules, 0, len(lines))
 	for i, line := range lines {
+		if len(line) == 0 {
+			continue
+		}
 		rule := rule{}
 		line = bytealg.Trim(line, noFmt)
 		if reAssignV2V.Match(line) {
