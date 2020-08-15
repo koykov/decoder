@@ -3,6 +3,8 @@ package jsondecoder
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"regexp"
 
 	"github.com/koykov/bytealg"
@@ -26,6 +28,8 @@ var (
 	reFunction  = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod       = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 	reSet       = regexp.MustCompile(`(.*)\.{([^}]+)}`)
+
+	_ = ParseFile
 )
 
 func Parse(src []byte) (rules Rules, err error) {
@@ -77,6 +81,19 @@ func Parse(src []byte) (rules Rules, err error) {
 		break
 	}
 	return
+}
+
+func ParseFile(fileName string, keepFmt bool) (rules Rules, err error) {
+	_, err = os.Stat(fileName)
+	if os.IsNotExist(err) {
+		return
+	}
+	var raw []byte
+	raw, err = ioutil.ReadFile(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't read file %s", fileName)
+	}
+	return Parse(raw)
 }
 
 func extractMods(p []byte) ([]byte, []mod) {
