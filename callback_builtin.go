@@ -31,7 +31,7 @@ func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
 	}
 	if len(src) > 0 {
 		if key, ok := args[1].(*[]byte); ok {
-			err = ctx.SetJson(fastconv.B2S(*key), src)
+			_, err = ctx.SetJson(fastconv.B2S(*key), src)
 		}
 	}
 	return

@@ -69,8 +69,8 @@ func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 	c.ln++
 }
 
-func (c *Ctx) SetJson(key string, data []byte) (err error) {
-	vec := c.getParser()
+func (c *Ctx) SetJson(key string, data []byte) (vec *jsonvector.Vector, err error) {
+	vec = c.getParser()
 	if err = vec.Parse(data); err != nil {
 		return
 	}
