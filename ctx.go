@@ -118,6 +118,10 @@ func (c *Ctx) SetJsonNode(key string, node *jsonvector.Node) error {
 	return nil
 }
 
+func (c *Ctx) Get(path string) interface{} {
+	return c.get(fastconv.S2B(path), nil)
+}
+
 func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 	if len(path) == 0 {
 		return nil
