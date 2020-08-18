@@ -69,6 +69,15 @@ func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 	c.ln++
 }
 
+func (c *Ctx) SetStatic(key string, val interface{}) {
+	ins, err := inspector.GetInspector("static")
+	if err != nil {
+		c.Err = err
+		return
+	}
+	c.Set(key, val, ins)
+}
+
 func (c *Ctx) SetJson(key string, data []byte) (vec *jsonvector.Vector, err error) {
 	vec = c.getParser()
 	if err = vec.Parse(data); err != nil {
