@@ -83,7 +83,7 @@ func (c *Ctx) SetJson(key string, data []byte) (vec *jsonvector.Vector, err erro
 	if err = vec.Parse(data); err != nil {
 		return
 	}
-	node := vec.Get()
+	node := vec.Root()
 	err = c.SetJsonNode(key, node)
 	return
 }
