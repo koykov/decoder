@@ -1,4 +1,4 @@
-package jsondecoder
+package decoder
 
 type CallbackFn func(ctx *Ctx, args []interface{}) error
 

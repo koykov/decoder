@@ -1,4 +1,4 @@
-package jsondecoder
+package decoder
 
 func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	_, _, _ = buf, val, args

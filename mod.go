@@ -1,4 +1,4 @@
-package jsondecoder
+package decoder
 
 type ModFn func(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error
 

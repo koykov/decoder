@@ -1,4 +1,4 @@
-package jsondecoder
+package decoder
 
 type GetterFn func(ctx *Ctx, buf *interface{}, args []interface{}) error
 

@@ -1,4 +1,4 @@
-package jsondecoder
+package decoder
 
 import "github.com/koykov/jsonvector"
 
