@@ -157,6 +157,7 @@ func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 				}
 				return c.bufX
 			}
+			return v.val
 		}
 	}
 	return nil
