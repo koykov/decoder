@@ -34,11 +34,11 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 		ctx.bufI = int(crc32.ChecksumIEEE(ctx.Buf.Bytes()))
 		*buf = &ctx.bufI
 	}
-	return nil
+	return
 }
 
 // Example of getter callback that demonstrates how callbacks works.
-func getterAppendTestHistory(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterAppendTestHistory(_ *Ctx, buf *interface{}, args []interface{}) (err error) {
 	if len(args) < 3 {
 		err = ErrGetterPoorArgs
 		return
@@ -63,5 +63,5 @@ func getterAppendTestHistory(ctx *Ctx, buf *interface{}, args []interface{}) (er
 		*h = append(*h, hr)
 		*buf = h
 	}
-	return nil
+	return
 }
