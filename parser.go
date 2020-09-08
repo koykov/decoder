@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	// Byte constants.
 	nl     = []byte("\n")
 	vline  = []byte("|")
 	space  = []byte(" ")
@@ -23,16 +24,21 @@ var (
 	noFmt  = []byte(" \t\n\r")
 	quotes = []byte("\"'`")
 
+	// Regexp to parse expressions.
 	reAssignV2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)`)
 	reAssignF2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(|]+)\(([^)]*)\)`)
 	reFunction  = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod       = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 	reSet       = regexp.MustCompile(`(.*)\.{([^}]+)}`)
 
+	// Suppress go vet warning.
 	_ = ParseFile
 )
 
+// Initialize parser and parse the decoder rules.
 func Parse(src []byte) (rules Rules, err error) {
+	// Split body to separate lines.
+	// Each line contains only one expression.
 	lines := bytes.Split(src, nl)
 	rules = make(Rules, 0, len(lines))
 	for i, line := range lines {
@@ -42,9 +48,12 @@ func Parse(src []byte) (rules Rules, err error) {
 		rule := rule{}
 		line = bytealg.Trim(line, noFmt)
 		if reAssignV2V.Match(line) {
+			// Var-to-var expression caught.
 			if m := reAssignF2V.FindSubmatch(line); m != nil {
+				// Func-to-var expression caught.
 				rule.dst = replaceQB(m[1])
 				rule.src = replaceQB(m[2])
+				// Parse getter callback.
 				fn := GetGetterFn(fastconv.B2S(m[2]))
 				if fn == nil {
 					err = fmt.Errorf("unknown getter function '%s' at line %d", m[2], i)
@@ -53,6 +62,7 @@ func Parse(src []byte) (rules Rules, err error) {
 				rule.getter = fn
 				rule.arg = extractArgs(m[3])
 			} else if m := reAssignV2V.FindSubmatch(line); m != nil {
+				// Var-to-var ...
 				rule.dst = replaceQB(m[1])
 				if rule.static = isStatic(m[2]); rule.static {
 					rule.src = bytealg.Trim(m[2], quotes)
@@ -65,7 +75,9 @@ func Parse(src []byte) (rules Rules, err error) {
 			continue
 		}
 		if m := reFunction.FindSubmatch(line); m != nil {
+			// Function expression caught.
 			rule.src = m[1]
+			// Parse callback.
 			fn := GetCallbackFn(fastconv.B2S(m[1]))
 			if fn == nil {
 				err = fmt.Errorf("unknown callback function '%s' at line %d", m[1], i)
@@ -77,12 +89,14 @@ func Parse(src []byte) (rules Rules, err error) {
 			rules = append(rules, rule)
 			continue
 		}
+		// Report unparsed error.
 		err = fmt.Errorf("unknown rule '%s' a line %d", line, i)
 		break
 	}
 	return
 }
 
+// Parse the file.
 func ParseFile(fileName string, keepFmt bool) (rules Rules, err error) {
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
@@ -96,9 +110,9 @@ func ParseFile(fileName string, keepFmt bool) (rules Rules, err error) {
 	return Parse(raw)
 }
 
+// Split expression to variable and mods list.
 func extractMods(p []byte) ([]byte, []mod) {
 	if bytes.Contains(p, vline) && !reSet.Match(p) {
-		// First try to extract suffix mods, like ...|default(0).
 		mods := make([]mod, 0)
 		chunks := bytes.Split(p, vline)
 		for i := 1; i < len(chunks); i++ {
@@ -121,6 +135,11 @@ func extractMods(p []byte) ([]byte, []mod) {
 	}
 }
 
+// Get list of arguments of modifier or callback, ex:
+// variable|mod(arg0, ..., argN)
+//              ^             ^
+// callback(arg0, ..., argN)
+//          ^             ^
 func extractArgs(l []byte) []*arg {
 	r := make([]*arg, 0)
 	if len(l) == 0 {
@@ -145,6 +164,7 @@ func extractArgs(l []byte) []*arg {
 	return r
 }
 
+// Get list of certain keys that should be checked sequentially.
 func extractSet(p []byte) ([]byte, [][]byte) {
 	p = replaceQB(p)
 	if m := reSet.FindSubmatch(p); m != nil {
@@ -153,6 +173,7 @@ func extractSet(p []byte) ([]byte, [][]byte) {
 	return p, nil
 }
 
+// Replace square brackets in expression like this a[key] -> a.key
 func replaceQB(p []byte) []byte {
 	p = bytes.Replace(p, qbO, dot, -1)
 	p = bytes.Replace(p, qbC, empty, -1)
