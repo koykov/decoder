@@ -97,7 +97,7 @@ func Parse(src []byte) (rules Rules, err error) {
 }
 
 // Parse the file.
-func ParseFile(fileName string, keepFmt bool) (rules Rules, err error) {
+func ParseFile(fileName string) (rules Rules, err error) {
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
 		return
