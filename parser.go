@@ -45,8 +45,12 @@ func Parse(src []byte) (rules Rules, err error) {
 		if len(line) == 0 {
 			continue
 		}
-		rule := rule{}
 		line = bytealg.Trim(line, noFmt)
+		if len(line) == 0 || line[0] == '#' {
+			// Ignore comments.
+			continue
+		}
+		rule := rule{}
 		if reAssignV2V.Match(line) {
 			// Var-to-var expression caught.
 			if m := reAssignF2V.FindSubmatch(line); m != nil {
