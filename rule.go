@@ -2,24 +2,38 @@ package decoder
 
 import "bytes"
 
+// List of rules.
 type Rules []rule
 
+// Rule object that describes one line in decoder's body.
 type rule struct {
+	// Destination/source pair.
 	dst, src []byte
-	subset   [][]byte
-	getter   *GetterFn
+	// List of keys, that need to check sequentially in the source object.
+	subset [][]byte
+	// Getter callback, for sources like "dst = getFoo(var0, ...)"
+	getter *GetterFn
+	// Callback for lines like "prepareObject(var.obj)"
 	callback *CallbackFn
-	static   bool
-	mod      []mod
-	arg      []*arg
+	// Flag that indicates if source is a static value.
+	static bool
+	// List of modifier applied to source.
+	mod []mod
+	// List of arguments for getter or callback.
+	arg []*arg
 }
 
+// Argument for getter/callback/modifier.
 type arg struct {
-	val    []byte
+	// Value argument.
+	val []byte
+	// List of keys, that need to check sequentially in the value object.
 	subset [][]byte
+	// Flag that indicates if value is a static value.
 	static bool
 }
 
+// Build human readable view of the rules list.
 func (r *Rules) HumanReadable() []byte {
 	if len(*r) == 0 {
 		return nil
@@ -29,6 +43,7 @@ func (r *Rules) HumanReadable() []byte {
 	return buf.Bytes()
 }
 
+// Internal human readable helper.
 func (r *Rules) hrHelper(buf *bytes.Buffer) {
 	for _, rule := range *r {
 		if rule.callback == nil {
@@ -97,6 +112,7 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 	}
 }
 
+// Human readable helper for value.
 func (r *Rules) hrVal(buf *bytes.Buffer, v []byte, set [][]byte) {
 	buf.Write(v)
 	if len(set) > 0 {
