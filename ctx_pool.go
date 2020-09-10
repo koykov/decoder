@@ -7,9 +7,14 @@ type CtxPool struct {
 	p sync.Pool
 }
 
-// Default instance of context pool.
-// You may use it directly as jsondecoder.CP.Get()/Put() or using functions AcquireCtx()/ReleaseCtx().
-var CP CtxPool
+var (
+	// Default instance of context pool.
+	// You may use it directly as decoder.CP.Get()/Put() or using functions AcquireCtx()/ReleaseCtx().
+	CP CtxPool
+
+	// Suppress go vet warning.
+	_, _ = AcquireCtx, ReleaseCtx
+)
 
 // Get context object from the pool or make new object if pool is empty.
 func (p *CtxPool) Get() *Ctx {
