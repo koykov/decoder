@@ -5,10 +5,19 @@ import (
 	"github.com/koykov/jsonvector"
 )
 
+// Example of callback function to use in parser tests.
 func cbFoo(_ *Ctx, _ []interface{}) error {
 	return nil
 }
 
+// Parse json source and register it in the ctx.
+//
+// Takes two arguments, the first should contains JSON text, the second - key to register parsed json in the ctx.
+// Example of usage:
+// <code>jsonParse("{\"a\":\"foo\"}", "parsed0")
+// or
+// <code>jsonParse(jsonSrc, "parsed1")</code>
+// , where jsonSrc contains "{\"b\":[true,true,false]}".
 func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
 	if len(args) < 2 {
 		return ErrCbPoorArgs
