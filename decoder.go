@@ -2,16 +2,21 @@ package decoder
 
 import "sync"
 
+// Main decoder object.
+// Decoder contains only parsed rules.
+// All temporary and intermediate data should be store in context logic to make using of decoders thread-safe.
 type Decoder struct {
 	Id    string
 	rules Rules
 }
 
 var (
+	// Decoders registry.
 	mux             sync.Mutex
 	decoderRegistry = map[string]*Decoder{}
 )
 
+// Register decoder rules in the registry.
 func RegisterDecoder(id string, rules Rules) {
 	decoder := Decoder{
 		Id:    id,
@@ -22,6 +27,9 @@ func RegisterDecoder(id string, rules Rules) {
 	mux.Unlock()
 }
 
+// Apply decoder rules using given id.
+//
+// ctx should contains all variables mentioned in the decoder's body.
 func Decode(id string, ctx *Ctx) error {
 	mux.Lock()
 	decoder, ok := decoderRegistry[id]
@@ -32,6 +40,7 @@ func Decode(id string, ctx *Ctx) error {
 	return DecodeRules(decoder.rules, ctx)
 }
 
+// Apply decoder rules without using id.
 func DecodeRules(rules Rules, ctx *Ctx) (err error) {
 	for _, rule := range rules {
 		err = followRule(&rule, ctx)
@@ -42,9 +51,12 @@ func DecodeRules(rules Rules, ctx *Ctx) (err error) {
 	return
 }
 
+// Generic function to apply single rule.
 func followRule(rule *rule, ctx *Ctx) (err error) {
 	switch {
 	case rule.callback != nil:
+		// Rule is a callback.
+		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
 		if len(rule.arg) > 0 {
 			for _, arg := range rule.arg {
@@ -56,8 +68,11 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 				}
 			}
 		}
+		// Execute callback func.
 		err = (*rule.callback)(ctx, ctx.bufA)
 	case rule.getter != nil:
+		// F2V rule.
+		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
 		if len(rule.arg) > 0 {
 			for _, arg := range rule.arg {
@@ -69,20 +84,27 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 				}
 			}
 		}
+		// Call getter callback func.
 		err = (*rule.getter)(ctx, &ctx.bufX, ctx.bufA)
 		if err != nil {
 			return
 		}
+		// Assign result to destination.
 		err = ctx.set(rule.dst, ctx.bufX)
 	case len(rule.dst) > 0 && len(rule.src) > 0 && rule.static:
+		// V2V rule with static source.
+		// Just assign the source it to destination.
 		ctx.buf = append(ctx.buf[:0], rule.src...)
 		err = ctx.set(rule.dst, &ctx.buf)
 	case len(rule.dst) > 0 && len(rule.src) > 0 && !rule.static:
+		// V2V rule with dynamic source.
+		// Get source value.
 		raw := ctx.get(rule.src, rule.subset)
 		if ctx.Err != nil {
 			err = ctx.Err
 			return
 		}
+		// Apply modifiers.
 		if len(rule.mod) > 0 {
 			for _, mod := range rule.mod {
 				// Collect arguments to buffer.
@@ -109,6 +131,7 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 		if ctx.Err != nil {
 			return
 		}
+		// Assign to destination.
 		err = ctx.set(rule.dst, raw)
 	}
 	return
