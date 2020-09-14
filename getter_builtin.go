@@ -10,6 +10,7 @@ import (
 	"github.com/koykov/jsonvector"
 )
 
+// Calculate common crc32 hash of given arguments.
 func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	if len(args) == 0 {
 		err = ErrGetterPoorArgs
