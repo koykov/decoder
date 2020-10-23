@@ -13,16 +13,17 @@ import (
 
 var (
 	// Byte constants.
-	nl     = []byte("\n")
-	vline  = []byte("|")
-	space  = []byte(" ")
-	comma  = []byte(",")
-	dot    = []byte(".")
-	empty  = []byte("")
-	qbO    = []byte("[")
-	qbC    = []byte("]")
-	noFmt  = []byte(" \t\n\r")
-	quotes = []byte("\"'`")
+	nl      = []byte("\n")
+	vline   = []byte("|")
+	space   = []byte(" ")
+	comma   = []byte(",")
+	dot     = []byte(".")
+	empty   = []byte("")
+	qbO     = []byte("[")
+	qbC     = []byte("]")
+	noFmt   = []byte(" \t\n\r")
+	quotes  = []byte("\"'`")
+	comment = []byte("//")
 
 	// Regexp to parse expressions.
 	reAssignV2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)`)
@@ -42,7 +43,7 @@ func Parse(src []byte) (rules Rules, err error) {
 	lines := bytes.Split(src, nl)
 	rules = make(Rules, 0, len(lines))
 	for i, line := range lines {
-		if len(line) == 0 {
+		if len(line) == 0 || (len(line) > 1 && bytes.Equal(line[:2], comment)) {
 			continue
 		}
 		line = bytealg.Trim(line, noFmt)

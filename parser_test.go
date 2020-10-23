@@ -7,6 +7,7 @@ import (
 
 var (
 	v2vEx0 = []byte(`dst.ID = obj.user_id
+// example of comment
 dst.Name = "John Ruth"
 dst.Finance.Balance = obj.cost.total
 dst.Weight = 12.45`)
