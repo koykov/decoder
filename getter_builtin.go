@@ -53,7 +53,7 @@ func getterAppendTestHistory(_ *Ctx, buf *interface{}, args []interface{}) (err 
 		case *[]byte:
 			hr.Cost, _ = strconv.ParseFloat(fastconv.B2S(*args[1].(*[]byte)), 64)
 		case *jsonvector.Node:
-			hr.Cost = args[1].(*jsonvector.Node).Float()
+			hr.Cost, _ = args[1].(*jsonvector.Node).Float()
 		}
 		switch args[2].(type) {
 		case *[]byte:

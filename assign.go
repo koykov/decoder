@@ -19,29 +19,41 @@ func AssignJsonNode(dst, src interface{}) (ok bool) {
 		case *bool:
 			*dst.(*bool) = n.Bool()
 		case *int:
-			*dst.(*int) = int(n.Int())
+			i, _ := n.Int()
+			*dst.(*int) = int(i)
 		case *int8:
-			*dst.(*int8) = int8(n.Int())
+			i, _ := n.Int()
+			*dst.(*int8) = int8(i)
 		case *int16:
-			*dst.(*int16) = int16(n.Int())
+			i, _ := n.Int()
+			*dst.(*int16) = int16(i)
 		case *int32:
-			*dst.(*int32) = int32(n.Int())
+			i, _ := n.Int()
+			*dst.(*int32) = int32(i)
 		case *int64:
-			*dst.(*int64) = n.Int()
+			i, _ := n.Int()
+			*dst.(*int64) = i
 		case *uint:
-			*dst.(*uint) = uint(n.Uint())
+			u, _ := n.Uint()
+			*dst.(*uint) = uint(u)
 		case *uint8:
-			*dst.(*uint8) = uint8(n.Uint())
+			u, _ := n.Uint()
+			*dst.(*uint8) = uint8(u)
 		case *uint16:
-			*dst.(*uint16) = uint16(n.Uint())
+			u, _ := n.Uint()
+			*dst.(*uint16) = uint16(u)
 		case *uint32:
-			*dst.(*uint32) = uint32(n.Uint())
+			u, _ := n.Uint()
+			*dst.(*uint32) = uint32(u)
 		case *uint64:
-			*dst.(*uint64) = n.Uint()
+			u, _ := n.Uint()
+			*dst.(*uint64) = u
 		case *float32:
-			*dst.(*float32) = float32(n.Float())
+			f, _ := n.Float()
+			*dst.(*float32) = float32(f)
 		case *float64:
-			*dst.(*float64) = n.Float()
+			f, _ := n.Float()
+			*dst.(*float64) = f
 		default:
 			ok = false
 		}
