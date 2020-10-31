@@ -28,7 +28,10 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 		case *string:
 			ctx.Buf.WriteStr(*a.(*string))
 		case *jsonvector.Node:
-			ctx.Buf.Write(a.(*jsonvector.Node).Bytes())
+			node := a.(*jsonvector.Node)
+			if node != nil {
+				ctx.Buf.Write(node.Bytes())
+			}
 		}
 	}
 	if ctx.Buf.Len() > 0 {
