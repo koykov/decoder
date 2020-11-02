@@ -21,7 +21,10 @@ type Ctx struct {
 	bufI int
 	bufX interface{}
 	bufA []interface{}
-	// External buffers to use in modifier and and other callbacks.
+	// Byte buffers for strings/bytes.
+	bb  [][]byte
+	bbl int
+	// External buffers to use in modifier and other callbacks.
 	Buf, Buf1, Buf2 bytealg.ChainBuf
 
 	Err error
@@ -212,7 +215,7 @@ func (c *Ctx) set(path []byte, val interface{}) error {
 		}
 		if v.key == c.bufS[0] {
 			if v.ins != nil {
-				c.bufX = val
+				c.bufferizeVal(&c.bufX, val)
 				c.Err = v.ins.Set(v.val, c.bufX, c.bufS[1:]...)
 				if c.Err != nil {
 					return c.Err
@@ -222,6 +225,40 @@ func (c *Ctx) set(path []byte, val interface{}) error {
 		}
 	}
 	return nil
+}
+
+// Copy strings/bytes to internal buffers to avoid sharing data leaks.
+func (c *Ctx) bufferizeVal(dst *interface{}, val interface{}) {
+	switch val.(type) {
+	case []byte:
+		i := c.reserveByteBuf()
+		c.bb[i] = append(c.bb[i], val.([]byte)...)
+		*dst = &c.bb[i]
+	case *[]byte:
+		i := c.reserveByteBuf()
+		c.bb[i] = append(c.bb[i], *val.(*[]byte)...)
+		*dst = &c.bb[i]
+	case string:
+		i := c.reserveByteBuf()
+		c.bb[i] = append(c.bb[i], val.(string)...)
+		*dst = &c.bb[i]
+	case *string:
+		i := c.reserveByteBuf()
+		c.bb[i] = append(c.bb[i], *val.(*string)...)
+		*dst = &c.bb[i]
+	default:
+		*dst = val
+	}
+}
+
+// Reserve space for new byte buffer and return it index.
+func (c *Ctx) reserveByteBuf() int {
+	i := c.bbl
+	if c.bbl >= len(c.bb) {
+		c.bb = append(c.bb, nil)
+	}
+	c.bbl++
+	return i
 }
 
 // Get new JSON vector object from the context buffer.
@@ -250,6 +287,11 @@ func (c *Ctx) Reset() {
 		c.p[i].Reset()
 	}
 	c.pl = 0
+
+	for i := 0; i < c.bbl; i++ {
+		c.bb[i] = c.bb[i][:0]
+	}
+	c.bbl = 0
 
 	c.Err = nil
 	c.bufX = nil
