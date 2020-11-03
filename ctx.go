@@ -247,10 +247,11 @@ func (c *Ctx) bufferizeVal(dst *interface{}, val interface{}) {
 		c.bb[i] = append(c.bb[i], *val.(*string)...)
 		*dst = &c.bb[i]
 	case *jsonvector.Node:
-		i := c.reserveByteBuf()
-		node := *val.(*jsonvector.Node)
-		c.bb[i] = append(c.bb[i], node.Bytes()...)
-		*dst = &c.bb[i]
+		if node := val.(*jsonvector.Node); node != nil {
+			i := c.reserveByteBuf()
+			c.bb[i] = append(c.bb[i], node.ForceBytes()...)
+			*dst = &c.bb[i]
+		}
 	default:
 		*dst = val
 	}
