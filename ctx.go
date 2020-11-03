@@ -227,7 +227,7 @@ func (c *Ctx) set(path []byte, val interface{}) error {
 	return nil
 }
 
-// Copy strings/bytes to internal buffers to avoid sharing data leaks.
+// Copy strings/bytes to internal buffers to avoid data leaks.
 func (c *Ctx) bufferizeVal(dst *interface{}, val interface{}) {
 	switch val.(type) {
 	case []byte:
@@ -245,6 +245,11 @@ func (c *Ctx) bufferizeVal(dst *interface{}, val interface{}) {
 	case *string:
 		i := c.reserveByteBuf()
 		c.bb[i] = append(c.bb[i], *val.(*string)...)
+		*dst = &c.bb[i]
+	case *jsonvector.Node:
+		i := c.reserveByteBuf()
+		node := *val.(*jsonvector.Node)
+		c.bb[i] = append(c.bb[i], node.Bytes()...)
 		*dst = &c.bb[i]
 	default:
 		*dst = val
