@@ -215,7 +215,8 @@ func (c *Ctx) set(path []byte, val interface{}) error {
 		}
 		if v.key == c.bufS[0] {
 			if v.ins != nil {
-				c.bufferizeVal(&c.bufX, val)
+				// c.bufferizeVal(&c.bufX, val)
+				c.bufX = val
 				c.Err = v.ins.Set(v.val, c.bufX, c.bufS[1:]...)
 				if c.Err != nil {
 					return c.Err
