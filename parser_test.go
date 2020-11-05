@@ -44,6 +44,13 @@ dst.weight = new.value`)
 dst: ctx.new <- src: src.listing
 dst: dst.weight <- src: new.value
 `)
+	v2ci = []byte(`obj.Id = 17
+ctx.finance = response.fin as Finance
+obj.Balance = finance.Amount`)
+	v2ciExpect = []byte(`dst: obj.Id <- src: "17"
+dst: ctx.finance <- src: response.fin as Finance
+dst: obj.Balance <- src: finance.Amount
+`)
 	cb = []byte(`user.Registered = 1
 foo(user, req, true)
 user.Status = 15`)
@@ -114,6 +121,22 @@ func TestParse_V2C(t *testing.T) {
 	r = rules.HumanReadable()
 	if !bytes.Equal(r, v2cExpect) {
 		t.Errorf("v2c example 0 test failed\nexp: %s\ngot: %s", v2cExpect, r)
+	}
+}
+
+func TestParse_V2CI(t *testing.T) {
+	var (
+		rules Rules
+		err   error
+		r     []byte
+	)
+
+	if rules, err = Parse(v2ci); err != nil {
+		t.Error(err)
+	}
+	r = rules.HumanReadable()
+	if !bytes.Equal(r, v2ciExpect) {
+		t.Errorf("v2ci example 0 test failed\nexp: %s\ngot: %s", v2ciExpect, r)
 	}
 }
 

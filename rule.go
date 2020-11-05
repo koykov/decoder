@@ -57,6 +57,10 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 			} else {
 				r.hrVal(buf, rule.src, rule.subset)
 			}
+			if len(rule.ins) > 0 {
+				buf.WriteString(" as ")
+				buf.Write(rule.ins)
+			}
 		} else {
 			buf.WriteString("cb: ")
 			buf.Write(rule.src)
