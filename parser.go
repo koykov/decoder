@@ -56,6 +56,7 @@ func Parse(src []byte) (rules Rules, err error) {
 		}
 		rule := rule{}
 		if reAssignV2C.Match(line) {
+			// Var-to-ctx expression caught.
 			if m := reAssignV2CAs.FindSubmatch(line); m != nil {
 				rule.dst = m[1]
 				rule.src = m[2]
@@ -63,6 +64,13 @@ func Parse(src []byte) (rules Rules, err error) {
 			} else if m := reAssignV2C.FindSubmatch(line); m != nil {
 				rule.dst = m[1]
 				rule.src = m[2]
+			}
+			// Check static/variable.
+			if rule.static = isStatic(rule.src); rule.static {
+				rule.src = bytealg.Trim(rule.src, quotes)
+			} else {
+				rule.src, rule.mod = extractMods(rule.src)
+				rule.src, rule.subset = extractSet(rule.src)
 			}
 			rules = append(rules, rule)
 			continue

@@ -90,12 +90,12 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 			return
 		}
 		// Assign result to destination.
-		err = ctx.set(rule.dst, ctx.bufX)
+		err = ctx.set(rule.dst, ctx.bufX, rule.ins)
 	case len(rule.dst) > 0 && len(rule.src) > 0 && rule.static:
 		// V2V rule with static source.
 		// Just assign the source it to destination.
 		ctx.buf = append(ctx.buf[:0], rule.src...)
-		err = ctx.set(rule.dst, &ctx.buf)
+		err = ctx.set(rule.dst, &ctx.buf, rule.ins)
 	case len(rule.dst) > 0 && len(rule.src) > 0 && !rule.static:
 		// V2V rule with dynamic source.
 		// Get source value.
@@ -132,7 +132,7 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 			return
 		}
 		// Assign to destination.
-		err = ctx.set(rule.dst, raw)
+		err = ctx.set(rule.dst, raw, rule.ins)
 	}
 	return
 }

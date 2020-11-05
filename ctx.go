@@ -201,12 +201,36 @@ func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 // Internal setter.
 //
 // Set val to destination by address path.
-func (c *Ctx) set(path []byte, val interface{}) error {
+func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
 	if len(path) == 0 {
 		return nil
 	}
 	c.bufS = c.bufS[:0]
 	c.bufS = bytealg.AppendSplitStr(c.bufS, fastconv.B2S(path), ".", -1)
+	if len(c.bufS) == 0 {
+		return nil
+	}
+	if c.bufS[0] == "ctx" || c.bufS[0] == "context" {
+		if len(c.bufS) == 1 {
+			// Attempt to overwrite the whole context object caught.
+			return nil
+		}
+		// Var-to-ctx case.
+		ctxPath := fastconv.B2S(path[len(c.bufS[0])+1:])
+		if len(insName) > 0 {
+			ins, err := inspector.GetInspector(fastconv.B2S(insName))
+			if err != nil {
+				return err
+			}
+			c.Set(ctxPath, val, ins)
+		} else if node, ok := val.(*jsonvector.Node); ok {
+			_ = c.SetJsonNode(ctxPath, node)
+		} else {
+			c.SetStatic(ctxPath, val)
+		}
+		return nil
+	}
+	// Var-to-var case.
 	for i, v := range c.vars {
 		if i == c.ln {
 			break
