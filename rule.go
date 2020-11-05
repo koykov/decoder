@@ -8,7 +8,7 @@ type Rules []rule
 // Rule object that describes one line in decoder's body.
 type rule struct {
 	// Destination/source pair.
-	dst, src []byte
+	dst, src, ins []byte
 	// List of keys, that need to check sequentially in the source object.
 	subset [][]byte
 	// Getter callback, for sources like "dst = getFoo(var0, ...)"

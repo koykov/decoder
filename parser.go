@@ -26,6 +26,9 @@ var (
 	comment = []byte("//")
 
 	// Regexp to parse expressions.
+	reAssignV2CAs = regexp.MustCompile(`((?:context|ctx)\.[\w\d\\.\[\]]+)\s*=\s*(.*) as (\w*)`)
+	reAssignV2C   = regexp.MustCompile(`((?:context|ctx)\.[\w\d\\.\[\]]+)\s*=\s*(.*)`)
+
 	reAssignV2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)`)
 	reAssignF2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(|]+)\(([^)]*)\)`)
 	reFunction  = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
@@ -52,6 +55,18 @@ func Parse(src []byte) (rules Rules, err error) {
 			continue
 		}
 		rule := rule{}
+		if reAssignV2C.Match(line) {
+			if m := reAssignV2CAs.FindSubmatch(line); m != nil {
+				rule.dst = m[1]
+				rule.src = m[2]
+				rule.ins = m[3]
+			} else if m := reAssignV2C.FindSubmatch(line); m != nil {
+				rule.dst = m[1]
+				rule.src = m[2]
+			}
+			rules = append(rules, rule)
+			continue
+		}
 		if reAssignV2V.Match(line) {
 			// Var-to-var expression caught.
 			if m := reAssignF2V.FindSubmatch(line); m != nil {

@@ -37,6 +37,13 @@ bid.Ext.Processed = response.Done|default(false)`)
 dst: bid.Ext.HSum <- src: crc32(response.title, response.val)
 dst: bid.Ext.Processed <- src: response.Done mod default("false")
 `)
+	v2c = []byte(`dst.Hash = 64h95nd5fx
+ctx.new = src.listing
+dst.weight = new.value`)
+	v2cExpect = []byte(`dst: dst.Hash <- src: 64h95nd5fx
+dst: ctx.new <- src: src.listing
+dst: dst.weight <- src: new.value
+`)
 	cb = []byte(`user.Registered = 1
 foo(user, req, true)
 user.Status = 15`)
@@ -91,6 +98,22 @@ func TestParse_F2V(t *testing.T) {
 	r = rules.HumanReadable()
 	if !bytes.Equal(r, f2vExpect) {
 		t.Errorf("f2v example 0 test failed\nexp: %s\ngot: %s", f2vExpect, r)
+	}
+}
+
+func TestParse_V2C(t *testing.T) {
+	var (
+		rules Rules
+		err   error
+		r     []byte
+	)
+
+	if rules, err = Parse(v2c); err != nil {
+		t.Error(err)
+	}
+	r = rules.HumanReadable()
+	if !bytes.Equal(r, v2cExpect) {
+		t.Errorf("v2c example 0 test failed\nexp: %s\ngot: %s", v2cExpect, r)
 	}
 }
 
