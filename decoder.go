@@ -22,21 +22,36 @@ func RegisterDecoder(id string, rules Rules) {
 		Id:    id,
 		rules: rules,
 	}
-	mux.Lock()
-	decoderRegistry[id] = &decoder
-	mux.Unlock()
+	// Check lock policy.
+	if GetLockPolicy() == PolicyLockFree {
+		decoderRegistry[id] = &decoder
+	} else {
+		mux.Lock()
+		decoderRegistry[id] = &decoder
+		mux.Unlock()
+	}
 }
 
 // Apply decoder rules using given id.
 //
 // ctx should contains all variables mentioned in the decoder's body.
 func Decode(id string, ctx *Ctx) error {
-	mux.Lock()
-	decoder, ok := decoderRegistry[id]
-	mux.Unlock()
+	var (
+		decoder *Decoder
+		ok      bool
+	)
+	// Check lock policy.
+	if GetLockPolicy() == PolicyLockFree {
+		decoder, ok = decoderRegistry[id]
+	} else {
+		mux.Lock()
+		decoder, ok = decoderRegistry[id]
+		mux.Unlock()
+	}
 	if !ok {
 		return ErrDecoderNotFound
 	}
+	// Decode corresponding ruleset.
 	return DecodeRules(decoder.rules, ctx)
 }
 
