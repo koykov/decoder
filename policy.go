@@ -21,9 +21,9 @@ var (
 // * Make all modifications you need.
 // * Set again lock-free policy by call decoder.SetLockPolicy(policy.LockFree)
 // * ...
-// Caution! It's your responsibility to set proper policy. For example, if you wouldn't set PolicyLock before add/update
-// some ruleset, you may catch "concurrent map read and write" panic.
-// If you don't sure, please just ignore policies and work under default PolicyLock.
+// Caution! It's your responsibility to set proper policy. For example, if you wouldn't set policy.Locked before
+// add/update some ruleset, you may catch "concurrent map read and write" panic.
+// If you don't sure, please just ignore policies and work under default policy.Locked.
 func SetLockPolicy(new policy.Policy) {
 	lock.SetPolicy(new)
 }
