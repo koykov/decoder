@@ -1,6 +1,8 @@
 package decoder
 
-import "sync"
+import (
+	"github.com/koykov/policy"
+)
 
 // Main decoder object.
 // Decoder contains only parsed rules.
@@ -12,7 +14,7 @@ type Decoder struct {
 
 var (
 	// Decoders registry.
-	mux             sync.Mutex
+	lock            policy.Lock
 	decoderRegistry = map[string]*Decoder{}
 )
 
@@ -22,14 +24,9 @@ func RegisterDecoder(id string, rules Rules) {
 		Id:    id,
 		rules: rules,
 	}
-	// Check lock policy.
-	if GetLockPolicy() == PolicyLockFree {
-		decoderRegistry[id] = &decoder
-	} else {
-		mux.Lock()
-		decoderRegistry[id] = &decoder
-		mux.Unlock()
-	}
+	lock.Lock()
+	decoderRegistry[id] = &decoder
+	lock.Unlock()
 }
 
 // Apply decoder rules using given id.
@@ -40,14 +37,9 @@ func Decode(id string, ctx *Ctx) error {
 		decoder *Decoder
 		ok      bool
 	)
-	// Check lock policy.
-	if GetLockPolicy() == PolicyLockFree {
-		decoder, ok = decoderRegistry[id]
-	} else {
-		mux.Lock()
-		decoder, ok = decoderRegistry[id]
-		mux.Unlock()
-	}
+	lock.Lock()
+	decoder, ok = decoderRegistry[id]
+	lock.Unlock()
 	if !ok {
 		return ErrDecoderNotFound
 	}
