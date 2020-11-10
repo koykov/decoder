@@ -62,7 +62,7 @@ dst: user.Status <- src: "15"
 
 func TestParse_V2V(t *testing.T) {
 	var (
-		rules Rules
+		rules Ruleset
 		err   error
 		r     []byte
 	)
@@ -94,15 +94,15 @@ func TestParse_V2V(t *testing.T) {
 
 func TestParse_F2V(t *testing.T) {
 	var (
-		rules Rules
-		err   error
-		r     []byte
+		rs  Ruleset
+		err error
+		r   []byte
 	)
 
-	if rules, err = Parse(f2v); err != nil {
+	if rs, err = Parse(f2v); err != nil {
 		t.Error(err)
 	}
-	r = rules.HumanReadable()
+	r = rs.HumanReadable()
 	if !bytes.Equal(r, f2vExpect) {
 		t.Errorf("f2v example 0 test failed\nexp: %s\ngot: %s", f2vExpect, r)
 	}
@@ -110,15 +110,15 @@ func TestParse_F2V(t *testing.T) {
 
 func TestParse_V2C(t *testing.T) {
 	var (
-		rules Rules
-		err   error
-		r     []byte
+		rs  Ruleset
+		err error
+		r   []byte
 	)
 
-	if rules, err = Parse(v2c); err != nil {
+	if rs, err = Parse(v2c); err != nil {
 		t.Error(err)
 	}
-	r = rules.HumanReadable()
+	r = rs.HumanReadable()
 	if !bytes.Equal(r, v2cExpect) {
 		t.Errorf("v2c example 0 test failed\nexp: %s\ngot: %s", v2cExpect, r)
 	}
@@ -126,15 +126,15 @@ func TestParse_V2C(t *testing.T) {
 
 func TestParse_V2CI(t *testing.T) {
 	var (
-		rules Rules
-		err   error
-		r     []byte
+		rs  Ruleset
+		err error
+		r   []byte
 	)
 
-	if rules, err = Parse(v2ci); err != nil {
+	if rs, err = Parse(v2ci); err != nil {
 		t.Error(err)
 	}
-	r = rules.HumanReadable()
+	r = rs.HumanReadable()
 	if !bytes.Equal(r, v2ciExpect) {
 		t.Errorf("v2ci example 0 test failed\nexp: %s\ngot: %s", v2ciExpect, r)
 	}
@@ -142,15 +142,15 @@ func TestParse_V2CI(t *testing.T) {
 
 func TestParse_Cb(t *testing.T) {
 	var (
-		rules Rules
-		err   error
-		r     []byte
+		rs  Ruleset
+		err error
+		r   []byte
 	)
 
-	if rules, err = Parse(cb); err != nil {
+	if rs, err = Parse(cb); err != nil {
 		t.Error(err)
 	}
-	r = rules.HumanReadable()
+	r = rs.HumanReadable()
 	if !bytes.Equal(r, cbExpect) {
 		t.Errorf("callback example 0 test failed\nexp: %s\ngot: %s", cbExpect, r)
 	}

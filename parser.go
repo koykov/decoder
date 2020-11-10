@@ -40,11 +40,11 @@ var (
 )
 
 // Initialize parser and parse the decoder rules.
-func Parse(src []byte) (rules Rules, err error) {
+func Parse(src []byte) (ruleset Ruleset, err error) {
 	// Split body to separate lines.
 	// Each line contains only one expression.
 	lines := bytes.Split(src, nl)
-	rules = make(Rules, 0, len(lines))
+	ruleset = make(Ruleset, 0, len(lines))
 	for i, line := range lines {
 		if len(line) == 0 || (len(line) > 1 && bytes.Equal(line[:2], comment)) {
 			continue
@@ -72,7 +72,7 @@ func Parse(src []byte) (rules Rules, err error) {
 				rule.src, rule.mod = extractMods(rule.src)
 				rule.src, rule.subset = extractSet(rule.src)
 			}
-			rules = append(rules, rule)
+			ruleset = append(ruleset, rule)
 			continue
 		}
 		if reAssignV2V.Match(line) {
@@ -99,7 +99,7 @@ func Parse(src []byte) (rules Rules, err error) {
 					rule.src, rule.subset = extractSet(rule.src)
 				}
 			}
-			rules = append(rules, rule)
+			ruleset = append(ruleset, rule)
 			continue
 		}
 		if m := reFunction.FindSubmatch(line); m != nil {
@@ -114,7 +114,7 @@ func Parse(src []byte) (rules Rules, err error) {
 			rule.callback = fn
 			rule.arg = extractArgs(m[2])
 
-			rules = append(rules, rule)
+			ruleset = append(ruleset, rule)
 			continue
 		}
 		// Report unparsed error.
@@ -125,7 +125,7 @@ func Parse(src []byte) (rules Rules, err error) {
 }
 
 // Parse the file.
-func ParseFile(fileName string) (rules Rules, err error) {
+func ParseFile(fileName string) (rules Ruleset, err error) {
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
 		return

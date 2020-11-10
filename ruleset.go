@@ -3,7 +3,7 @@ package decoder
 import "bytes"
 
 // List of rules.
-type Rules []rule
+type Ruleset []rule
 
 // Rule object that describes one line in decoder's body.
 type rule struct {
@@ -34,7 +34,7 @@ type arg struct {
 }
 
 // Build human readable view of the rules list.
-func (r *Rules) HumanReadable() []byte {
+func (r *Ruleset) HumanReadable() []byte {
 	if len(*r) == 0 {
 		return nil
 	}
@@ -44,7 +44,7 @@ func (r *Rules) HumanReadable() []byte {
 }
 
 // Internal human readable helper.
-func (r *Rules) hrHelper(buf *bytes.Buffer) {
+func (r *Ruleset) hrHelper(buf *bytes.Buffer) {
 	for _, rule := range *r {
 		if rule.callback == nil {
 			buf.WriteString("dst: ")
@@ -117,7 +117,7 @@ func (r *Rules) hrHelper(buf *bytes.Buffer) {
 }
 
 // Human readable helper for value.
-func (r *Rules) hrVal(buf *bytes.Buffer, v []byte, set [][]byte) {
+func (r *Ruleset) hrVal(buf *bytes.Buffer, v []byte, set [][]byte) {
 	buf.Write(v)
 	if len(set) > 0 {
 		buf.WriteString(".{")

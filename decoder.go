@@ -8,8 +8,8 @@ import (
 // Decoder contains only parsed rules.
 // All temporary and intermediate data should be store in context logic to make using of decoders thread-safe.
 type Decoder struct {
-	Id    string
-	rules Rules
+	Id string
+	rs Ruleset
 }
 
 var (
@@ -19,10 +19,10 @@ var (
 )
 
 // Register decoder rules in the registry.
-func RegisterDecoder(id string, rules Rules) {
+func RegisterDecoder(id string, rules Ruleset) {
 	decoder := Decoder{
-		Id:    id,
-		rules: rules,
+		Id: id,
+		rs: rules,
 	}
 	mux.Lock()
 	decoderRegistry[id] = &decoder
@@ -44,11 +44,11 @@ func Decode(id string, ctx *Ctx) error {
 		return ErrDecoderNotFound
 	}
 	// Decode corresponding ruleset.
-	return DecodeRules(decoder.rules, ctx)
+	return DecodeRuleset(decoder.rs, ctx)
 }
 
 // Apply decoder rules without using id.
-func DecodeRules(rules Rules, ctx *Ctx) (err error) {
+func DecodeRuleset(rules Ruleset, ctx *Ctx) (err error) {
 	for _, rule := range rules {
 		err = followRule(&rule, ctx)
 		if err != nil {
