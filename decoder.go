@@ -5,7 +5,7 @@ import (
 )
 
 // Main decoder object.
-// Decoder contains only parsed rules.
+// Decoder contains only parsed ruleset.
 // All temporary and intermediate data should be store in context logic to make using of decoders thread-safe.
 type Decoder struct {
 	Id string
@@ -14,18 +14,18 @@ type Decoder struct {
 
 var (
 	// Decoders registry.
-	mux             sync.Mutex
-	decoderRegistry = map[string]*Decoder{}
+	mux      sync.Mutex
+	registry = map[string]*Decoder{}
 )
 
-// Register decoder rules in the registry.
+// Register decoder ruleset in the registry.
 func RegisterDecoder(id string, rules Ruleset) {
 	decoder := Decoder{
 		Id: id,
 		rs: rules,
 	}
 	mux.Lock()
-	decoderRegistry[id] = &decoder
+	registry[id] = &decoder
 	mux.Unlock()
 }
 
@@ -38,7 +38,7 @@ func Decode(id string, ctx *Ctx) error {
 		ok      bool
 	)
 	mux.Lock()
-	decoder, ok = decoderRegistry[id]
+	decoder, ok = registry[id]
 	mux.Unlock()
 	if !ok {
 		return ErrDecoderNotFound
@@ -47,9 +47,9 @@ func Decode(id string, ctx *Ctx) error {
 	return DecodeRuleset(decoder.rs, ctx)
 }
 
-// Apply decoder rules without using id.
-func DecodeRuleset(rules Ruleset, ctx *Ctx) (err error) {
-	for _, rule := range rules {
+// Apply decoder ruleset without using id.
+func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
+	for _, rule := range ruleset {
 		err = followRule(&rule, ctx)
 		if err != nil {
 			return
