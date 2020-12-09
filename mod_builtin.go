@@ -216,3 +216,15 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	}
 	return
 }
+
+// Conditional assignment modifier.
+func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+	// todo implement me
+	return
+}
+
+// Extended conditional assignment modifier (includes else case).
+func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+	// todo implement me
+	return
+}

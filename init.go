@@ -5,6 +5,8 @@ import "github.com/koykov/inspector"
 func init() {
 	// Register builtin modifiers.
 	RegisterModFn("default", "def", modDefault)
+	RegisterModFn("ifThen", "if", modIfThen)
+	RegisterModFn("ifThenElse", "ifel", modIfThenElse)
 
 	// Register builtin getter callbacks.
 	RegisterGetterFn("crc32", "", getterCrc32)
