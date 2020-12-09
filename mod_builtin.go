@@ -6,6 +6,7 @@ import (
 
 // Replace empty val with default value.
 func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+	// Check val is empty.
 	var empty bool
 	switch val.(type) {
 	case *[]byte:
@@ -105,11 +106,14 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 		empty = false
 	}
 	if !empty {
+		// Non-empty case - exiting.
 		return
 	}
 	if len(args) == 0 {
 		err = ErrModPoorArgs
 	}
+
+	// Implement default mod logic.
 	switch args[0].(type) {
 	case *[]byte:
 		a := *args[0].(*[]byte)
