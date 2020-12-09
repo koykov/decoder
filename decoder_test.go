@@ -69,6 +69,8 @@ func pretest(t testing.TB) {
 		"decTest2": decTest2,
 		"decTest3": decTest3,
 		"decTest4": decTest4,
+
+		"decModDefault0": decModDefault0,
 	}
 	for id, body := range dec {
 		rules, err := Parse(body)
