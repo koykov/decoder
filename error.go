@@ -9,5 +9,5 @@ var (
 	ErrModPoorArgs     = errors.New("arguments list in modifier is too small")
 	ErrCbPoorArgs      = errors.New("arguments list in callback is too small")
 	ErrGetterPoorArgs  = errors.New("arguments list in getter callback is too small")
-	ErrUnknownPolicy   = errors.New("unknown policy, pass one decoder.Policy* constants")
+	ErrUnknownPolicy   = errors.New("unknown policy, pass one of decoder.Policy* constants")
 )
