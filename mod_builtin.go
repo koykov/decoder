@@ -1,7 +1,13 @@
 package decoder
 
 import (
+	"bytes"
+
 	"github.com/koykov/jsonvector"
+)
+
+var (
+	bTrue = []byte("true")
 )
 
 // Replace empty val with default value.
@@ -219,12 +225,104 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 
 // Conditional assignment modifier.
 func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
-	// todo implement me
+	if len(args) == 0 {
+		err = ErrModNoArgs
+		return
+	}
+	if checkTrue(val) {
+		*buf = args[0]
+	}
 	return
 }
 
 // Extended conditional assignment modifier (includes else case).
 func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
-	// todo implement me
+	if len(args) < 2 {
+		err = ErrModPoorArgs
+		return
+	}
+	if checkTrue(val) {
+		*buf = args[0]
+	} else {
+		*buf = args[1]
+	}
+	return
+}
+
+// Check if given val is a true.
+func checkTrue(val interface{}) (r bool) {
+	switch val.(type) {
+	case *[]byte:
+		a := *val.(*[]byte)
+		r = bytes.Equal(a, bTrue)
+	case []byte:
+		a := val.([]byte)
+		r = bytes.Equal(a, bTrue)
+	case *string:
+		a := *val.(*string)
+		r = a == "true"
+	case string:
+		a := val.(string)
+		r = a == "true"
+	case *bool:
+		r = *val.(*bool)
+	case bool:
+		r = val.(bool)
+	case int:
+		r = val.(int) == 1
+	case *int:
+		r = *val.(*int) == 1
+	case int8:
+		r = val.(int8) == 1
+	case *int8:
+		r = *val.(*int8) == 1
+	case int16:
+		r = val.(int16) == 1
+	case *int16:
+		r = *val.(*int16) == 1
+	case int32:
+		r = val.(int32) == 1
+	case *int32:
+		r = *val.(*int32) == 1
+	case int64:
+		r = val.(int64) == 1
+	case *int64:
+		r = *val.(*int64) == 1
+	case uint:
+		r = val.(uint) == 1
+	case *uint:
+		r = *val.(*uint) == 1
+	case uint8:
+		r = val.(uint8) == 1
+	case *uint8:
+		r = *val.(*uint8) == 1
+	case uint16:
+		r = val.(uint16) == 1
+	case *uint16:
+		r = *val.(*uint16) == 1
+	case uint32:
+		r = val.(uint32) == 1
+	case *uint32:
+		r = *val.(*uint32) == 1
+	case uint64:
+		r = val.(uint64) == 1
+	case *uint64:
+		r = *val.(*uint64) == 1
+	case float32:
+		r = val.(float32) == 1
+	case *float32:
+		r = *val.(*float32) == 1
+	case float64:
+		r = val.(float64) == 1
+	case *float64:
+		r = *val.(*float64) == 1
+	case *jsonvector.Node:
+		node := val.(*jsonvector.Node)
+		if node != nil {
+			r = node.Bool()
+		}
+	default:
+		r = false
+	}
 	return
 }
