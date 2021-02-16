@@ -71,4 +71,12 @@ func modMyCustomMod(ctx *Ctx, buf *interface{}, val interface{}, args []interfac
 
 decoder.RegisterModFn("myCustomMod", "customMod", modMyCustomMod)
 ```
-See [mod.go](mod.go) for details.
+
+Modifier arguments:
+* `ctx` is a storage of variables/buffers you may use.
+* `buf` is a type-free buffer that receives result of modifier's work. Please note the type `*interface{}` is an
+alloc-free trick.
+* `val` if a value of variable from left side of modifier separator (`|`).
+* `args` array of modifier arguments, specified in rule. 
+
+See [mod.go](mod.go) for details and [mod_builtin.go](mod_builtin.go) for more example of modifiers.
