@@ -1,9 +1,12 @@
 package decoder
 
-import "github.com/koykov/jsonvector"
+import (
+	"github.com/koykov/inspector"
+	"github.com/koykov/jsonvector"
+)
 
 // Assign callback to convert jsconvector.Node to destination with arbitrary type.
-func AssignJsonNode(dst, src interface{}) (ok bool) {
+func AssignJsonNode(dst, src interface{}, _ inspector.AccumulativeBuffer) (ok bool) {
 	switch src.(type) {
 	case *jsonvector.Node:
 		n := src.(*jsonvector.Node)

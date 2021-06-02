@@ -16,6 +16,7 @@ type Ctx struct {
 	p  []*jsonvector.Vector
 	pl int
 	// Internal buffers.
+	accB []byte
 	buf  []byte
 	bufS []string
 	bufI int
@@ -140,6 +141,19 @@ func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path), nil)
 }
 
+// Return accumulative buffer.
+func (c *Ctx) AcquireBytes() []byte {
+	return c.accB
+}
+
+// Update accumulative buffer with p.
+func (c *Ctx) ReleaseBytes(p []byte) {
+	if len(p) == 0 {
+		return
+	}
+	c.accB = p
+}
+
 // Internal getter.
 func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 	if len(path) == 0 {
@@ -238,7 +252,7 @@ func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
 		if v.key == c.bufS[0] {
 			if v.ins != nil {
 				c.bufX = val
-				c.Err = v.ins.Set(v.val, c.bufX, c.bufS[1:]...)
+				c.Err = v.ins.SetWB(v.val, c.bufX, c, c.bufS[1:]...)
 				if c.Err != nil {
 					return c.Err
 				}
@@ -278,6 +292,7 @@ func (c *Ctx) Reset() {
 
 	c.Err = nil
 	c.bufX = nil
+	c.accB = c.accB[:0]
 	c.buf = c.buf[:0]
 	c.bufS = c.bufS[:0]
 	c.bufA = c.bufA[:0]
