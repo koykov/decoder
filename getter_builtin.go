@@ -7,7 +7,7 @@ import (
 
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector/testobj"
-	"github.com/koykov/jsonvector"
+	"github.com/koykov/vector"
 )
 
 // Calculate common crc32 hash of given arguments.
@@ -27,8 +27,8 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 			ctx.Buf.WriteStr(a.(string))
 		case *string:
 			ctx.Buf.WriteStr(*a.(*string))
-		case *jsonvector.Node:
-			node := a.(*jsonvector.Node)
+		case *vector.Node:
+			node := a.(*vector.Node)
 			if node != nil {
 				ctx.Buf.Write(node.Bytes())
 			}
@@ -55,14 +55,14 @@ func getterAppendTestHistory(_ *Ctx, buf *interface{}, args []interface{}) (err 
 		switch args[1].(type) {
 		case *[]byte:
 			hr.Cost, _ = strconv.ParseFloat(fastconv.B2S(*args[1].(*[]byte)), 64)
-		case *jsonvector.Node:
-			hr.Cost, _ = args[1].(*jsonvector.Node).Float()
+		case *vector.Node:
+			hr.Cost, _ = args[1].(*vector.Node).Float()
 		}
 		switch args[2].(type) {
 		case *[]byte:
 			hr.Comment = *args[2].(*[]byte)
-		case *jsonvector.Node:
-			hr.Comment = args[2].(*jsonvector.Node).Bytes()
+		case *vector.Node:
+			hr.Comment = args[2].(*vector.Node).Bytes()
 		}
 		*h = append(*h, hr)
 		*buf = h

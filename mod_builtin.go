@@ -3,7 +3,7 @@ package decoder
 import (
 	"bytes"
 
-	"github.com/koykov/jsonvector"
+	"github.com/koykov/vector"
 )
 
 var (
@@ -105,9 +105,9 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	case *float64:
 		a := *val.(*float64)
 		empty = a == 0
-	case *jsonvector.Node:
-		node := val.(*jsonvector.Node)
-		empty = node == nil || node.Len() == 0
+	case *vector.Node:
+		node := val.(*vector.Node)
+		empty = node.Type() == vector.TypeNull || node.Limit() == 0
 	default:
 		empty = false
 	}
@@ -211,8 +211,8 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	case *float64:
 		a := *args[0].(*float64)
 		*buf = &a
-	case *jsonvector.Node:
-		node := args[0].(*jsonvector.Node)
+	case *vector.Node:
+		node := args[0].(*vector.Node)
 		if node != nil {
 			a := node.Bytes()
 			*buf = &a
@@ -316,8 +316,8 @@ func checkTrue(val interface{}) (r bool) {
 		r = val.(float64) == 1
 	case *float64:
 		r = *val.(*float64) == 1
-	case *jsonvector.Node:
-		node := val.(*jsonvector.Node)
+	case *vector.Node:
+		node := val.(*vector.Node)
 		if node != nil {
 			r = node.Bool()
 		}

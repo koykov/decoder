@@ -5,6 +5,7 @@ import (
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
 	"github.com/koykov/jsonvector"
+	"github.com/koykov/vector"
 )
 
 // Context object. Contains list of variables that can be used as source or destination.
@@ -12,8 +13,8 @@ type Ctx struct {
 	// List of context variables and list len.
 	vars []ctxVar
 	ln   int
-	// JSON vector objects list and list len.
-	p  []*jsonvector.Vector
+	// Vector parsers list and list len.
+	p  []VectorParser
 	pl int
 	// Internal buffers.
 	accB []byte
@@ -31,11 +32,16 @@ type Ctx struct {
 
 // Context variable object.
 type ctxVar struct {
-	key string
-	val interface{}
-	ins inspector.Inspector
-	// Var is JSON node case.
-	jsn *jsonvector.Node
+	key  string
+	val  interface{}
+	ins  inspector.Inspector
+	node *vector.Node
+}
+
+type VectorParser interface {
+	Parse([]byte) error
+	Root() *vector.Node
+	Reset()
 }
 
 // Make new context object.
@@ -65,7 +71,7 @@ func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 		c.vars[c.ln].key = key
 		c.vars[c.ln].val = val
 		c.vars[c.ln].ins = ins
-		c.vars[c.ln].jsn = nil
+		c.vars[c.ln].node = nil
 	} else {
 		// Extend the variable list with new one.
 		c.vars = append(c.vars, ctxVar{
@@ -88,8 +94,8 @@ func (c *Ctx) SetStatic(key string, val interface{}) {
 	c.Set(key, val, ins)
 }
 
-// Parse data as JSON source and set it to context as key.
-func (c *Ctx) SetJson(key string, data []byte) (vec *jsonvector.Vector, err error) {
+// Parse source data and set it to context as key.
+func (c *Ctx) SetJson(key string, data []byte) (vec VectorParser, err error) {
 	vec = c.getParser()
 	if err = vec.Parse(data); err != nil {
 		return
@@ -100,14 +106,14 @@ func (c *Ctx) SetJson(key string, data []byte) (vec *jsonvector.Vector, err erro
 }
 
 // Directly set node to context as key.
-func (c *Ctx) SetJsonNode(key string, node *jsonvector.Node) error {
+func (c *Ctx) SetJsonNode(key string, node *vector.Node) error {
 	if node == nil {
 		return ErrEmptyNode
 	}
 	for i := 0; i < c.ln; i++ {
 		if c.vars[i].key == key {
 			// Update existing variable.
-			c.vars[i].jsn = node
+			c.vars[i].node = node
 			c.vars[i].val, c.vars[i].ins = nil, nil
 			return nil
 		}
@@ -116,13 +122,13 @@ func (c *Ctx) SetJsonNode(key string, node *jsonvector.Node) error {
 	if c.ln < len(c.vars) {
 		// Use existing item in variable list..
 		c.vars[c.ln].key = key
-		c.vars[c.ln].jsn = node
+		c.vars[c.ln].node = node
 		c.vars[c.ln].val, c.vars[c.ln].ins = nil, nil
 	} else {
 		// Extend the variable list with new one.
 		c.vars = append(c.vars, ctxVar{
-			key: key,
-			jsn: node,
+			key:  key,
+			node: node,
 		})
 	}
 	// Increase variables count.
@@ -176,7 +182,7 @@ func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 		}
 		if v.key == c.bufS[0] {
 			// Var found.
-			if v.jsn != nil {
+			if v.node != nil {
 				// Var is JSON node.
 				if len(subset) > 0 {
 					// List of subsets provided.
@@ -186,15 +192,15 @@ func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 						if len(tail) > 0 {
 							// Fill preserved item with subset's value.
 							c.bufS[len(c.bufS)-1] = fastconv.B2S(tail)
-							c.bufX = v.jsn.Get(c.bufS[1:]...)
-							if n, ok := c.bufX.(*jsonvector.Node); ok && n != nil {
+							c.bufX = v.node.Get(c.bufS[1:]...)
+							if n, ok := c.bufX.(*vector.Node); ok && n.Type() != vector.TypeNull {
 								// Successful hunt.
 								break
 							}
 						}
 					}
 				} else {
-					c.bufX = v.jsn.Get(c.bufS[1:]...)
+					c.bufX = v.node.Get(c.bufS[1:]...)
 				}
 				return c.bufX
 			}
@@ -237,7 +243,7 @@ func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
 				return err
 			}
 			c.Set(ctxPath, val, ins)
-		} else if node, ok := val.(*jsonvector.Node); ok {
+		} else if node, ok := val.(*vector.Node); ok {
 			_ = c.SetJsonNode(ctxPath, node)
 		} else {
 			c.SetStatic(ctxPath, val)
@@ -264,11 +270,11 @@ func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
 }
 
 // Get new JSON vector object from the context buffer.
-func (c *Ctx) getParser() *jsonvector.Vector {
-	var v *jsonvector.Vector
+func (c *Ctx) getParser() (v VectorParser) {
 	if c.pl < len(c.p) {
 		v = c.p[c.pl]
 	} else {
+		// todo implement bridge package to get the parser with any type
 		v = jsonvector.NewVector()
 		c.p = append(c.p, v)
 	}
@@ -281,7 +287,7 @@ func (c *Ctx) getParser() *jsonvector.Vector {
 // Made to use together with pools.
 func (c *Ctx) Reset() {
 	for i := 0; i < c.ln; i++ {
-		c.vars[i].jsn = nil
+		c.vars[i].node = nil
 	}
 	c.ln = 0
 

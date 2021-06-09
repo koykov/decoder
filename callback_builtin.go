@@ -2,7 +2,7 @@ package decoder
 
 import (
 	"github.com/koykov/fastconv"
-	"github.com/koykov/jsonvector"
+	"github.com/koykov/vector"
 )
 
 // Example of callback function to use in parser tests.
@@ -18,6 +18,7 @@ func cbFoo(_ *Ctx, _ []interface{}) error {
 // or
 // <code>jsonParse(jsonSrc, "parsed1")</code>
 // , where jsonSrc contains "{\"b\":[true,true,false]}".
+// todo move callback to further bridge package.
 func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
 	if len(args) < 2 {
 		return ErrCbPoorArgs
@@ -32,9 +33,9 @@ func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
 		src = fastconv.S2B(*args[0].(*string))
 	case string:
 		src = fastconv.S2B(args[0].(string))
-	case *jsonvector.Node:
-		node := args[0].(*jsonvector.Node)
-		if node.Type() == jsonvector.TypeStr {
+	case *vector.Node:
+		node := args[0].(*vector.Node)
+		if node.Type() == vector.TypeStr {
 			src = node.Bytes()
 		}
 	}
