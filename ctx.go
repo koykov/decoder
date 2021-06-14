@@ -4,7 +4,6 @@ import (
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
-	"github.com/koykov/jsonvector"
 	"github.com/koykov/vector"
 )
 
@@ -36,12 +35,6 @@ type ctxVar struct {
 	val  interface{}
 	ins  inspector.Inspector
 	node *vector.Node
-}
-
-type VectorParser interface {
-	Parse([]byte) error
-	Root() *vector.Node
-	Reset()
 }
 
 // Make new context object.
@@ -95,18 +88,18 @@ func (c *Ctx) SetStatic(key string, val interface{}) {
 }
 
 // Parse source data and set it to context as key.
-func (c *Ctx) SetJson(key string, data []byte) (vec VectorParser, err error) {
-	vec = c.getParser()
+func (c *Ctx) SetVector(key string, data []byte, typ VectorType) (vec VectorParser, err error) {
+	vec = c.getParser(typ)
 	if err = vec.Parse(data); err != nil {
 		return
 	}
 	node := vec.Root()
-	err = c.SetJsonNode(key, node)
+	err = c.SetVectorNode(key, node)
 	return
 }
 
 // Directly set node to context as key.
-func (c *Ctx) SetJsonNode(key string, node *vector.Node) error {
+func (c *Ctx) SetVectorNode(key string, node *vector.Node) error {
 	if node == nil {
 		return ErrEmptyNode
 	}
@@ -244,7 +237,7 @@ func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
 			}
 			c.Set(ctxPath, val, ins)
 		} else if node, ok := val.(*vector.Node); ok {
-			_ = c.SetJsonNode(ctxPath, node)
+			_ = c.SetVectorNode(ctxPath, node)
 		} else {
 			c.SetStatic(ctxPath, val)
 		}
@@ -270,12 +263,11 @@ func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
 }
 
 // Get new JSON vector object from the context buffer.
-func (c *Ctx) getParser() (v VectorParser) {
+func (c *Ctx) getParser(typ VectorType) (v VectorParser) {
 	if c.pl < len(c.p) {
-		v = c.p[c.pl]
+		v = ensureHelper(c.p[c.pl], typ)
 	} else {
-		// todo implement bridge package to get the parser with any type
-		v = jsonvector.NewVector()
+		v = newVector(typ)
 		c.p = append(c.p, v)
 	}
 	c.pl++

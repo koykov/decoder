@@ -18,7 +18,7 @@ func TestModDefault(t *testing.T) {
 	obj := &testobj.TestObject{}
 	ctx := NewCtx()
 	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-	_, err := ctx.SetJson("jso", decTestSrc)
+	_, err := ctx.SetVector("jso", decTestSrc, VectorJson)
 	if err != nil {
 		t.Error(err)
 	}

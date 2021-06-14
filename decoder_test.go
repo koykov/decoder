@@ -141,7 +141,7 @@ func TestDecode0(t *testing.T) {
 	obj := &testobj.TestObject{}
 	ctx := NewCtx()
 	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-	_, err := ctx.SetJson("jso", decTestSrc)
+	_, err := ctx.SetVector("jso", decTestSrc, VectorJson)
 	if err != nil {
 		t.Error(err)
 	}
@@ -184,7 +184,7 @@ func TestDecode1(t *testing.T) {
 	obj := &testobj.TestObject{}
 	ctx := NewCtx()
 	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-	_, err := ctx.SetJson("jso", decTestSrc)
+	_, err := ctx.SetVector("jso", decTestSrc, VectorJson)
 	if err != nil {
 		t.Error(err)
 	}
@@ -200,7 +200,7 @@ func TestDecode2(t *testing.T) {
 	obj := &testobj.TestObject{}
 	ctx := NewCtx()
 	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-	_, err := ctx.SetJson("jso", decTestSrc)
+	_, err := ctx.SetVector("jso", decTestSrc, VectorJson)
 	if err != nil {
 		t.Error(err)
 	}
@@ -216,7 +216,7 @@ func TestDecode3(t *testing.T) {
 	obj := &testobj.TestObject{}
 	ctx := NewCtx()
 	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-	_, err := ctx.SetJson("jso", decTestNestedJsonSrc)
+	_, err := ctx.SetVector("jso", decTestNestedJsonSrc, VectorJson)
 	if err != nil {
 		t.Error(err)
 	}
@@ -232,7 +232,7 @@ func TestDecode4(t *testing.T) {
 	obj := &testobj.TestObject{}
 	ctx := NewCtx()
 	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-	_, err := ctx.SetJson("jso", decTestSrc)
+	_, err := ctx.SetVector("jso", decTestSrc, VectorJson)
 	if err != nil {
 		t.Error(err)
 	}
@@ -251,7 +251,7 @@ func BenchmarkDecode1(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-		_, err := ctx.SetJson("jso", decTestSrc)
+		_, err := ctx.SetVector("jso", decTestSrc, VectorJson)
 		if err != nil {
 			b.Error(err)
 		}
@@ -273,7 +273,7 @@ func BenchmarkDecode2(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-		_, err := ctx.SetJson("jso", decTestSrc)
+		_, err := ctx.SetVector("jso", decTestSrc, VectorJson)
 		if err != nil {
 			b.Error(err)
 		}
@@ -297,7 +297,7 @@ func BenchmarkDecode3(b *testing.B) {
 		buf = append(buf[:0], decTestNestedJsonSrc...)
 
 		ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-		_, err := ctx.SetJson("jso", buf)
+		_, err := ctx.SetVector("jso", buf, VectorJson)
 		if err != nil {
 			b.Error(err)
 		}
@@ -321,7 +321,7 @@ func BenchmarkDecode4(b *testing.B) {
 		buf = append(buf[:0], decTestSrc...)
 
 		ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
-		_, err := ctx.SetJson("jso", buf)
+		_, err := ctx.SetVector("jso", buf, VectorJson)
 		if err != nil {
 			b.Error(err)
 		}

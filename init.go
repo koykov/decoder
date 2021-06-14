@@ -14,8 +14,10 @@ func init() {
 
 	// Register builtin callbacks.
 	RegisterCallbackFn("foo", "", cbFoo)
-	// todo move callback to further bridge package.
 	RegisterCallbackFn("jsonParseAs", "jsonParse", cbJsonParse)
+	RegisterCallbackFn("urlParseAs", "urlParse", cbUrlParse)
+	RegisterCallbackFn("xmlParseAs", "xmlParse", cbXmlParse)
+	RegisterCallbackFn("yamlParseAs", "yamlParse", cbYamlParse)
 
 	// Register assign functions.
 	inspector.RegisterAssignFn(AssignVectorNode)

@@ -11,6 +11,26 @@ func cbFoo(_ *Ctx, _ []interface{}) error {
 }
 
 // Parse json source and register it in the ctx.
+func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
+	return cbParse(ctx, args, VectorJson)
+}
+
+// Parse json source and register it in the ctx.
+func cbUrlParse(ctx *Ctx, args []interface{}) (err error) {
+	return cbParse(ctx, args, VectorUrl)
+}
+
+// Parse json source and register it in the ctx.
+func cbXmlParse(ctx *Ctx, args []interface{}) (err error) {
+	return cbParse(ctx, args, VectorXml)
+}
+
+// Parse json source and register it in the ctx.
+func cbYamlParse(ctx *Ctx, args []interface{}) (err error) {
+	return cbParse(ctx, args, VectorYaml)
+}
+
+// Parse source of type and register it in the ctx.
 //
 // Takes two arguments, the first should contains JSON text, the second - key to register parsed json in the ctx.
 // Example of usage:
@@ -18,8 +38,7 @@ func cbFoo(_ *Ctx, _ []interface{}) error {
 // or
 // <code>jsonParse(jsonSrc, "parsed1")</code>
 // , where jsonSrc contains "{\"b\":[true,true,false]}".
-// todo move callback to further bridge package.
-func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
+func cbParse(ctx *Ctx, args []interface{}, typ VectorType) (err error) {
 	if len(args) < 2 {
 		return ErrCbPoorArgs
 	}
@@ -41,7 +60,7 @@ func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
 	}
 	if len(src) > 0 {
 		if key, ok := args[1].(*[]byte); ok {
-			_, err = ctx.SetJson(fastconv.B2S(*key), src)
+			_, err = ctx.SetVector(fastconv.B2S(*key), src, typ)
 		}
 	}
 	return
