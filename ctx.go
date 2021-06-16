@@ -13,7 +13,7 @@ type Ctx struct {
 	vars []ctxVar
 	ln   int
 	// Vector parsers list and list len.
-	p  []VectorParser
+	p  []vector.Interface
 	pl int
 	// Internal buffers.
 	accB []byte
@@ -88,7 +88,7 @@ func (c *Ctx) SetStatic(key string, val interface{}) {
 }
 
 // Parse source data and set it to context as key.
-func (c *Ctx) SetVector(key string, data []byte, typ VectorType) (vec VectorParser, err error) {
+func (c *Ctx) SetVector(key string, data []byte, typ VectorType) (vec vector.Interface, err error) {
 	vec = c.getParser(typ)
 	if err = vec.Parse(data); err != nil {
 		return
@@ -263,7 +263,7 @@ func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
 }
 
 // Get new JSON vector object from the context buffer.
-func (c *Ctx) getParser(typ VectorType) (v VectorParser) {
+func (c *Ctx) getParser(typ VectorType) (v vector.Interface) {
 	if c.pl < len(c.p) {
 		v = ensureHelper(c.p[c.pl], typ)
 	} else {

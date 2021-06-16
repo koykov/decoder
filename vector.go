@@ -17,15 +17,8 @@ const (
 	VectorYaml
 )
 
-type VectorParser interface {
-	SetHelper(helper vector.Helper)
-	Parse([]byte) error
-	Root() *vector.Node
-	Reset()
-}
-
 // Assign parser helper to the vector vec according given type.
-func ensureHelper(vec VectorParser, typ VectorType) VectorParser {
+func ensureHelper(vec vector.Interface, typ VectorType) vector.Interface {
 	switch typ {
 	case VectorJson:
 		vec.SetHelper(&jsonvector.JsonHelper{})
@@ -42,7 +35,7 @@ func ensureHelper(vec VectorParser, typ VectorType) VectorParser {
 }
 
 // Make new vector parser according given type.
-func newVector(typ VectorType) VectorParser {
+func newVector(typ VectorType) vector.Interface {
 	switch typ {
 	case VectorJson:
 		return jsonvector.NewVector()
