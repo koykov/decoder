@@ -10,7 +10,7 @@ func AssignVectorNode(dst, src interface{}, _ inspector.AccumulativeBuffer) (ok 
 	switch src.(type) {
 	case *vector.Node:
 		n := src.(*vector.Node)
-		if n == nil {
+		if n.Type() == vector.TypeNull {
 			return
 		}
 		ok = true

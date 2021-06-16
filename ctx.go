@@ -100,7 +100,7 @@ func (c *Ctx) SetVector(key string, data []byte, typ VectorType) (vec VectorPars
 
 // Directly set node to context as key.
 func (c *Ctx) SetVectorNode(key string, node *vector.Node) error {
-	if node == nil {
+	if node == nil || node.Type() == vector.TypeNull {
 		return ErrEmptyNode
 	}
 	for i := 0; i < c.ln; i++ {
