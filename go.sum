@@ -13,6 +13,8 @@ github.com/koykov/jsonvector v0.0.0-20210623190405-594e2a31b72e h1:Y3wZ5BEpto/hm
 github.com/koykov/jsonvector v0.0.0-20210623190405-594e2a31b72e/go.mod h1:2R1WUmLwBi94vCW8MD9eyYFDWqkbAYjDLvhTqK7fc8Q=
 github.com/koykov/urlvector v0.0.0-20210623150953-cb37da9572db h1:WVy9+s4S9rtlp+K5b12PhEcKxtemWmjBRdSRtlXA2WM=
 github.com/koykov/urlvector v0.0.0-20210623150953-cb37da9572db/go.mod h1:lPqLhmvr/ruefp4o9xn3QI0dZX7G28q0AFnNXjt/zZQ=
+github.com/koykov/urlvector v0.0.0-20210625193010-aed61b65a88b h1:9ap3TLtkQQgw40IOsFcwZkwjGXyMCsAk2qhmYQelD9Y=
+github.com/koykov/urlvector v0.0.0-20210625193010-aed61b65a88b/go.mod h1:lPqLhmvr/ruefp4o9xn3QI0dZX7G28q0AFnNXjt/zZQ=
 github.com/koykov/vector v0.0.0-20210621123456-aaf6158b768f h1:DOx7OVNTxeUT3mWH795UbDJxFq85hIrgcrwBk4UVEEk=
 github.com/koykov/vector v0.0.0-20210621123456-aaf6158b768f/go.mod h1:NMVY8Xr7+PypNP0UpeBhsq5SwTzBlCfESBU4Wq8dfJA=
 github.com/koykov/x2bytes v0.0.0-20210125202922-e56731f1055a h1:toVWeFXfGurBG8ibs7sPLIdabEYA3uLKrCh4eHH8ZGw=
