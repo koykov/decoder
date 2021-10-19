@@ -41,6 +41,37 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	return
 }
 
+// Convert string to float.
+func getterAtof(_ *Ctx, buf *interface{}, args []interface{}) (err error) {
+	if len(args) < 1 {
+		err = ErrGetterPoorArgs
+		return
+	}
+	var raw string
+	ok := true
+	switch args[0].(type) {
+	case *vector.Node:
+		raw = args[0].(*vector.Node).String()
+	case string:
+		raw = args[0].(string)
+	case *string:
+		raw = *args[0].(*string)
+	case *[]byte:
+		raw = fastconv.B2S(args[0].([]byte))
+	case []byte:
+		raw = fastconv.B2S(*args[0].(*[]byte))
+	default:
+		ok = false
+	}
+	if ok {
+		var f float64
+		if f, err = strconv.ParseFloat(raw, 64); err == nil {
+			*buf = &f
+		}
+	}
+	return
+}
+
 // Example of getter callback that demonstrates how callbacks works.
 func getterAppendTestHistory(_ *Ctx, buf *interface{}, args []interface{}) (err error) {
 	if len(args) < 3 {
