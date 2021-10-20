@@ -11,25 +11,40 @@ var (
 dst.Name = "John Ruth"
 dst.Finance.Balance = obj.cost.total
 dst.Weight = 12.45`)
-	v2vEx0Expect = []byte(`dst: dst.ID <- src: obj.user_id
-dst: dst.Name <- src: "John Ruth"
-dst: dst.Finance.Balance <- src: obj.cost.total
-dst: dst.Weight <- src: "12.45"
+	v2vEx0Expect = []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="dst.ID" src="obj.user_id"/>
+	<rule dst="dst.Name" src="John Ruth" static="1"/>
+	<rule dst="dst.Finance.Balance" src="obj.cost.total"/>
+	<rule dst="dst.Weight" src="12.45" static="1"/>
+</rules>
 `)
+
 	v2vEx1 = []byte(`person.Gender = request.gender|default("male")
 person.Owner = false`)
-	v2vEx1Expect = []byte(`dst: person.Gender <- src: request.gender mod default("male")
-dst: person.Owner <- src: "false"
+	v2vEx1Expect = []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="person.Gender" src="request.gender">
+		<mods>
+			<mod name="default" sarg0="male"/>
+		</mods>
+	</rule>
+	<rule dst="person.Owner" src="false" static="1"/>
+</rules>
 `)
 	v2vEx2 = []byte(`dst.Id = src.id
 dst.Status = src.{state|closed|expired}
 dst.Hash = crc32("q", src.{id|title|descr})
 foo(src.{a|b|c})`)
-	v2vEx2Expect = []byte(`dst: dst.Id <- src: src.id
-dst: dst.Status <- src: src.{state, closed, expired}
-dst: dst.Hash <- src: crc32("q", src.{id, title, descr})
-cb: foo(src.{a, b, c})
+	v2vEx2Expect = []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="dst.Id" src="src.id"/>
+	<rule dst="dst.Status" src="src.{state, closed, expired}"/>
+	<rule dst="dst.Hash" getter="crc32" sarg0="q" arg1="src.{id, title, descr}"/>
+	<rule callback="foo" arg0="src.{a, b, c}"/>
+</rules>
 `)
+
 	f2v = []byte(`bid.Id = 1
 bid.Ext.HSum = crc32(response.title, response.val)
 bid.Ext.Processed = response.Done|default(false)`)
