@@ -6,13 +6,6 @@ import (
 )
 
 var (
-	f2v = []byte(`bid.Id = 1
-bid.Ext.HSum = crc32(response.title, response.val)
-bid.Ext.Processed = response.Done|default(false)`)
-	f2vExpect = []byte(`dst: bid.Id <- src: "1"
-dst: bid.Ext.HSum <- src: crc32(response.title, response.val)
-dst: bid.Ext.Processed <- src: response.Done mod default("false")
-`)
 	v2c = []byte(`dst.Hash = 64h95nd5fx
 ctx.new = src.listing
 dst.weight = new.value`)
@@ -42,6 +35,10 @@ func TestParserV2V(t *testing.T) {
 	t.Run("v2v2", func(t *testing.T) { testParser(t) })
 }
 
+func TestParserF2V(t *testing.T) {
+	t.Run("f2v0", func(t *testing.T) { testParser(t) })
+}
+
 func testParser(t *testing.T) {
 	key := getTBName(t)
 	st := getStage("parser/" + key)
@@ -55,22 +52,6 @@ func testParser(t *testing.T) {
 		if !bytes.Equal(r, st.expect) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))
 		}
-	}
-}
-
-func TestParse_F2V(t *testing.T) {
-	var (
-		rs  Ruleset
-		err error
-		r   []byte
-	)
-
-	if rs, err = Parse(f2v); err != nil {
-		t.Error(err)
-	}
-	r = rs.HumanReadable()
-	if !bytes.Equal(r, f2vExpect) {
-		t.Errorf("f2v example 0 test failed\nexp: %s\ngot: %s", f2vExpect, r)
 	}
 }
 

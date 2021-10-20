@@ -1,0 +1,3 @@
+bid.Id = 1
+bid.Ext.HSum = crc32(response.title, response.val)
+bid.Ext.Processed = response.Done|default(false)
