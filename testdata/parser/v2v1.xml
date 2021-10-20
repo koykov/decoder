@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="person.Gender" src="request.gender">
+		<mods>
+			<mod name="default" sarg0="male"/>
+		</mods>
+	</rule>
+	<rule dst="person.Owner" src="false" static="1"/>
+</rules>

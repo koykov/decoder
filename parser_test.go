@@ -6,45 +6,6 @@ import (
 )
 
 var (
-	v2vEx0 = []byte(`dst.ID = obj.user_id
-// example of comment
-dst.Name = "John Ruth"
-dst.Finance.Balance = obj.cost.total
-dst.Weight = 12.45`)
-	v2vEx0Expect = []byte(`<?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule dst="dst.ID" src="obj.user_id"/>
-	<rule dst="dst.Name" src="John Ruth" static="1"/>
-	<rule dst="dst.Finance.Balance" src="obj.cost.total"/>
-	<rule dst="dst.Weight" src="12.45" static="1"/>
-</rules>
-`)
-
-	v2vEx1 = []byte(`person.Gender = request.gender|default("male")
-person.Owner = false`)
-	v2vEx1Expect = []byte(`<?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule dst="person.Gender" src="request.gender">
-		<mods>
-			<mod name="default" sarg0="male"/>
-		</mods>
-	</rule>
-	<rule dst="person.Owner" src="false" static="1"/>
-</rules>
-`)
-	v2vEx2 = []byte(`dst.Id = src.id
-dst.Status = src.{state|closed|expired}
-dst.Hash = crc32("q", src.{id|title|descr})
-foo(src.{a|b|c})`)
-	v2vEx2Expect = []byte(`<?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule dst="dst.Id" src="src.id"/>
-	<rule dst="dst.Status" src="src.{state, closed, expired}"/>
-	<rule dst="dst.Hash" getter="crc32" sarg0="q" arg1="src.{id, title, descr}"/>
-	<rule callback="foo" arg0="src.{a, b, c}"/>
-</rules>
-`)
-
 	f2v = []byte(`bid.Id = 1
 bid.Ext.HSum = crc32(response.title, response.val)
 bid.Ext.Processed = response.Done|default(false)`)
@@ -75,35 +36,25 @@ dst: user.Status <- src: "15"
 `)
 )
 
-func TestParse_V2V(t *testing.T) {
-	var (
-		rules Ruleset
-		err   error
-		r     []byte
-	)
+func TestParserV2V(t *testing.T) {
+	t.Run("v2v0", func(t *testing.T) { testParser(t) })
+	t.Run("v2v1", func(t *testing.T) { testParser(t) })
+	t.Run("v2v2", func(t *testing.T) { testParser(t) })
+}
 
-	if rules, err = Parse(v2vEx0); err != nil {
-		t.Error(err)
+func testParser(t *testing.T) {
+	key := getTBName(t)
+	st := getStage("parser/" + key)
+	if st == nil {
+		t.Error("stage not found")
+		return
 	}
-	r = rules.HumanReadable()
-	if !bytes.Equal(r, v2vEx0Expect) {
-		t.Errorf("v2v example 0 test failed\nexp: %s\ngot: %s", v2vEx0Expect, r)
-	}
-
-	if rules, err = Parse(v2vEx1); err != nil {
-		t.Error(err)
-	}
-	r = rules.HumanReadable()
-	if !bytes.Equal(r, v2vEx1Expect) {
-		t.Errorf("v2v example 1 test failed\nexp: %s\ngot: %s", v2vEx1Expect, r)
-	}
-
-	if rules, err = Parse(v2vEx2); err != nil {
-		t.Error(err)
-	}
-	r = rules.HumanReadable()
-	if !bytes.Equal(r, v2vEx2Expect) {
-		t.Errorf("v2v example 2 test failed\nexp: %s\ngot: %s", v2vEx2Expect, r)
+	if len(st.expect) > 0 {
+		rs, _ := Parse(st.origin)
+		r := rs.HumanReadable()
+		if !bytes.Equal(r, st.expect) {
+			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))
+		}
 	}
 }
 

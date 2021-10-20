@@ -1,0 +1,2 @@
+person.Gender = request.gender|default("male")
+person.Owner = false

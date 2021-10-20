@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="dst.ID" src="obj.user_id"/>
+	<rule dst="dst.Name" src="John Ruth" static="1"/>
+	<rule dst="dst.Finance.Balance" src="obj.cost.total"/>
+	<rule dst="dst.Weight" src="12.45" static="1"/>
+</rules>

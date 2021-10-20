@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="dst.Id" src="src.id"/>
+	<rule dst="dst.Status" src="src.{state, closed, expired}"/>
+	<rule dst="dst.Hash" getter="crc32" sarg0="q" arg1="src.{id, title, descr}"/>
+	<rule callback="foo" arg0="src.{a, b, c}"/>
+</rules>

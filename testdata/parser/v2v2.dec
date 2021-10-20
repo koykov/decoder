@@ -1,0 +1,4 @@
+dst.Id = src.id
+dst.Status = src.{state|closed|expired}
+dst.Hash = crc32("q", src.{id|title|descr})
+foo(src.{a|b|c})
