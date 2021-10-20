@@ -64,31 +64,11 @@ func (r *Ruleset) hrHelper(buf *bytebuf.ChainBuf) {
 		switch {
 		case rule.callback != nil:
 			r.attrB(buf, "callback", rule.src)
-			if len(rule.arg) > 0 {
-				for j, a := range rule.arg {
-					pfx := "arg"
-					if a.static {
-						pfx = "sarg"
-					}
-					buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`)
-					r.hrVal(buf, a.val, a.subset)
-					buf.WriteByte('"')
-				}
-			}
+			r.hrArgs(buf, rule.arg)
 		case rule.getter != nil:
 			r.attrB(buf, "dst", rule.dst)
 			r.attrB(buf, "getter", rule.src)
-			if len(rule.arg) > 0 {
-				for j, a := range rule.arg {
-					pfx := "arg"
-					if a.static {
-						pfx = "sarg"
-					}
-					buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`)
-					r.hrVal(buf, a.val, a.subset)
-					buf.WriteByte('"')
-				}
-			}
+			r.hrArgs(buf, rule.arg)
 		default:
 			r.attrB(buf, "dst", rule.dst)
 			if rule.static {
@@ -111,15 +91,7 @@ func (r *Ruleset) hrHelper(buf *bytebuf.ChainBuf) {
 			buf.WriteByte('\n').WriteStr("\t\t<mods>\n")
 			for _, mod := range rule.mod {
 				buf.WriteStr("\t\t\t").WriteStr(`<mod name="`).Write(mod.id).WriteByte('"')
-				if len(mod.arg) > 0 {
-					for j, a := range mod.arg {
-						pfx := "arg"
-						if a.static {
-							pfx = "sarg"
-						}
-						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
-					}
-				}
+				r.hrArgs(buf, mod.arg)
 				buf.WriteStr("/>\n")
 			}
 			buf.WriteStr("\t\t</mods>\n")
@@ -134,78 +106,6 @@ func (r *Ruleset) hrHelper(buf *bytebuf.ChainBuf) {
 	buf.WriteStr("</rules>\n")
 }
 
-// func (r *Ruleset) hrHelper1(buf *bytes.Buffer) {
-// 	for _, rule := range *r {
-// 		if rule.callback == nil {
-// 			buf.WriteString("dst: ")
-// 			buf.Write(rule.dst)
-// 			buf.WriteString(" <- src: ")
-// 			if rule.static {
-// 				buf.WriteByte('"')
-// 				buf.Write(rule.src)
-// 				buf.WriteByte('"')
-// 			} else {
-// 				r.hrVal(buf, rule.src, rule.subset)
-// 			}
-// 			if len(rule.ins) > 0 {
-// 				buf.WriteString(" as ")
-// 				buf.Write(rule.ins)
-// 			}
-// 		} else {
-// 			buf.WriteString("cb: ")
-// 			buf.Write(rule.src)
-// 		}
-//
-// 		if rule.getter != nil || rule.callback != nil {
-// 			buf.WriteByte('(')
-// 			for i, a := range rule.arg {
-// 				if i > 0 {
-// 					buf.WriteByte(',')
-// 					buf.WriteByte(' ')
-// 				}
-// 				if a.static {
-// 					buf.WriteByte('"')
-// 					buf.Write(a.val)
-// 					buf.WriteByte('"')
-// 				} else {
-// 					r.hrVal(buf, a.val, a.subset)
-// 				}
-// 			}
-// 			buf.WriteByte(')')
-// 		}
-//
-// 		if len(rule.mod) > 0 {
-// 			buf.WriteString(" mod")
-// 			for i, mod := range rule.mod {
-// 				if i > 0 {
-// 					buf.WriteByte(',')
-// 				}
-// 				buf.WriteByte(' ')
-// 				buf.Write(mod.id)
-// 				if len(mod.arg) > 0 {
-// 					buf.WriteByte('(')
-// 					for j, a := range mod.arg {
-// 						if j > 0 {
-// 							buf.WriteByte(',')
-// 							buf.WriteByte(' ')
-// 						}
-// 						if a.static {
-// 							buf.WriteByte('"')
-// 							buf.Write(a.val)
-// 							buf.WriteByte('"')
-// 						} else {
-// 							buf.Write(a.val)
-// 						}
-// 					}
-// 					buf.WriteByte(')')
-// 				}
-// 			}
-// 		}
-//
-// 		buf.WriteByte('\n')
-// 	}
-// }
-
 // Human readable helper for value.
 func (r *Ruleset) hrVal(buf *bytebuf.ChainBuf, v []byte, set [][]byte) {
 	buf.Write(v)
@@ -218,6 +118,21 @@ func (r *Ruleset) hrVal(buf *bytebuf.ChainBuf, v []byte, set [][]byte) {
 			buf.Write(s)
 		}
 		buf.WriteByte('}')
+	}
+}
+
+// Human readable helper for args list.
+func (r *Ruleset) hrArgs(buf *bytebuf.ChainBuf, args []*arg) {
+	if len(args) > 0 {
+		for j, a := range args {
+			pfx := "arg"
+			if a.static {
+				pfx = "sarg"
+			}
+			buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`)
+			r.hrVal(buf, a.val, a.subset)
+			buf.WriteByte('"')
+		}
 	}
 }
 
