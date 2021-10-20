@@ -6,13 +6,6 @@ import (
 )
 
 var (
-	v2c = []byte(`dst.Hash = 64h95nd5fx
-ctx.new = src.listing
-dst.weight = new.value`)
-	v2cExpect = []byte(`dst: dst.Hash <- src: 64h95nd5fx
-dst: ctx.new <- src: src.listing
-dst: dst.weight <- src: new.value
-`)
 	v2ci = []byte(`obj.Id = 17
 ctx.finance = response.fin as Finance
 obj.Balance = finance.Amount`)
@@ -39,6 +32,10 @@ func TestParserF2V(t *testing.T) {
 	t.Run("f2v0", func(t *testing.T) { testParser(t) })
 }
 
+func TestParserV2C(t *testing.T) {
+	t.Run("v2c0", func(t *testing.T) { testParser(t) })
+}
+
 func testParser(t *testing.T) {
 	key := getTBName(t)
 	st := getStage("parser/" + key)
@@ -52,22 +49,6 @@ func testParser(t *testing.T) {
 		if !bytes.Equal(r, st.expect) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))
 		}
-	}
-}
-
-func TestParse_V2C(t *testing.T) {
-	var (
-		rs  Ruleset
-		err error
-		r   []byte
-	)
-
-	if rs, err = Parse(v2c); err != nil {
-		t.Error(err)
-	}
-	r = rs.HumanReadable()
-	if !bytes.Equal(r, v2cExpect) {
-		t.Errorf("v2c example 0 test failed\nexp: %s\ngot: %s", v2cExpect, r)
 	}
 }
 

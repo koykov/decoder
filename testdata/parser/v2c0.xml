@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="dst.Hash" src="64h95nd5fx"/>
+	<rule dst="ctx.new" src="src.listing"/>
+	<rule dst="dst.weight" src="new.value"/>
+</rules>
