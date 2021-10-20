@@ -6,13 +6,6 @@ import (
 )
 
 var (
-	v2ci = []byte(`obj.Id = 17
-ctx.finance = response.fin as Finance
-obj.Balance = finance.Amount`)
-	v2ciExpect = []byte(`dst: obj.Id <- src: "17"
-dst: ctx.finance <- src: response.fin as Finance
-dst: obj.Balance <- src: finance.Amount
-`)
 	cb = []byte(`user.Registered = 1
 foo(user, req, true)
 user.Status = 15`)
@@ -36,6 +29,10 @@ func TestParserV2C(t *testing.T) {
 	t.Run("v2c0", func(t *testing.T) { testParser(t) })
 }
 
+func TestParserV2CI(t *testing.T) {
+	t.Run("v2ci0", func(t *testing.T) { testParser(t) })
+}
+
 func testParser(t *testing.T) {
 	key := getTBName(t)
 	st := getStage("parser/" + key)
@@ -49,22 +46,6 @@ func testParser(t *testing.T) {
 		if !bytes.Equal(r, st.expect) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))
 		}
-	}
-}
-
-func TestParse_V2CI(t *testing.T) {
-	var (
-		rs  Ruleset
-		err error
-		r   []byte
-	)
-
-	if rs, err = Parse(v2ci); err != nil {
-		t.Error(err)
-	}
-	r = rs.HumanReadable()
-	if !bytes.Equal(r, v2ciExpect) {
-		t.Errorf("v2ci example 0 test failed\nexp: %s\ngot: %s", v2ciExpect, r)
 	}
 }
 

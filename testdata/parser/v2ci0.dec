@@ -1,0 +1,3 @@
+obj.Id = 17
+ctx.finance = response.fin as Finance
+obj.Balance = finance.Amount

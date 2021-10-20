@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="obj.Id" src="17" static="1"/>
+	<rule dst="ctx.finance" src="response.fin" ins="Finance"/>
+	<rule dst="obj.Balance" src="finance.Amount"/>
+</rules>
