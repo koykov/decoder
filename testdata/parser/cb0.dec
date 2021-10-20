@@ -1,0 +1,3 @@
+user.Registered = 1
+foo(user, req, true)
+user.Status = 15

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule dst="user.Registered" src="1" static="1"/>
+	<rule callback="foo" arg0="user" arg1="req" sarg2="true"/>
+	<rule dst="user.Status" src="15" static="1"/>
+</rules>
