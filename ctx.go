@@ -16,14 +16,16 @@ type Ctx struct {
 	p  []vector.Interface
 	pl int
 	// Internal buffers.
-	accB []byte
-	buf  []byte
-	bufS []string
-	bufI int
-	bufX interface{}
-	bufA []interface{}
+	accB  []byte
+	buf   []byte
+	bufBB [][]byte
+	lenBB int
+	bufS  []string
+	bufI  int
+	bufX  interface{}
+	bufA  []interface{}
 
-	// External buffers to use in modifier and other callbacks.
+	// External buffers to use in modifier and condition helpers.
 	Buf, Buf1, Buf2 bytealg.ChainBuf
 
 	Err error
@@ -151,6 +153,14 @@ func (c *Ctx) ReleaseBytes(p []byte) {
 		return
 	}
 	c.accB = p
+}
+
+func (c *Ctx) reserveBB() int {
+	if len(c.bufBB) == c.lenBB {
+		c.bufBB = append(c.bufBB, nil)
+	}
+	c.lenBB++
+	return c.lenBB - 1
 }
 
 // Internal getter.
@@ -287,6 +297,11 @@ func (c *Ctx) Reset() {
 		c.p[i].Reset()
 	}
 	c.pl = 0
+
+	for i := 0; i < c.lenBB; i++ {
+		c.bufBB[i] = c.bufBB[i][:0]
+	}
+	c.lenBB = 0
 
 	c.Err = nil
 	c.bufX = nil

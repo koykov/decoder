@@ -11,7 +11,7 @@ var (
 )
 
 // Replace empty val with default value.
-func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modDefault(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	// Check val is empty.
 	var empty bool
 	switch val.(type) {
@@ -122,8 +122,9 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	// Implement default mod logic.
 	switch args[0].(type) {
 	case *[]byte:
-		a := *args[0].(*[]byte)
-		*buf = &a
+		i := ctx.reserveBB()
+		ctx.bufBB[i] = append(ctx.bufBB[i], *args[0].(*[]byte)...)
+		*buf = &ctx.bufBB[i]
 	case []byte:
 		a := args[0].([]byte)
 		*buf = &a
@@ -214,8 +215,9 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	case *vector.Node:
 		node := args[0].(*vector.Node)
 		if node != nil {
-			a := node.Bytes()
-			*buf = &a
+			i := ctx.reserveBB()
+			ctx.bufBB[i] = append(ctx.bufBB[i], node.Bytes()...)
+			*buf = &ctx.bufBB[i]
 		}
 	default:
 		*buf = nil
