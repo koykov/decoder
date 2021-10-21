@@ -1,0 +1,18 @@
+{
+  "identifier": "xf44e",
+  "person": {
+    "full_name": "Marquis Warren",
+    "status": 67,
+    "read_f": 4,
+    "write_f": 8,
+    "last_buy": 45.90421
+  },
+  "finance": {
+    "balance": 164.5962,
+    "balance_total": 200,
+    "is_active": true
+  },
+  "ext": {
+    "perm": [false, true, true]
+  }
+}

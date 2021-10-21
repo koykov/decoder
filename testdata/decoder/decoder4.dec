@@ -1,0 +1,1 @@
+obj.Name = crc32(jso.person.{id|nickname|full_name})

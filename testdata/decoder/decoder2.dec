@@ -1,0 +1,2 @@
+obj.Finance.History = appendTestHistory(obj.Finance.History, 13.1415, jso.person.full_name)
+obj.Finance.History = appendTestHistory(obj.Finance.History, jso.finance.balance, "foobar")

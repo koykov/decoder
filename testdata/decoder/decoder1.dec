@@ -1,0 +1,8 @@
+obj.Id = jso.identifier
+obj.Name = jso.person.full_name
+obj.Status = jso.person.status
+obj.Cost = jso.finance.balance
+obj.Finance.AllowBuy = jso.finance.is_active
+obj.Finance.MoneyIn = 15.4532
+obj.Finance.MoneyOut = jso.person.last_buy
+obj.Finance.Balance = jso.finance.balance_total

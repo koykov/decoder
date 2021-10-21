@@ -1,0 +1,9 @@
+obj.Id = jso.identifier
+obj.Name = jso.person.full_name
+obj.Status = jso.person.status
+obj.Cost = jso.finance.balance
+obj.Finance.AllowBuy = jso.finance.is_active
+obj.Flags[read] = jso.person.read_f
+obj.Flags[write] = jso.person.write_f
+obj.Permission[45] = jso.ext.perm[0]
+obj.Permission[59] = jso.ext.perm[2]
