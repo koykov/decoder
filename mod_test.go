@@ -8,7 +8,8 @@ import (
 
 func TestMod(t *testing.T) {
 	t.Run("default", func(t *testing.T) { testMod(t, "src", scenarioModDefault) })
-	t.Run("ifThen", func(t *testing.T) { testMod(t, "src", scenarioModIfThen) })
+	t.Run("ifThen", func(t *testing.T) { testMod(t, "src", scenarioModIfThenElse) })
+	t.Run("ifThenElse", func(t *testing.T) { testMod(t, "src", scenarioModIfThenElse) })
 }
 
 func testMod(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -20,7 +21,8 @@ func testMod(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *test
 
 func BenchmarkMod(b *testing.B) {
 	b.Run("default", func(b *testing.B) { benchMod(b, "src", scenarioModDefault) })
-	b.Run("ifThen", func(b *testing.B) { benchMod(b, "src", scenarioModIfThen) })
+	b.Run("ifThen", func(b *testing.B) { benchMod(b, "src", scenarioModIfThenElse) })
+	b.Run("ifThenElse", func(b *testing.B) { benchMod(b, "src", scenarioModIfThenElse) })
 }
 
 func benchMod(b *testing.B, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -39,6 +41,6 @@ func scenarioModDefault(t testing.TB, obj *testobj.TestObject) {
 	assertI32(t, "Status", obj.Status, 1)
 }
 
-func scenarioModIfThen(t testing.TB, obj *testobj.TestObject) {
+func scenarioModIfThenElse(t testing.TB, obj *testobj.TestObject) {
 	assertB(t, "Name", obj.Name, []byte("Rich men"))
 }
