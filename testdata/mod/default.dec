@@ -1,0 +1,2 @@
+obj.Name = jso.person.name|default(jso.person.full_name)
+obj.Status = jso.person.state|default(1)

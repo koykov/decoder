@@ -42,25 +42,28 @@ func init() {
 		}
 		return nil
 	})
-	_ = filepath.Walk("testdata/decoder", func(path string, info os.FileInfo, err error) error {
-		if filepath.Ext(path) == ".dec" {
-			st := stage{}
-			st.key = strings.Replace(filepath.Base(path), ".dec", "", 1)
-			st.key = "decoder/" + st.key
+	dirs := []string{"decoder", "mod"}
+	for _, dir := range dirs {
+		_ = filepath.Walk("testdata/"+dir, func(path string, info os.FileInfo, err error) error {
+			if filepath.Ext(path) == ".dec" {
+				st := stage{}
+				st.key = strings.Replace(filepath.Base(path), ".dec", "", 1)
+				st.key = dir + "/" + st.key
 
-			st.origin, _ = ioutil.ReadFile(path)
-			rules, _ := Parse(st.origin)
-			RegisterDecoder(st.key, rules)
+				st.origin, _ = ioutil.ReadFile(path)
+				rules, _ := Parse(st.origin)
+				RegisterDecoder(st.key, rules)
 
-			stages = append(stages, st)
-		}
-		if filepath.Ext(path) == ".json" {
-			key := strings.Replace(filepath.Base(path), ".json", "", 1)
-			src, _ := ioutil.ReadFile(path)
-			jsonSrc[key] = src
-		}
-		return nil
-	})
+				stages = append(stages, st)
+			}
+			if filepath.Ext(path) == ".json" {
+				key := strings.Replace(filepath.Base(path), ".json", "", 1)
+				src, _ := ioutil.ReadFile(path)
+				jsonSrc[key] = src
+			}
+			return nil
+		})
+	}
 }
 
 func getStage(key string) (st *stage) {
@@ -78,7 +81,7 @@ func getTBName(tb testing.TB) string {
 	return key[strings.Index(key, "/")+1:]
 }
 
-func assertDecode(t testing.TB, ctx *Ctx, obj *testobj.TestObject, jsonKey string) *testobj.TestObject {
+func assertDecode(t testing.TB, ctx *Ctx, obj *testobj.TestObject, target, jsonKey string) *testobj.TestObject {
 	ctx.Reset()
 	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
 	buf = append(buf[:0], jsonSrc[jsonKey]...)
@@ -86,7 +89,7 @@ func assertDecode(t testing.TB, ctx *Ctx, obj *testobj.TestObject, jsonKey strin
 	if err != nil {
 		t.Error(err)
 	}
-	key := "decoder/" + getTBName(t)
+	key := target + "/" + getTBName(t)
 	err = Decode(key, ctx)
 	if err != nil {
 		t.Error(err)
