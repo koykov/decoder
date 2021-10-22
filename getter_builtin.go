@@ -42,7 +42,7 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 }
 
 // Convert string to float.
-func getterAtof(_ *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterAtof(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	if len(args) < 1 {
 		err = ErrGetterPoorArgs
 		return
@@ -64,9 +64,8 @@ func getterAtof(_ *Ctx, buf *interface{}, args []interface{}) (err error) {
 		ok = false
 	}
 	if ok {
-		var f float64
-		if f, err = strconv.ParseFloat(raw, 64); err == nil {
-			*buf = &f
+		if ctx.bufF, err = strconv.ParseFloat(raw, 64); err == nil {
+			*buf = &ctx.bufF
 		}
 	}
 	return
