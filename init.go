@@ -11,6 +11,7 @@ func init() {
 	// Register builtin getter callbacks.
 	RegisterGetterFn("crc32", "", getterCrc32)
 	RegisterGetterFn("strToFloat", "atof", getterAtof)
+	RegisterGetterFn("strToInt", "atoi", getterAtoi)
 	RegisterGetterFn("appendTestHistory", "", getterAppendTestHistory)
 
 	// Register builtin callbacks.

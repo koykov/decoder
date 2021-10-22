@@ -22,7 +22,7 @@ type Ctx struct {
 	bufBB [][]byte
 	lenBB int
 	bufS  []string
-	bufI  int
+	bufI  int64
 	bufF  float64
 	bufX  interface{}
 	bufA  []interface{}

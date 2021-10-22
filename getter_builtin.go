@@ -35,7 +35,7 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 		}
 	}
 	if ctx.BufAcc.StakedLen() > 0 {
-		ctx.bufI = int(crc32.ChecksumIEEE(ctx.BufAcc.StakedBytes()))
+		ctx.bufI = int64(crc32.ChecksumIEEE(ctx.BufAcc.StakedBytes()))
 		*buf = &ctx.bufI
 	}
 	return
@@ -57,15 +57,45 @@ func getterAtof(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	case *string:
 		raw = *args[0].(*string)
 	case *[]byte:
-		raw = fastconv.B2S(args[0].([]byte))
-	case []byte:
 		raw = fastconv.B2S(*args[0].(*[]byte))
+	case []byte:
+		raw = fastconv.B2S(args[0].([]byte))
 	default:
 		ok = false
 	}
 	if ok {
 		if ctx.bufF, err = strconv.ParseFloat(raw, 64); err == nil {
 			*buf = &ctx.bufF
+		}
+	}
+	return
+}
+
+// Convert string to int.
+func getterAtoi(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+	if len(args) < 1 {
+		err = ErrGetterPoorArgs
+		return
+	}
+	var raw string
+	ok := true
+	switch args[0].(type) {
+	case *vector.Node:
+		raw = args[0].(*vector.Node).String()
+	case string:
+		raw = args[0].(string)
+	case *string:
+		raw = *args[0].(*string)
+	case *[]byte:
+		raw = fastconv.B2S(*args[0].(*[]byte))
+	case []byte:
+		raw = fastconv.B2S(args[0].([]byte))
+	default:
+		ok = false
+	}
+	if ok {
+		if ctx.bufI, err = strconv.ParseInt(raw, 10, 64); err == nil {
+			*buf = &ctx.bufI
 		}
 	}
 	return
