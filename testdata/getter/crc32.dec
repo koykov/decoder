@@ -1,0 +1,1 @@
+obj.Id = crc32(jso.identifier, jso.person.full_name)

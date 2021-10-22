@@ -42,7 +42,7 @@ func init() {
 		}
 		return nil
 	})
-	dirs := []string{"decoder", "mod"}
+	dirs := []string{"decoder", "mod", "getter"}
 	for _, dir := range dirs {
 		_ = filepath.Walk("testdata/"+dir, func(path string, info os.FileInfo, err error) error {
 			if filepath.Ext(path) == ".dec" {
