@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/koykov/bytealg v0.0.0-20210927090650-e39b8a62e232
-	github.com/koykov/bytebuf v0.0.0-20210927210429-baf0e8cab606
+	github.com/koykov/bytebuf v0.0.0-20211022124711-1142353a5deb
 	github.com/koykov/fastconv v0.0.0-20210824195058-3dc579589f15
 	github.com/koykov/inspector v0.0.0-20210709074729-5d3152550e8a
 	github.com/koykov/jsonvector v0.0.0-20211011193529-fcb3573fc42b

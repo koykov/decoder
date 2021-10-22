@@ -2,6 +2,7 @@ package decoder
 
 import (
 	"github.com/koykov/bytealg"
+	"github.com/koykov/bytebuf"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
 	"github.com/koykov/vector"
@@ -26,6 +27,8 @@ type Ctx struct {
 	bufA  []interface{}
 
 	// External buffers to use in modifier and condition helpers.
+	BufAcc bytebuf.AccumulativeBuf
+	// todo remove as unused later
 	Buf, Buf1, Buf2 bytealg.ChainBuf
 
 	Err error
@@ -309,6 +312,7 @@ func (c *Ctx) Reset() {
 	c.buf = c.buf[:0]
 	c.bufS = c.bufS[:0]
 	c.bufA = c.bufA[:0]
+	c.BufAcc.Reset()
 	c.Buf.Reset()
 	c.Buf1.Reset()
 	c.Buf2.Reset()

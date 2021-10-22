@@ -75,5 +75,5 @@ func scenarioDec3(t testing.TB, obj *testobj.TestObject) {
 }
 
 func scenarioDec4(t testing.TB, obj *testobj.TestObject) {
-	assertB(t, "Id", obj.Name, []byte(`2677594116`))
+	assertB(t, "Name", obj.Name, []byte(`2677594116`))
 }

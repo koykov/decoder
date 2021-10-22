@@ -16,26 +16,26 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 		err = ErrGetterPoorArgs
 		return
 	}
-	ctx.Buf.Reset()
+	ctx.BufAcc.StakeOut()
 	for _, a := range args {
 		switch a.(type) {
 		case []byte:
-			ctx.Buf.Write(a.([]byte))
+			ctx.BufAcc.Write(a.([]byte))
 		case *[]byte:
-			ctx.Buf.Write(*a.(*[]byte))
+			ctx.BufAcc.Write(*a.(*[]byte))
 		case string:
-			ctx.Buf.WriteStr(a.(string))
+			ctx.BufAcc.WriteStr(a.(string))
 		case *string:
-			ctx.Buf.WriteStr(*a.(*string))
+			ctx.BufAcc.WriteStr(*a.(*string))
 		case *vector.Node:
 			node := a.(*vector.Node)
 			if node != nil {
-				ctx.Buf.Write(node.Bytes())
+				ctx.BufAcc.Write(node.Bytes())
 			}
 		}
 	}
-	if ctx.Buf.Len() > 0 {
-		ctx.bufI = int(crc32.ChecksumIEEE(ctx.Buf.Bytes()))
+	if ctx.BufAcc.StakedLen() > 0 {
+		ctx.bufI = int(crc32.ChecksumIEEE(ctx.BufAcc.StakedBytes()))
 		*buf = &ctx.bufI
 	}
 	return
