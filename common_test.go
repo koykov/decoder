@@ -56,14 +56,17 @@ func init() {
 
 				stages = append(stages, st)
 			}
-			if filepath.Ext(path) == ".json" {
-				key := strings.Replace(filepath.Base(path), ".json", "", 1)
-				src, _ := ioutil.ReadFile(path)
-				jsonSrc[key] = src
-			}
 			return nil
 		})
 	}
+	_ = filepath.Walk("testdata/json", func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(path) == ".json" {
+			key := strings.Replace(filepath.Base(path), ".json", "", 1)
+			src, _ := ioutil.ReadFile(path)
+			jsonSrc[key] = src
+		}
+		return nil
+	})
 }
 
 func getStage(key string) (st *stage) {
