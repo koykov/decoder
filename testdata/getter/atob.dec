@@ -1,0 +1,1 @@
+obj.Finance.AllowBuy = atob(jso.finance.is_active)

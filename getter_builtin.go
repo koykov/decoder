@@ -65,6 +65,11 @@ func getterAtof(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	return atox(ctx, buf, args, atof)
 }
 
+// Convert string to bool.
+func getterAtob(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+	return atox(ctx, buf, args, atob)
+}
+
 func atox(ctx *Ctx, buf *interface{}, args []interface{}, target target) (err error) {
 	if len(args) < 1 {
 		err = ErrGetterPoorArgs
@@ -100,7 +105,10 @@ func atox(ctx *Ctx, buf *interface{}, args []interface{}, target target) (err er
 			if ctx.bufF, err = strconv.ParseFloat(raw, 64); err == nil {
 				*buf = &ctx.bufF
 			}
-			// todo atou/atob
+		case atob:
+			if ctx.bufBl, err = strconv.ParseBool(raw); err == nil {
+				*buf = &ctx.bufBl
+			}
 		}
 	}
 	return

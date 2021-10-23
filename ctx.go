@@ -25,6 +25,7 @@ type Ctx struct {
 	bufI  int64
 	bufU  uint64
 	bufF  float64
+	bufBl bool
 	bufX  interface{}
 	bufA  []interface{}
 

@@ -12,6 +12,7 @@ func TestGetter(t *testing.T) {
 	t.Run("atoi", func(t *testing.T) { testGetter(t, "src", scenarioGetterAtoi) })
 	t.Run("atou", func(t *testing.T) { testGetter(t, "src", scenarioGetterAtou) })
 	t.Run("atof", func(t *testing.T) { testGetter(t, "src", scenarioGetterAtof) })
+	t.Run("atob", func(t *testing.T) { testGetter(t, "src", scenarioGetterAtob) })
 }
 
 func testGetter(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -27,6 +28,7 @@ func BenchmarkGetter(b *testing.B) {
 	b.Run("atoi", func(b *testing.B) { benchGetter(b, "src", scenarioGetterAtoi) })
 	b.Run("atou", func(b *testing.B) { benchGetter(b, "src", scenarioGetterAtou) })
 	b.Run("atof", func(b *testing.B) { benchGetter(b, "src", scenarioGetterAtof) })
+	b.Run("atob", func(b *testing.B) { benchGetter(b, "src", scenarioGetterAtob) })
 }
 
 func benchGetter(b *testing.B, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -54,4 +56,8 @@ func scenarioGetterAtou(t testing.TB, obj *testobj.TestObject) {
 
 func scenarioGetterAtof(t testing.TB, obj *testobj.TestObject) {
 	assertF64(t, "Cost", obj.Cost, 45.90421)
+}
+
+func scenarioGetterAtob(t testing.TB, obj *testobj.TestObject) {
+	assertB1(t, "Finance.AllowBuy", obj.Finance.AllowBuy, true)
 }

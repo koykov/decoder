@@ -13,6 +13,7 @@ func init() {
 	RegisterGetterFn("strToInt", "atoi", getterAtoi)
 	RegisterGetterFn("strToUint", "atou", getterAtou)
 	RegisterGetterFn("strToFloat", "atof", getterAtof)
+	RegisterGetterFn("strToBool", "atob", getterAtob)
 	RegisterGetterFn("appendTestHistory", "", getterAppendTestHistory)
 
 	// Register builtin callbacks.
