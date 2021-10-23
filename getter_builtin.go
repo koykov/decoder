@@ -10,6 +10,15 @@ import (
 	"github.com/koykov/vector"
 )
 
+type target int
+
+const (
+	atoi target = iota
+	atou
+	atof
+	atob
+)
+
 // Calculate common crc32 hash of given arguments.
 func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	if len(args) == 0 {
@@ -43,36 +52,15 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 
 // Convert string to float.
 func getterAtof(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
-	if len(args) < 1 {
-		err = ErrGetterPoorArgs
-		return
-	}
-	var raw string
-	ok := true
-	switch args[0].(type) {
-	case *vector.Node:
-		raw = args[0].(*vector.Node).String()
-	case string:
-		raw = args[0].(string)
-	case *string:
-		raw = *args[0].(*string)
-	case *[]byte:
-		raw = fastconv.B2S(*args[0].(*[]byte))
-	case []byte:
-		raw = fastconv.B2S(args[0].([]byte))
-	default:
-		ok = false
-	}
-	if ok {
-		if ctx.bufF, err = strconv.ParseFloat(raw, 64); err == nil {
-			*buf = &ctx.bufF
-		}
-	}
-	return
+	return atox(ctx, buf, args, atof)
 }
 
 // Convert string to int.
 func getterAtoi(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+	return atox(ctx, buf, args, atoi)
+}
+
+func atox(ctx *Ctx, buf *interface{}, args []interface{}, target target) (err error) {
 	if len(args) < 1 {
 		err = ErrGetterPoorArgs
 		return
@@ -94,8 +82,16 @@ func getterAtoi(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 		ok = false
 	}
 	if ok {
-		if ctx.bufI, err = strconv.ParseInt(raw, 10, 64); err == nil {
-			*buf = &ctx.bufI
+		switch target {
+		case atoi:
+			if ctx.bufI, err = strconv.ParseInt(raw, 10, 64); err == nil {
+				*buf = &ctx.bufI
+			}
+		case atof:
+			if ctx.bufF, err = strconv.ParseFloat(raw, 64); err == nil {
+				*buf = &ctx.bufF
+			}
+			// todo atou/atob
 		}
 	}
 	return
