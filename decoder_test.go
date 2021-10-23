@@ -44,12 +44,12 @@ func scenarioDec0(t testing.TB, obj *testobj.TestObject) {
 	assertB(t, "Name", obj.Name, []byte("Marquis Warren"))
 	assertI32(t, "Status", obj.Status, 67)
 	assertF64(t, "Cost", obj.Cost, 164.5962)
-	assertB1(t, "Finance.AllowBuy", obj.Finance.AllowBuy, true)
+	assertBl(t, "Finance.AllowBuy", obj.Finance.AllowBuy, true)
 	assertI32(t, "Flags[read]", obj.Flags["read"], 4)
 	assertI32(t, "Flags[write]", obj.Flags["write"], 8)
 	perm := obj.Permission
-	assertB1(t, "Permission[45]", (*perm)[45], false)
-	assertB1(t, "Permission[59]", (*perm)[59], true)
+	assertBl(t, "Permission[45]", (*perm)[45], false)
+	assertBl(t, "Permission[59]", (*perm)[59], true)
 }
 
 func scenarioDec1(t testing.TB, obj *testobj.TestObject) {
@@ -57,7 +57,7 @@ func scenarioDec1(t testing.TB, obj *testobj.TestObject) {
 	assertB(t, "Name", obj.Name, []byte("Marquis Warren"))
 	assertI32(t, "Status", obj.Status, 67)
 	assertF64(t, "Cost", obj.Cost, 164.5962)
-	assertB1(t, "Finance.AllowBuy", obj.Finance.AllowBuy, true)
+	assertBl(t, "Finance.AllowBuy", obj.Finance.AllowBuy, true)
 	assertF64(t, "Finance.MoneyIn", obj.Finance.MoneyIn, 15.4532)
 	assertF64(t, "Finance.MoneyOut", obj.Finance.MoneyOut, 45.90421)
 	assertF64(t, "Finance.Balance", obj.Finance.Balance, 200)

@@ -59,5 +59,5 @@ func scenarioGetterAtof(t testing.TB, obj *testobj.TestObject) {
 }
 
 func scenarioGetterAtob(t testing.TB, obj *testobj.TestObject) {
-	assertB1(t, "Finance.AllowBuy", obj.Finance.AllowBuy, true)
+	assertBl(t, "Finance.AllowBuy", obj.Finance.AllowBuy, true)
 }

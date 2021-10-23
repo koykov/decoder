@@ -135,7 +135,7 @@ func assertF64(t testing.TB, field string, val, expect float64) {
 	}
 }
 
-func assertB1(t testing.TB, field string, val, expect bool) {
+func assertBl(t testing.TB, field string, val, expect bool) {
 	if val != expect {
 		key := getTBName(t)
 		t.Errorf("%s %s test failed", key, field)
