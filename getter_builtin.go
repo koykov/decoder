@@ -50,14 +50,19 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	return
 }
 
-// Convert string to float.
-func getterAtof(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
-	return atox(ctx, buf, args, atof)
-}
-
 // Convert string to int.
 func getterAtoi(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	return atox(ctx, buf, args, atoi)
+}
+
+// Convert string to uint.
+func getterAtou(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+	return atox(ctx, buf, args, atou)
+}
+
+// Convert string to float.
+func getterAtof(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+	return atox(ctx, buf, args, atof)
 }
 
 func atox(ctx *Ctx, buf *interface{}, args []interface{}, target target) (err error) {
@@ -86,6 +91,10 @@ func atox(ctx *Ctx, buf *interface{}, args []interface{}, target target) (err er
 		case atoi:
 			if ctx.bufI, err = strconv.ParseInt(raw, 10, 64); err == nil {
 				*buf = &ctx.bufI
+			}
+		case atou:
+			if ctx.bufU, err = strconv.ParseUint(raw, 10, 64); err == nil {
+				*buf = &ctx.bufU
 			}
 		case atof:
 			if ctx.bufF, err = strconv.ParseFloat(raw, 64); err == nil {

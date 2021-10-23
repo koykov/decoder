@@ -121,6 +121,13 @@ func assertI32(t testing.TB, field string, val, expect int32) {
 	}
 }
 
+func assertU64(t testing.TB, field string, val, expect uint64) {
+	if val != expect {
+		key := getTBName(t)
+		t.Errorf("%s %s test failed", key, field)
+	}
+}
+
 func assertF64(t testing.TB, field string, val, expect float64) {
 	if val != expect {
 		key := getTBName(t)

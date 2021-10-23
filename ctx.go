@@ -23,6 +23,7 @@ type Ctx struct {
 	lenBB int
 	bufS  []string
 	bufI  int64
+	bufU  uint64
 	bufF  float64
 	bufX  interface{}
 	bufA  []interface{}

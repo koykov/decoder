@@ -10,8 +10,8 @@ github.com/koykov/byteptr v0.0.0-20210620190848-e0b56dd286d9/go.mod h1:LG7b4GrG4
 github.com/koykov/fastconv v0.0.0-20200216201335-c0ba44f9d207/go.mod h1:JXdtdh0aCcSmxLsVUoYP61lmxpL6dWOXEKxCIR+MlGg=
 github.com/koykov/fastconv v0.0.0-20210824195058-3dc579589f15 h1:KJm8IHb1fzR/hgMQziTjTM5B7F0uIawHDxBCHs7HQWs=
 github.com/koykov/fastconv v0.0.0-20210824195058-3dc579589f15/go.mod h1:JXdtdh0aCcSmxLsVUoYP61lmxpL6dWOXEKxCIR+MlGg=
-github.com/koykov/inspector v0.0.0-20210709074729-5d3152550e8a h1:P1oO+Zy9KP0jujda+NHjCzJrYgO3ZYT5GXj2gHXEAOI=
-github.com/koykov/inspector v0.0.0-20210709074729-5d3152550e8a/go.mod h1:6QAZFyU1Ezq/OP+m5YLCt4OlMioSy4FUI6wRmNlBWzE=
+github.com/koykov/inspector v0.0.0-20211023193813-f678b31491d0 h1:QxDDizqMus0bnQKOCB38aPlu5IhkHri+7Q9txWMQNPk=
+github.com/koykov/inspector v0.0.0-20211023193813-f678b31491d0/go.mod h1:6QAZFyU1Ezq/OP+m5YLCt4OlMioSy4FUI6wRmNlBWzE=
 github.com/koykov/jsonvector v0.0.0-20211011193529-fcb3573fc42b h1:me+F67rz/dX6UVex4VnBGJMQk+5HD1Oh15i9lssHNos=
 github.com/koykov/jsonvector v0.0.0-20211011193529-fcb3573fc42b/go.mod h1:06jDATe0GngF7qL4E8UJ1+iOmM/QxRGjsikZWQQr8B4=
 github.com/koykov/urlvector v0.0.0-20211011193708-da3c386ddf43 h1:jAd8PCB2ftWw7S321MACGGZVEd9d/o/aAi1mwB5vTsY=
