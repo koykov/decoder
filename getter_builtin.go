@@ -8,6 +8,7 @@ import (
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector/testobj"
 	"github.com/koykov/vector"
+	"github.com/koykov/x2bytes"
 )
 
 type target int
@@ -110,6 +111,21 @@ func atox(ctx *Ctx, buf *interface{}, args []interface{}, target target) (err er
 				*buf = &ctx.bufBl
 			}
 		}
+	}
+	return
+}
+
+func getterItoa(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+	if len(args) < 1 {
+		err = ErrGetterPoorArgs
+		return
+	}
+	i := ctx.reserveBB()
+	if node, ok := args[0].(*vector.Node); ok {
+		ctx.bufBB[i] = append(ctx.bufBB[i], node.ForceBytes()...)
+		*buf = &ctx.bufBB[i]
+	} else if ctx.bufBB[i], err = x2bytes.IntToBytes(ctx.bufBB[i], args[0]); err == nil {
+		*buf = &ctx.bufBB[i]
 	}
 	return
 }

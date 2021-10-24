@@ -92,6 +92,10 @@ func assertDecode(t testing.TB, ctx *Ctx, obj *testobj.TestObject, target, jsonK
 	if err != nil {
 		t.Error(err)
 	}
+	ctx.SetStatic("ivar", int64(67))
+	ctx.SetStatic("uvar", uint64(1e6))
+	ctx.SetStatic("fvar", 3.1415)
+	ctx.SetStatic("bvar", true)
 	key := target + "/" + getTBName(t)
 	err = Decode(key, ctx)
 	if err != nil {

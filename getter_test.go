@@ -13,6 +13,10 @@ func TestGetter(t *testing.T) {
 	t.Run("atou", func(t *testing.T) { testGetter(t, "src", scenarioGetterAtou) })
 	t.Run("atof", func(t *testing.T) { testGetter(t, "src", scenarioGetterAtof) })
 	t.Run("atob", func(t *testing.T) { testGetter(t, "src", scenarioGetterAtob) })
+	t.Run("itoa-explicit-vector", func(t *testing.T) { testGetter(t, "src", scenarioGetterItoa) })
+	t.Run("itoa-explicit-var", func(t *testing.T) { testGetter(t, "src", scenarioGetterItoa) })
+	t.Run("itoa-implicit-vector", func(t *testing.T) { testGetter(t, "src", scenarioGetterItoa) })
+	t.Run("itoa-implicit-var", func(t *testing.T) { testGetter(t, "src", scenarioGetterItoa) })
 }
 
 func testGetter(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -29,6 +33,10 @@ func BenchmarkGetter(b *testing.B) {
 	b.Run("atou", func(b *testing.B) { benchGetter(b, "src", scenarioGetterAtou) })
 	b.Run("atof", func(b *testing.B) { benchGetter(b, "src", scenarioGetterAtof) })
 	b.Run("atob", func(b *testing.B) { benchGetter(b, "src", scenarioGetterAtob) })
+	b.Run("itoa-explicit-vector", func(b *testing.B) { benchGetter(b, "src", scenarioGetterItoa) })
+	b.Run("itoa-explicit-var", func(b *testing.B) { benchGetter(b, "src", scenarioGetterItoa) })
+	b.Run("itoa-implicit-vector", func(b *testing.B) { benchGetter(b, "src", scenarioGetterItoa) })
+	b.Run("itoa-implicit-var", func(b *testing.B) { benchGetter(b, "src", scenarioGetterItoa) })
 }
 
 func benchGetter(b *testing.B, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -60,4 +68,8 @@ func scenarioGetterAtof(t testing.TB, obj *testobj.TestObject) {
 
 func scenarioGetterAtob(t testing.TB, obj *testobj.TestObject) {
 	assertBl(t, "Finance.AllowBuy", obj.Finance.AllowBuy, true)
+}
+
+func scenarioGetterItoa(t testing.TB, obj *testobj.TestObject) {
+	assertB(t, "Status", obj.Name, []byte("67"))
 }
