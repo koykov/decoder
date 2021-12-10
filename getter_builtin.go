@@ -130,6 +130,21 @@ func getterItoa(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	return
 }
 
+func getterUtoa(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+	if len(args) < 1 {
+		err = ErrGetterPoorArgs
+		return
+	}
+	i := ctx.reserveBB()
+	if node, ok := args[0].(*vector.Node); ok {
+		ctx.bufBB[i] = append(ctx.bufBB[i], node.ForceBytes()...)
+		*buf = &ctx.bufBB[i]
+	} else if ctx.bufBB[i], err = x2bytes.UintToBytes(ctx.bufBB[i], args[0]); err == nil {
+		*buf = &ctx.bufBB[i]
+	}
+	return
+}
+
 // Example of getter callback that demonstrates how callbacks works.
 func getterAppendTestHistory(_ *Ctx, buf *interface{}, args []interface{}) (err error) {
 	if len(args) < 3 {
