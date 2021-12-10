@@ -32,7 +32,7 @@ type Ctx struct {
 	// External buffers to use in modifier and condition helpers.
 	BufAcc bytebuf.AccumulativeBuf
 	// todo remove as unused later
-	Buf, Buf1, Buf2 bytealg.ChainBuf
+	Buf, Buf1, Buf2 bytebuf.ChainBuf
 
 	Err error
 }
