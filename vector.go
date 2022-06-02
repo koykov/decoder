@@ -11,23 +11,22 @@ import (
 type VectorType int
 
 const (
-	VectorJson VectorType = iota
-	VectorUrl
-	VectorXml
-	VectorYaml
+	VectorJSON VectorType = iota
+	VectorURL
+	VectorXML
+	VectorYAML
 )
 
 // Assign parser helper to the vector vec according given type.
 func ensureHelper(vec vector.Interface, typ VectorType) vector.Interface {
 	switch typ {
-	case VectorJson:
+	case VectorJSON:
 		vec.SetHelper(&jsonvector.JsonHelper{})
-	case VectorUrl:
+	case VectorURL:
 		vec.SetHelper(&urlvector.URLHelper{})
-	case VectorXml:
-		// todo set proper helper when xmlvector package will implements.
-		vec.SetHelper(nil)
-	case VectorYaml:
+	case VectorXML:
+		vec.SetHelper(&xmlvector.Helper{})
+	case VectorYAML:
 		// todo set proper helper when yamlvector package will implements.
 		vec.SetHelper(nil)
 	}
@@ -37,13 +36,13 @@ func ensureHelper(vec vector.Interface, typ VectorType) vector.Interface {
 // Make new vector parser according given type.
 func newVector(typ VectorType) vector.Interface {
 	switch typ {
-	case VectorJson:
+	case VectorJSON:
 		return jsonvector.NewVector()
-	case VectorUrl:
+	case VectorURL:
 		return urlvector.NewVector()
-	case VectorXml:
+	case VectorXML:
 		return xmlvector.NewVector()
-	case VectorYaml:
+	case VectorYAML:
 		return yamlvector.NewVector()
 	}
 	return nil

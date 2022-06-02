@@ -88,7 +88,7 @@ func assertDecode(t testing.TB, ctx *Ctx, obj *testobj.TestObject, target, jsonK
 	ctx.Reset()
 	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
 	buf = append(buf[:0], jsonSrc[jsonKey]...)
-	_, err := ctx.SetVector("jso", buf, VectorJson)
+	_, err := ctx.SetVector("jso", buf, VectorJSON)
 	if err != nil {
 		t.Error(err)
 	}

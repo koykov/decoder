@@ -12,22 +12,22 @@ func cbFoo(_ *Ctx, _ []interface{}) error {
 
 // Parse json source and register it in the ctx.
 func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
-	return cbParse(ctx, args, VectorJson)
+	return cbParse(ctx, args, VectorJSON)
 }
 
 // Parse json source and register it in the ctx.
 func cbUrlParse(ctx *Ctx, args []interface{}) (err error) {
-	return cbParse(ctx, args, VectorUrl)
+	return cbParse(ctx, args, VectorURL)
 }
 
 // Parse json source and register it in the ctx.
 func cbXmlParse(ctx *Ctx, args []interface{}) (err error) {
-	return cbParse(ctx, args, VectorXml)
+	return cbParse(ctx, args, VectorXML)
 }
 
 // Parse json source and register it in the ctx.
 func cbYamlParse(ctx *Ctx, args []interface{}) (err error) {
-	return cbParse(ctx, args, VectorYaml)
+	return cbParse(ctx, args, VectorYAML)
 }
 
 // Parse source of type and register it in the ctx.
