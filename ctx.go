@@ -1,6 +1,8 @@
 package decoder
 
 import (
+	"strings"
+
 	"github.com/koykov/bytealg"
 	"github.com/koykov/bytebuf"
 	"github.com/koykov/fastconv"
@@ -176,9 +178,7 @@ func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 	}
 
 	// Split path to separate words using dot as separator.
-	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
-	c.bufS = c.bufS[:0]
-	c.bufS = bytealg.AppendSplitStr(c.bufS, fastconv.B2S(path), ".", -1)
+	c.splitPath(fastconv.B2S(path), ".")
 	if len(c.bufS) == 0 {
 		return nil
 	}
@@ -288,6 +288,25 @@ func (c *Ctx) getParser(typ VectorType) (v vector.Interface) {
 	}
 	c.pl[typ]++
 	return v
+}
+
+// Split path to separate words using dot as separator.
+// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
+func (c *Ctx) splitPath(path, separator string) {
+	c.bufS = bytealg.AppendSplitStr(c.bufS[:0], path, separator, -1)
+	ti := len(c.bufS) - 1
+	if ti < 0 {
+		return
+	}
+	tail := c.bufS[ti]
+	if p := strings.IndexByte(tail, '@'); p != -1 {
+		if p > 0 {
+			if len(tail[p:]) > 1 {
+				c.bufS = append(c.bufS, tail[p:])
+			}
+			c.bufS[ti] = c.bufS[ti][:p]
+		}
+	}
 }
 
 // Reset the context.
