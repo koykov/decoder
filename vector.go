@@ -15,6 +15,8 @@ const (
 	VectorURL
 	VectorXML
 	VectorYAML
+
+	VectorsSupported = 4
 )
 
 // Assign parser helper to the vector vec according given type.
