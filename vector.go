@@ -23,11 +23,11 @@ const (
 func ensureHelper(vec vector.Interface, typ VectorType) vector.Interface {
 	switch typ {
 	case VectorJSON:
-		vec.SetHelper(&jsonvector.JsonHelper{})
+		vec.SetHelper(jsonvector.Helper{})
 	case VectorURL:
-		vec.SetHelper(&urlvector.URLHelper{})
+		vec.SetHelper(urlvector.Helper{})
 	case VectorXML:
-		vec.SetHelper(&xmlvector.Helper{})
+		vec.SetHelper(xmlvector.Helper{})
 	case VectorYAML:
 		// todo set proper helper when yamlvector package will implements.
 		vec.SetHelper(nil)
