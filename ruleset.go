@@ -7,7 +7,7 @@ import (
 	"github.com/koykov/fastconv"
 )
 
-// List of rules.
+// Ruleset represents list of rules.
 type Ruleset []rule
 
 // Rule object that describes one line in decoder's body.
@@ -43,7 +43,7 @@ var (
 	hrQR = []byte(`&quot;`)
 )
 
-// Build human readable view of the rules list.
+// HumanReadable builds human-readable view of the rules list.
 func (r *Ruleset) HumanReadable() []byte {
 	if len(*r) == 0 {
 		return nil

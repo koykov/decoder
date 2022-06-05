@@ -10,7 +10,9 @@ import (
 	"github.com/koykov/vector"
 )
 
-// Context object. Contains list of variables that can be used as source or destination.
+// Ctx represents decoder context object.
+//
+// Contains list of variables that can be used as source or destination.
 type Ctx struct {
 	// List of context variables and list len.
 	vars []ctxVar
@@ -47,7 +49,7 @@ type ctxVar struct {
 	node *vector.Node
 }
 
-// Make new context object.
+// NewCtx makes new context object.
 func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars: make([]ctxVar, 0),
@@ -58,7 +60,7 @@ func NewCtx() *Ctx {
 }
 
 // Set the variable to context.
-// Inspector ins should be correspond to variable val.
+// Inspector ins should be corresponded to variable val.
 func (ctx *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 	for i := 0; i < ctx.ln; i++ {
 		if ctx.vars[i].key == key {
@@ -87,7 +89,7 @@ func (ctx *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 	ctx.ln++
 }
 
-// Set static variable to context.
+// SetStatic registers static variable in context.
 func (ctx *Ctx) SetStatic(key string, val interface{}) {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
@@ -97,7 +99,7 @@ func (ctx *Ctx) SetStatic(key string, val interface{}) {
 	ctx.Set(key, val, ins)
 }
 
-// Parse source data and set it to context as key.
+// SetVector parses source data and register it in context under given key.
 func (ctx *Ctx) SetVector(key string, data []byte, typ VectorType) (vec vector.Interface, err error) {
 	vec = ctx.getParser(typ)
 	if err = vec.Parse(data); err != nil {
@@ -108,7 +110,7 @@ func (ctx *Ctx) SetVector(key string, data []byte, typ VectorType) (vec vector.I
 	return
 }
 
-// Directly set node to context as key.
+// SetVectorNode directly registers node in context under given key.
 func (ctx *Ctx) SetVectorNode(key string, node *vector.Node) error {
 	if node == nil || node.Type() == vector.TypeNull {
 		return ErrEmptyNode
@@ -150,12 +152,12 @@ func (ctx *Ctx) Get(path string) interface{} {
 	return ctx.get(fastconv.S2B(path), nil)
 }
 
-// Return accumulative buffer.
+// AcquireBytes returns accumulative buffer.
 func (ctx *Ctx) AcquireBytes() []byte {
 	return ctx.accB
 }
 
-// Update accumulative buffer with p.
+// ReleaseBytes updates accumulative buffer with p.
 func (ctx *Ctx) ReleaseBytes(p []byte) {
 	if len(p) == 0 {
 		return

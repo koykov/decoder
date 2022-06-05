@@ -5,7 +5,7 @@ import (
 	"github.com/koykov/vector"
 )
 
-// Assign callback to convert vector.Node to destination with arbitrary type.
+// AssignVectorNode implements assign callback to convert vector.Node to destination with arbitrary type.
 func AssignVectorNode(dst, src interface{}, _ inspector.AccumulativeBuffer) (ok bool) {
 	switch src.(type) {
 	case *vector.Node:

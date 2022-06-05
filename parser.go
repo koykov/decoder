@@ -39,7 +39,7 @@ var (
 	_ = ParseFile
 )
 
-// Initialize parser and parse the decoder rules.
+// Parse parses the decoder rules.
 func Parse(src []byte) (ruleset Ruleset, err error) {
 	// Split body to separate lines.
 	// Each line contains only one expression.
@@ -124,7 +124,7 @@ func Parse(src []byte) (ruleset Ruleset, err error) {
 	return
 }
 
-// Parse the file.
+// ParseFile parses the file.
 func ParseFile(fileName string) (rules Ruleset, err error) {
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
