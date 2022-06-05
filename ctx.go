@@ -59,83 +59,83 @@ func NewCtx() *Ctx {
 
 // Set the variable to context.
 // Inspector ins should be correspond to variable val.
-func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
-	for i := 0; i < c.ln; i++ {
-		if c.vars[i].key == key {
+func (ctx *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
+	for i := 0; i < ctx.ln; i++ {
+		if ctx.vars[i].key == key {
 			// Update existing variable.
-			c.vars[i].val = val
-			c.vars[i].ins = ins
+			ctx.vars[i].val = val
+			ctx.vars[i].ins = ins
 			return
 		}
 	}
 	// Add new variable.
-	if c.ln < len(c.vars) {
+	if ctx.ln < len(ctx.vars) {
 		// Use existing item in variable list..
-		c.vars[c.ln].key = key
-		c.vars[c.ln].val = val
-		c.vars[c.ln].ins = ins
-		c.vars[c.ln].node = nil
+		ctx.vars[ctx.ln].key = key
+		ctx.vars[ctx.ln].val = val
+		ctx.vars[ctx.ln].ins = ins
+		ctx.vars[ctx.ln].node = nil
 	} else {
 		// Extend the variable list with new one.
-		c.vars = append(c.vars, ctxVar{
+		ctx.vars = append(ctx.vars, ctxVar{
 			key: key,
 			val: val,
 			ins: ins,
 		})
 	}
 	// Increase variables count.
-	c.ln++
+	ctx.ln++
 }
 
 // Set static variable to context.
-func (c *Ctx) SetStatic(key string, val interface{}) {
+func (ctx *Ctx) SetStatic(key string, val interface{}) {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
-		c.Err = err
+		ctx.Err = err
 		return
 	}
-	c.Set(key, val, ins)
+	ctx.Set(key, val, ins)
 }
 
 // Parse source data and set it to context as key.
-func (c *Ctx) SetVector(key string, data []byte, typ VectorType) (vec vector.Interface, err error) {
-	vec = c.getParser(typ)
+func (ctx *Ctx) SetVector(key string, data []byte, typ VectorType) (vec vector.Interface, err error) {
+	vec = ctx.getParser(typ)
 	if err = vec.Parse(data); err != nil {
 		return
 	}
 	node := vec.Root()
-	err = c.SetVectorNode(key, node)
+	err = ctx.SetVectorNode(key, node)
 	return
 }
 
 // Directly set node to context as key.
-func (c *Ctx) SetVectorNode(key string, node *vector.Node) error {
+func (ctx *Ctx) SetVectorNode(key string, node *vector.Node) error {
 	if node == nil || node.Type() == vector.TypeNull {
 		return ErrEmptyNode
 	}
-	for i := 0; i < c.ln; i++ {
-		if c.vars[i].key == key {
+	for i := 0; i < ctx.ln; i++ {
+		if ctx.vars[i].key == key {
 			// Update existing variable.
-			c.vars[i].node = node
-			c.vars[i].val, c.vars[i].ins = nil, nil
+			ctx.vars[i].node = node
+			ctx.vars[i].val, ctx.vars[i].ins = nil, nil
 			return nil
 		}
 	}
 	// Add new variable.
-	if c.ln < len(c.vars) {
+	if ctx.ln < len(ctx.vars) {
 		// Use existing item in variable list..
-		c.vars[c.ln].key = key
-		c.vars[c.ln].node = node
-		c.vars[c.ln].val, c.vars[c.ln].ins = nil, nil
+		ctx.vars[ctx.ln].key = key
+		ctx.vars[ctx.ln].node = node
+		ctx.vars[ctx.ln].val, ctx.vars[ctx.ln].ins = nil, nil
 	} else {
 		// Extend the variable list with new one.
-		c.vars = append(c.vars, ctxVar{
+		ctx.vars = append(ctx.vars, ctxVar{
 			key:  key,
 			node: node,
 		})
 	}
 	// Increase variables count.
-	c.ln++
+	ctx.ln++
 	return nil
 }
 
@@ -146,80 +146,80 @@ func (c *Ctx) SetVectorNode(key string, node *vector.Node) error {
 // Examples:
 // * user.Bio.Birthday
 // * staticVar
-func (c *Ctx) Get(path string) interface{} {
-	return c.get(fastconv.S2B(path), nil)
+func (ctx *Ctx) Get(path string) interface{} {
+	return ctx.get(fastconv.S2B(path), nil)
 }
 
 // Return accumulative buffer.
-func (c *Ctx) AcquireBytes() []byte {
-	return c.accB
+func (ctx *Ctx) AcquireBytes() []byte {
+	return ctx.accB
 }
 
 // Update accumulative buffer with p.
-func (c *Ctx) ReleaseBytes(p []byte) {
+func (ctx *Ctx) ReleaseBytes(p []byte) {
 	if len(p) == 0 {
 		return
 	}
-	c.accB = p
+	ctx.accB = p
 }
 
-func (c *Ctx) reserveBB() int {
-	if len(c.bufBB) == c.lenBB {
-		c.bufBB = append(c.bufBB, nil)
+func (ctx *Ctx) reserveBB() int {
+	if len(ctx.bufBB) == ctx.lenBB {
+		ctx.bufBB = append(ctx.bufBB, nil)
 	}
-	c.lenBB++
-	return c.lenBB - 1
+	ctx.lenBB++
+	return ctx.lenBB - 1
 }
 
 // Internal getter.
-func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
+func (ctx *Ctx) get(path []byte, subset [][]byte) interface{} {
 	if len(path) == 0 {
 		return nil
 	}
 
 	// Split path to separate words using dot as separator.
-	c.splitPath(fastconv.B2S(path), ".")
-	if len(c.bufS) == 0 {
+	ctx.splitPath(fastconv.B2S(path), ".")
+	if len(ctx.bufS) == 0 {
 		return nil
 	}
 
 	// Look for first path chunk in vars.
-	for i, v := range c.vars {
-		if i == c.ln {
+	for i, v := range ctx.vars {
+		if i == ctx.ln {
 			// Vars limit reached, exit.
 			break
 		}
-		if v.key == c.bufS[0] {
+		if v.key == ctx.bufS[0] {
 			// Var found.
 			if v.node != nil {
 				// Var is JSON node.
 				if len(subset) > 0 {
 					// List of subsets provided.
 					// Preserve item in []str buffer to check each key separately.
-					c.bufS = append(c.bufS, "")
+					ctx.bufS = append(ctx.bufS, "")
 					for _, tail := range subset {
 						if len(tail) > 0 {
 							// Fill preserved item with subset's value.
-							c.bufS[len(c.bufS)-1] = fastconv.B2S(tail)
-							c.bufX = v.node.Get(c.bufS[1:]...)
-							if n, ok := c.bufX.(*vector.Node); ok && n.Type() != vector.TypeNull {
+							ctx.bufS[len(ctx.bufS)-1] = fastconv.B2S(tail)
+							ctx.bufX = v.node.Get(ctx.bufS[1:]...)
+							if n, ok := ctx.bufX.(*vector.Node); ok && n.Type() != vector.TypeNull {
 								// Successful hunt.
 								break
 							}
 						}
 					}
 				} else {
-					c.bufX = v.node.Get(c.bufS[1:]...)
+					ctx.bufX = v.node.Get(ctx.bufS[1:]...)
 				}
-				return c.bufX
+				return ctx.bufX
 			}
 			if v.ins != nil {
 				// Variable is covered by inspector.
-				c.Err = v.ins.GetTo(v.val, &c.bufX, c.bufS[1:]...)
-				if c.Err != nil {
+				ctx.Err = v.ins.GetTo(v.val, &ctx.bufX, ctx.bufS[1:]...)
+				if ctx.Err != nil {
 					return nil
 				}
-				return c.bufX
+				return ctx.bufX
 			}
 			return v.val
 		}
@@ -230,46 +230,46 @@ func (c *Ctx) get(path []byte, subset [][]byte) interface{} {
 // Internal setter.
 //
 // Set val to destination by address path.
-func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
+func (ctx *Ctx) set(path []byte, val interface{}, insName []byte) error {
 	if len(path) == 0 {
 		return nil
 	}
-	c.bufS = c.bufS[:0]
-	c.bufS = bytealg.AppendSplitStr(c.bufS, fastconv.B2S(path), ".", -1)
-	if len(c.bufS) == 0 {
+	ctx.bufS = ctx.bufS[:0]
+	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS, fastconv.B2S(path), ".", -1)
+	if len(ctx.bufS) == 0 {
 		return nil
 	}
-	if c.bufS[0] == "ctx" || c.bufS[0] == "context" {
-		if len(c.bufS) == 1 {
+	if ctx.bufS[0] == "ctx" || ctx.bufS[0] == "context" {
+		if len(ctx.bufS) == 1 {
 			// Attempt to overwrite the whole context object caught.
 			return nil
 		}
 		// Var-to-ctx case.
-		ctxPath := fastconv.B2S(path[len(c.bufS[0])+1:])
+		ctxPath := fastconv.B2S(path[len(ctx.bufS[0])+1:])
 		if len(insName) > 0 {
 			ins, err := inspector.GetInspector(fastconv.B2S(insName))
 			if err != nil {
 				return err
 			}
-			c.Set(ctxPath, val, ins)
+			ctx.Set(ctxPath, val, ins)
 		} else if node, ok := val.(*vector.Node); ok {
-			_ = c.SetVectorNode(ctxPath, node)
+			_ = ctx.SetVectorNode(ctxPath, node)
 		} else {
-			c.SetStatic(ctxPath, val)
+			ctx.SetStatic(ctxPath, val)
 		}
 		return nil
 	}
 	// Var-to-var case.
-	for i, v := range c.vars {
-		if i == c.ln {
+	for i, v := range ctx.vars {
+		if i == ctx.ln {
 			break
 		}
-		if v.key == c.bufS[0] {
+		if v.key == ctx.bufS[0] {
 			if v.ins != nil {
-				c.bufX = val
-				c.Err = v.ins.SetWB(v.val, c.bufX, c, c.bufS[1:]...)
-				if c.Err != nil {
-					return c.Err
+				ctx.bufX = val
+				ctx.Err = v.ins.SetWB(v.val, ctx.bufX, ctx, ctx.bufS[1:]...)
+				if ctx.Err != nil {
+					return ctx.Err
 				}
 			}
 			break
@@ -279,32 +279,32 @@ func (c *Ctx) set(path []byte, val interface{}, insName []byte) error {
 }
 
 // Get new JSON vector object from the context buffer.
-func (c *Ctx) getParser(typ VectorType) (v vector.Interface) {
-	if c.pl[typ] < len(c.p[typ]) {
-		v = ensureHelper(c.p[typ][c.pl[typ]], typ)
+func (ctx *Ctx) getParser(typ VectorType) (v vector.Interface) {
+	if ctx.pl[typ] < len(ctx.p[typ]) {
+		v = ensureHelper(ctx.p[typ][ctx.pl[typ]], typ)
 	} else {
 		v = newVector(typ)
-		c.p[typ] = append(c.p[typ], v)
+		ctx.p[typ] = append(ctx.p[typ], v)
 	}
-	c.pl[typ]++
+	ctx.pl[typ]++
 	return v
 }
 
 // Split path to separate words using dot as separator.
 // So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
-func (c *Ctx) splitPath(path, separator string) {
-	c.bufS = bytealg.AppendSplitStr(c.bufS[:0], path, separator, -1)
-	ti := len(c.bufS) - 1
+func (ctx *Ctx) splitPath(path, separator string) {
+	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS[:0], path, separator, -1)
+	ti := len(ctx.bufS) - 1
 	if ti < 0 {
 		return
 	}
-	tail := c.bufS[ti]
+	tail := ctx.bufS[ti]
 	if p := strings.IndexByte(tail, '@'); p != -1 {
 		if p > 0 {
 			if len(tail[p:]) > 1 {
-				c.bufS = append(c.bufS, tail[p:])
+				ctx.bufS = append(ctx.bufS, tail[p:])
 			}
-			c.bufS[ti] = c.bufS[ti][:p]
+			ctx.bufS[ti] = ctx.bufS[ti][:p]
 		}
 	}
 }
@@ -312,32 +312,32 @@ func (c *Ctx) splitPath(path, separator string) {
 // Reset the context.
 //
 // Made to use together with pools.
-func (c *Ctx) Reset() {
-	for i := 0; i < c.ln; i++ {
-		c.vars[i].node = nil
+func (ctx *Ctx) Reset() {
+	for i := 0; i < ctx.ln; i++ {
+		ctx.vars[i].node = nil
 	}
-	c.ln = 0
+	ctx.ln = 0
 
 	for i := 0; i < VectorsSupported; i++ {
-		for j := 0; j < c.pl[i]; j++ {
-			c.p[i][j].Reset()
+		for j := 0; j < ctx.pl[i]; j++ {
+			ctx.p[i][j].Reset()
 		}
-		c.pl[i] = 0
+		ctx.pl[i] = 0
 	}
 
-	for i := 0; i < c.lenBB; i++ {
-		c.bufBB[i] = c.bufBB[i][:0]
+	for i := 0; i < ctx.lenBB; i++ {
+		ctx.bufBB[i] = ctx.bufBB[i][:0]
 	}
-	c.lenBB = 0
+	ctx.lenBB = 0
 
-	c.Err = nil
-	c.bufX = nil
-	c.accB = c.accB[:0]
-	c.buf = c.buf[:0]
-	c.bufS = c.bufS[:0]
-	c.bufA = c.bufA[:0]
-	c.BufAcc.Reset()
-	c.Buf.Reset()
-	c.Buf1.Reset()
-	c.Buf2.Reset()
+	ctx.Err = nil
+	ctx.bufX = nil
+	ctx.accB = ctx.accB[:0]
+	ctx.buf = ctx.buf[:0]
+	ctx.bufS = ctx.bufS[:0]
+	ctx.bufA = ctx.bufA[:0]
+	ctx.BufAcc.Reset()
+	ctx.Buf.Reset()
+	ctx.Buf1.Reset()
+	ctx.Buf2.Reset()
 }
