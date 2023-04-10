@@ -165,6 +165,18 @@ func (ctx *Ctx) ReleaseBytes(p []byte) {
 	ctx.accB = p
 }
 
+func (ctx *Ctx) Bufferize(p []byte) []byte {
+	off := len(ctx.accB)
+	ctx.accB = append(ctx.accB, p...)
+	return ctx.accB[off:]
+}
+
+func (ctx *Ctx) BufferizeString(s string) string {
+	off := len(ctx.accB)
+	ctx.accB = append(ctx.accB, s...)
+	return fastconv.B2S(ctx.accB[off:])
+}
+
 func (ctx *Ctx) reserveBB() int {
 	if len(ctx.bufBB) == ctx.lenBB {
 		ctx.bufBB = append(ctx.bufBB, nil)
@@ -269,7 +281,7 @@ func (ctx *Ctx) set(path []byte, val interface{}, insName []byte) error {
 		if v.key == ctx.bufS[0] {
 			if v.ins != nil {
 				ctx.bufX = val
-				ctx.Err = v.ins.SetWB(v.val, ctx.bufX, ctx, ctx.bufS[1:]...)
+				ctx.Err = v.ins.SetWithBuffer(v.val, ctx.bufX, ctx, ctx.bufS[1:]...)
 				if ctx.Err != nil {
 					return ctx.Err
 				}
