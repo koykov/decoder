@@ -6,27 +6,27 @@ import (
 )
 
 // Example of callback function to use in parser tests.
-func cbFoo(_ *Ctx, _ []interface{}) error {
+func cbFoo(_ *Ctx, _ []any) error {
 	return nil
 }
 
 // Parse json source and register it in the ctx.
-func cbJsonParse(ctx *Ctx, args []interface{}) (err error) {
+func cbJsonParse(ctx *Ctx, args []any) (err error) {
 	return cbParse(ctx, args, VectorJSON)
 }
 
 // Parse json source and register it in the ctx.
-func cbUrlParse(ctx *Ctx, args []interface{}) (err error) {
+func cbUrlParse(ctx *Ctx, args []any) (err error) {
 	return cbParse(ctx, args, VectorURL)
 }
 
 // Parse json source and register it in the ctx.
-func cbXmlParse(ctx *Ctx, args []interface{}) (err error) {
+func cbXmlParse(ctx *Ctx, args []any) (err error) {
 	return cbParse(ctx, args, VectorXML)
 }
 
 // Parse json source and register it in the ctx.
-func cbYamlParse(ctx *Ctx, args []interface{}) (err error) {
+func cbYamlParse(ctx *Ctx, args []any) (err error) {
 	return cbParse(ctx, args, VectorYAML)
 }
 
@@ -38,7 +38,7 @@ func cbYamlParse(ctx *Ctx, args []interface{}) (err error) {
 // or
 // <code>jsonParse(jsonSrc, "parsed1")</code>
 // , where jsonSrc contains "{\"b\":[true,true,false]}".
-func cbParse(ctx *Ctx, args []interface{}, typ VectorType) (err error) {
+func cbParse(ctx *Ctx, args []any, typ VectorType) (err error) {
 	if len(args) < 2 {
 		return ErrCbPoorArgs
 	}

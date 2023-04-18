@@ -6,7 +6,7 @@ import (
 )
 
 // AssignVectorNode implements assign callback to convert vector.Node to destination with arbitrary type.
-func AssignVectorNode(dst, src interface{}, _ inspector.AccumulativeBuffer) (ok bool) {
+func AssignVectorNode(dst, src any, _ inspector.AccumulativeBuffer) (ok bool) {
 	switch src.(type) {
 	case *vector.Node:
 		n := src.(*vector.Node)

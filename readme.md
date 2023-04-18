@@ -65,7 +65,7 @@ dstObj.Balance = user.Finance.Rest|default(0)
 
 Default is a built-in modifier, but you may register your own modifiers using modifiers registry:
 ```go
-func modMyCustomMod(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
+func modMyCustomMod(ctx *Ctx, buf *any, val any, args []any) error {
     // ...
 }
 
@@ -74,7 +74,7 @@ decoder.RegisterModFn("myCustomMod", "customMod", modMyCustomMod)
 
 Modifier arguments:
 * `ctx` is a storage of variables/buffers you may use.
-* `buf` is a type-free buffer that receives result of modifier's work. Please note the type `*interface{}` is an
+* `buf` is a type-free buffer that receives result of modifier's work. Please note the type `*any` is an
 alloc-free trick.
 * `val` if a value of variable from left side of modifier separator (`|`).
 * `args` array of modifier arguments, specified in rule. 

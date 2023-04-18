@@ -11,7 +11,7 @@ var (
 )
 
 // Replace empty val with default value.
-func modDefault(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modDefault(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	// Check val is empty.
 	var empty bool
 	switch val.(type) {
@@ -226,7 +226,7 @@ func modDefault(ctx *Ctx, buf *interface{}, val interface{}, args []interface{})
 }
 
 // Conditional assignment modifier.
-func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modIfThen(_ *Ctx, buf *any, val any, args []any) (err error) {
 	if len(args) == 0 {
 		err = ErrModNoArgs
 		return
@@ -238,7 +238,7 @@ func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (e
 }
 
 // Extended conditional assignment modifier (includes else case).
-func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modIfThenElse(_ *Ctx, buf *any, val any, args []any) (err error) {
 	if len(args) < 2 {
 		err = ErrModPoorArgs
 		return
@@ -252,7 +252,7 @@ func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}
 }
 
 // Check if given val is a true.
-func checkTrue(val interface{}) (r bool) {
+func checkTrue(val any) (r bool) {
 	switch val.(type) {
 	case *[]byte:
 		a := *val.(*[]byte)

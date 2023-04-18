@@ -3,7 +3,7 @@ package decoder
 // GetterFn represents signature of getter callback function.
 //
 // args contains list of all arguments you passed in decoder rule.
-type GetterFn func(ctx *Ctx, buf *interface{}, args []interface{}) error
+type GetterFn func(ctx *Ctx, buf *any, args []any) error
 
 var (
 	// Registry of getter callback functions.

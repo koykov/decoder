@@ -21,7 +21,7 @@ const (
 )
 
 // Calculate common crc32 hash of given arguments.
-func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterCrc32(ctx *Ctx, buf *any, args []any) (err error) {
 	if len(args) == 0 {
 		err = ErrGetterPoorArgs
 		return
@@ -52,26 +52,26 @@ func getterCrc32(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 }
 
 // Convert string to int.
-func getterAtoi(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterAtoi(ctx *Ctx, buf *any, args []any) (err error) {
 	return atox(ctx, buf, args, atoi)
 }
 
 // Convert string to uint.
-func getterAtou(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterAtou(ctx *Ctx, buf *any, args []any) (err error) {
 	return atox(ctx, buf, args, atou)
 }
 
 // Convert string to float.
-func getterAtof(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterAtof(ctx *Ctx, buf *any, args []any) (err error) {
 	return atox(ctx, buf, args, atof)
 }
 
 // Convert string to bool.
-func getterAtob(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterAtob(ctx *Ctx, buf *any, args []any) (err error) {
 	return atox(ctx, buf, args, atob)
 }
 
-func atox(ctx *Ctx, buf *interface{}, args []interface{}, target target) (err error) {
+func atox(ctx *Ctx, buf *any, args []any, target target) (err error) {
 	if len(args) < 1 {
 		err = ErrGetterPoorArgs
 		return
@@ -115,7 +115,7 @@ func atox(ctx *Ctx, buf *interface{}, args []interface{}, target target) (err er
 	return
 }
 
-func getterItoa(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterItoa(ctx *Ctx, buf *any, args []any) (err error) {
 	if len(args) < 1 {
 		err = ErrGetterPoorArgs
 		return
@@ -130,7 +130,7 @@ func getterItoa(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 	return
 }
 
-func getterUtoa(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterUtoa(ctx *Ctx, buf *any, args []any) (err error) {
 	if len(args) < 1 {
 		err = ErrGetterPoorArgs
 		return
@@ -146,7 +146,7 @@ func getterUtoa(ctx *Ctx, buf *interface{}, args []interface{}) (err error) {
 }
 
 // Example of getter callback that demonstrates how callbacks works.
-func getterAppendTestHistory(_ *Ctx, buf *interface{}, args []interface{}) (err error) {
+func getterAppendTestHistory(_ *Ctx, buf *any, args []any) (err error) {
 	if len(args) < 3 {
 		err = ErrGetterPoorArgs
 		return
