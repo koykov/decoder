@@ -3,7 +3,7 @@ package decoder
 // CallbackFn represents the signature of callback function.
 //
 // args contains list of all arguments you passed in decoder rule.
-type CallbackFn func(ctx *Ctx, args []interface{}) error
+type CallbackFn func(ctx *Ctx, args []any) error
 
 var (
 	// Registry of callback functions.

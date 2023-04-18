@@ -30,8 +30,8 @@ type Ctx struct {
 	bufU  uint64
 	bufF  float64
 	bufBl bool
-	bufX  interface{}
-	bufA  []interface{}
+	bufX  any
+	bufA  []any
 
 	// External buffers to use in modifier and condition helpers.
 	BufAcc bytebuf.AccumulativeBuf
@@ -44,7 +44,7 @@ type Ctx struct {
 // Context variable object.
 type ctxVar struct {
 	key  string
-	val  interface{}
+	val  any
 	ins  inspector.Inspector
 	node *vector.Node
 }
@@ -54,14 +54,14 @@ func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars: make([]ctxVar, 0),
 		bufS: make([]string, 0),
-		bufA: make([]interface{}, 0),
+		bufA: make([]any, 0),
 	}
 	return &ctx
 }
 
 // Set the variable to context.
 // Inspector ins should be corresponded to variable val.
-func (ctx *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
+func (ctx *Ctx) Set(key string, val any, ins inspector.Inspector) {
 	for i := 0; i < ctx.ln; i++ {
 		if ctx.vars[i].key == key {
 			// Update existing variable.
@@ -90,7 +90,7 @@ func (ctx *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 }
 
 // SetStatic registers static variable in context.
-func (ctx *Ctx) SetStatic(key string, val interface{}) {
+func (ctx *Ctx) SetStatic(key string, val any) {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
 		ctx.Err = err
@@ -148,7 +148,7 @@ func (ctx *Ctx) SetVectorNode(key string, node *vector.Node) error {
 // Examples:
 // * user.Bio.Birthday
 // * staticVar
-func (ctx *Ctx) Get(path string) interface{} {
+func (ctx *Ctx) Get(path string) any {
 	return ctx.get(fastconv.S2B(path), nil)
 }
 
@@ -186,7 +186,7 @@ func (ctx *Ctx) reserveBB() int {
 }
 
 // Internal getter.
-func (ctx *Ctx) get(path []byte, subset [][]byte) interface{} {
+func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 	if len(path) == 0 {
 		return nil
 	}
@@ -244,12 +244,12 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) interface{} {
 // Internal setter.
 //
 // Set val to destination by address path.
-func (ctx *Ctx) set(path []byte, val interface{}, insName []byte) error {
+func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
 	if len(path) == 0 {
 		return nil
 	}
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
@@ -307,7 +307,7 @@ func (ctx *Ctx) getParser(typ VectorType) (v vector.Interface) {
 // Split path to separate words using dot as separator.
 // So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
 func (ctx *Ctx) splitPath(path, separator string) {
-	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS[:0], path, separator, -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS[:0], path, separator, -1)
 	ti := len(ctx.bufS) - 1
 	if ti < 0 {
 		return
