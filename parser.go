@@ -3,7 +3,6 @@ package decoder
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 
@@ -131,7 +130,7 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 		return
 	}
 	var raw []byte
-	raw, err = ioutil.ReadFile(fileName)
+	raw, err = os.ReadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't read file %s", fileName)
 	}
@@ -165,9 +164,12 @@ func extractMods(p []byte) ([]byte, []mod) {
 
 // Get list of arguments of modifier or callback, ex:
 // variable|mod(arg0, ..., argN)
-//              ^             ^
+//
+//	^             ^
+//
 // callback(arg0, ..., argN)
-//          ^             ^
+//
+//	^             ^
 func extractArgs(l []byte) []*arg {
 	r := make([]*arg, 0)
 	if len(l) == 0 {

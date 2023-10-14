@@ -53,7 +53,7 @@ func (r *Ruleset) HumanReadable() []byte {
 	return buf.Bytes()
 }
 
-// Internal human readable helper.
+// Internal human-readable helper.
 func (r *Ruleset) hrHelper(buf *bytebuf.ChainBuf) {
 	buf.WriteStr("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 	buf.WriteStr("<rules>\n")
@@ -121,7 +121,7 @@ func (r *Ruleset) hrVal(buf *bytebuf.ChainBuf, v []byte, set [][]byte) {
 	}
 }
 
-// Human readable helper for args list.
+// Human-readable helper for args list.
 func (r *Ruleset) hrArgs(buf *bytebuf.ChainBuf, args []*arg) {
 	if len(args) > 0 {
 		for j, a := range args {
