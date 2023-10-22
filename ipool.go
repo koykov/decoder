@@ -57,3 +57,5 @@ func RegisterPool(key string, pool Pool) error {
 	ipoolRegistry.index[key] = len(ipoolRegistry.buf) - 1
 	return nil
 }
+
+var _ = RegisterPool
