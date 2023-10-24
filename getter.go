@@ -31,9 +31,9 @@ func RegisterGetterFnNS(namespace, name, alias string, cb GetterFn) {
 }
 
 // GetGetterFn returns getter callback function from the registry.
-func GetGetterFn(name string) *GetterFn {
+func GetGetterFn(name string) GetterFn {
 	if fn, ok := getterRegistry[name]; ok {
-		return &fn
+		return fn
 	}
 	return nil
 }

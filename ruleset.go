@@ -17,9 +17,9 @@ type rule struct {
 	// List of keys, that need to check sequentially in the source object.
 	subset [][]byte
 	// Getter callback, for sources like "dst = getFoo(var0, ...)"
-	getter *GetterFn
+	getter GetterFn
 	// Callback for lines like "prepareObject(var.obj)"
-	callback *CallbackFn
+	callback CallbackFn
 	// Flag that indicates if source is a static value.
 	static bool
 	// List of modifier applied to source.

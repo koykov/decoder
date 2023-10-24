@@ -66,33 +66,33 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
 		if len(rule.arg) > 0 {
-			for _, arg := range rule.arg {
-				if arg.static {
-					ctx.bufA = append(ctx.bufA, &arg.val)
+			for _, arg_ := range rule.arg {
+				if arg_.static {
+					ctx.bufA = append(ctx.bufA, &arg_.val)
 				} else {
-					val := ctx.get(arg.val, arg.subset)
+					val := ctx.get(arg_.val, arg_.subset)
 					ctx.bufA = append(ctx.bufA, val)
 				}
 			}
 		}
 		// Execute callback func.
-		err = (*rule.callback)(ctx, ctx.bufA)
+		err = rule.callback(ctx, ctx.bufA)
 	case rule.getter != nil:
 		// F2V rule.
 		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
 		if len(rule.arg) > 0 {
-			for _, arg := range rule.arg {
-				if arg.static {
-					ctx.bufA = append(ctx.bufA, &arg.val)
+			for _, arg_ := range rule.arg {
+				if arg_.static {
+					ctx.bufA = append(ctx.bufA, &arg_.val)
 				} else {
-					val := ctx.get(arg.val, arg.subset)
+					val := ctx.get(arg_.val, arg_.subset)
 					ctx.bufA = append(ctx.bufA, val)
 				}
 			}
 		}
 		// Call getter callback func.
-		err = (*rule.getter)(ctx, &ctx.bufX, ctx.bufA)
+		err = rule.getter(ctx, &ctx.bufX, ctx.bufA)
 		if err != nil {
 			return
 		}
@@ -113,22 +113,22 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 		}
 		// Apply modifiers.
 		if len(rule.mod) > 0 {
-			for _, mod := range rule.mod {
+			for _, mod_ := range rule.mod {
 				// Collect arguments to buffer.
 				ctx.bufA = ctx.bufA[:0]
-				if len(mod.arg) > 0 {
-					for _, arg := range mod.arg {
-						if arg.static {
-							ctx.bufA = append(ctx.bufA, &arg.val)
+				if len(mod_.arg) > 0 {
+					for _, arg_ := range mod_.arg {
+						if arg_.static {
+							ctx.bufA = append(ctx.bufA, &arg_.val)
 						} else {
-							val := ctx.get(arg.val, arg.subset)
+							val := ctx.get(arg_.val, arg_.subset)
 							ctx.bufA = append(ctx.bufA, val)
 						}
 					}
 				}
 				ctx.bufX = raw
 				// Call the modifier func.
-				ctx.Err = (*mod.fn)(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
+				ctx.Err = mod_.fn(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
 				if ctx.Err != nil {
 					break
 				}
