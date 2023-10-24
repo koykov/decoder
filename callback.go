@@ -31,9 +31,9 @@ func RegisterCallbackFnNS(namespace, name, alias string, cb CallbackFn) {
 }
 
 // GetCallbackFn returns callback function from the registry.
-func GetCallbackFn(name string) *CallbackFn {
+func GetCallbackFn(name string) CallbackFn {
 	if fn, ok := callbackRegistry[name]; ok {
-		return &fn
+		return fn
 	}
 	return nil
 }
