@@ -8,12 +8,24 @@ type CallbackFn func(ctx *Ctx, args []any) error
 var (
 	// Registry of callback functions.
 	callbackRegistry = map[string]CallbackFn{}
+
+	_ = RegisterCallbackFnNS
 )
 
 // RegisterCallbackFn registers new callback to the registry.
 func RegisterCallbackFn(name, alias string, cb CallbackFn) {
 	callbackRegistry[name] = cb
 	if len(alias) > 0 {
+		callbackRegistry[alias] = cb
+	}
+}
+
+// RegisterCallbackFnNS registers new callback in given namespace.
+func RegisterCallbackFnNS(namespace, name, alias string, cb CallbackFn) {
+	name = namespace + "::" + name
+	callbackRegistry[name] = cb
+	if len(alias) > 0 {
+		alias = namespace + "::" + alias
 		callbackRegistry[alias] = cb
 	}
 }

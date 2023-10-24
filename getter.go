@@ -8,12 +8,24 @@ type GetterFn func(ctx *Ctx, buf *any, args []any) error
 var (
 	// Registry of getter callback functions.
 	getterRegistry = map[string]GetterFn{}
+
+	_ = RegisterGetterFnNS
 )
 
 // RegisterGetterFn registers new getter callback to the registry.
 func RegisterGetterFn(name, alias string, cb GetterFn) {
 	getterRegistry[name] = cb
 	if len(alias) > 0 {
+		getterRegistry[alias] = cb
+	}
+}
+
+// RegisterGetterFnNS registers new getter callback in given namespace.
+func RegisterGetterFnNS(namespace, name, alias string, cb GetterFn) {
+	name = namespace + "::" + name
+	getterRegistry[name] = cb
+	if len(alias) > 0 {
+		alias = namespace + "::" + alias
 		getterRegistry[alias] = cb
 	}
 }

@@ -19,12 +19,24 @@ type mod struct {
 var (
 	// Registry of modifiers.
 	modRegistry = map[string]ModFn{}
+
+	_ = RegisterModFnNS
 )
 
 // RegisterModFn registers new modifier function.
 func RegisterModFn(name, alias string, mod ModFn) {
 	modRegistry[name] = mod
 	if len(alias) > 0 {
+		modRegistry[alias] = mod
+	}
+}
+
+// RegisterModFnNS registers new modifier function in given namespace.
+func RegisterModFnNS(namespace, name, alias string, mod ModFn) {
+	name = namespace + "::" + name
+	modRegistry[name] = mod
+	if len(alias) > 0 {
+		alias = namespace + "::" + alias
 		modRegistry[alias] = mod
 	}
 }
