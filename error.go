@@ -9,4 +9,6 @@ var (
 	ErrModPoorArgs     = errors.New("arguments list in modifier is too small")
 	ErrCbPoorArgs      = errors.New("arguments list in callback is too small")
 	ErrGetterPoorArgs  = errors.New("arguments list in getter callback is too small")
+
+	ErrUnknownPool = errors.New("unknown pool")
 )

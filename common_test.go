@@ -2,7 +2,6 @@ package decoder
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,10 +31,10 @@ func init() {
 			st.key = strings.Replace(filepath.Base(path), ".dec", "", 1)
 			st.key = "parser/" + st.key
 
-			st.origin, _ = ioutil.ReadFile(path)
+			st.origin, _ = os.ReadFile(path)
 			_, _ = Parse(st.origin)
 
-			if raw, err := ioutil.ReadFile(strings.Replace(path, ".dec", ".xml", 1)); err == nil {
+			if raw, err := os.ReadFile(strings.Replace(path, ".dec", ".xml", 1)); err == nil {
 				st.expect = raw
 			}
 			stages = append(stages, st)
@@ -50,7 +49,7 @@ func init() {
 				st.key = strings.Replace(filepath.Base(path), ".dec", "", 1)
 				st.key = dir + "/" + st.key
 
-				st.origin, _ = ioutil.ReadFile(path)
+				st.origin, _ = os.ReadFile(path)
 				rules, _ := Parse(st.origin)
 				RegisterDecoder(st.key, rules)
 
@@ -62,7 +61,7 @@ func init() {
 	_ = filepath.Walk("testdata/json", func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) == ".json" {
 			key := strings.Replace(filepath.Base(path), ".json", "", 1)
-			src, _ := ioutil.ReadFile(path)
+			src, _ := os.ReadFile(path)
 			jsonSrc[key] = src
 		}
 		return nil
@@ -86,7 +85,7 @@ func getTBName(tb testing.TB) string {
 
 func assertDecode(t testing.TB, ctx *Ctx, obj *testobj.TestObject, target, jsonKey string) *testobj.TestObject {
 	ctx.Reset()
-	ctx.Set("obj", obj, &testobj_ins.TestObjectInspector{})
+	ctx.Set("obj", obj, testobj_ins.TestObjectInspector{})
 	buf = append(buf[:0], jsonSrc[jsonKey]...)
 	_, err := ctx.SetVector("jso", buf, VectorJSON)
 	if err != nil {

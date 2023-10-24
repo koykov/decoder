@@ -33,6 +33,10 @@ type Ctx struct {
 	bufX  any
 	bufA  []any
 
+	// List of variables taken from ipools and registered to return back.
+	ipv  []ipoolVar
+	ipvl int
+
 	// External buffers to use in modifier and condition helpers.
 	BufAcc bytebuf.AccumulativeBuf
 	// todo remove as unused later
@@ -175,6 +179,22 @@ func (ctx *Ctx) BufferizeString(s string) string {
 	off := len(ctx.accB)
 	ctx.accB = append(ctx.accB, s...)
 	return fastconv.B2S(ctx.accB[off:])
+}
+
+// AcquireFrom receives new variable from given pool and register it to return batch after finish template processing.
+func (ctx *Ctx) AcquireFrom(pool string) (any, error) {
+	v, err := ipoolRegistry.acquire(pool)
+	if err != nil {
+		return nil, err
+	}
+	if ctx.ipvl < len(ctx.ipv) {
+		ctx.ipv[ctx.ipvl].key = pool
+		ctx.ipv[ctx.ipvl].val = v
+	} else {
+		ctx.ipv = append(ctx.ipv, ipoolVar{key: pool, val: v})
+	}
+	ctx.ipvl++
+	return v, nil
 }
 
 func (ctx *Ctx) reserveBB() int {
@@ -343,6 +363,12 @@ func (ctx *Ctx) Reset() {
 		ctx.bufBB[i] = ctx.bufBB[i][:0]
 	}
 	ctx.lenBB = 0
+
+	for i := 0; i < ctx.ipvl; i++ {
+		_ = ipoolRegistry.release(ctx.ipv[i].key, ctx.ipv[i].val)
+		ctx.ipv[i].key, ctx.ipv[i].val = "", nil
+	}
+	ctx.ipvl = 0
 
 	ctx.Err = nil
 	ctx.bufX = nil
