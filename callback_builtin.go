@@ -5,11 +5,6 @@ import (
 	"github.com/koykov/vector"
 )
 
-// Example of callback function to use in parser tests.
-func cbFoo(_ *Ctx, _ []any) error {
-	return nil
-}
-
 // Parse json source and register it in the ctx.
 func cbJsonParse(ctx *Ctx, args []any) (err error) {
 	return cbParse(ctx, args, VectorJSON)
