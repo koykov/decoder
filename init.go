@@ -19,7 +19,7 @@ func init() {
 	RegisterGetterFn("appendTestHistory", "", getterAppendTestHistory)
 
 	// Register builtin callbacks.
-	RegisterCallbackFn("foo", "", cbFoo)
+	RegisterCallbackFnNS("testns", "foo", "", func(_ *Ctx, _ []any) error { return nil })
 	RegisterCallbackFn("jsonParseAs", "jsonParse", cbJsonParse)
 	RegisterCallbackFn("urlParseAs", "urlParse", cbUrlParse)
 	RegisterCallbackFn("xmlParseAs", "xmlParse", cbXmlParse)
