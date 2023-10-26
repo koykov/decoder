@@ -1,41 +1,42 @@
-package decoder
+package legacy
 
 import (
+	"github.com/koykov/decoder"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/vector"
 )
 
 // Parse json source and register it in the ctx.
-func cbJsonParse(ctx *Ctx, args []any) (err error) {
-	return cbParse(ctx, args, VectorJSON)
+func cbJsonParse(ctx *decoder.Ctx, args []any) (err error) {
+	return cbParse(ctx, args, decoder.VectorJSON)
 }
 
 // Parse json source and register it in the ctx.
-func cbUrlParse(ctx *Ctx, args []any) (err error) {
-	return cbParse(ctx, args, VectorURL)
+func cbUrlParse(ctx *decoder.Ctx, args []any) (err error) {
+	return cbParse(ctx, args, decoder.VectorURL)
 }
 
 // Parse json source and register it in the ctx.
-func cbXmlParse(ctx *Ctx, args []any) (err error) {
-	return cbParse(ctx, args, VectorXML)
+func cbXmlParse(ctx *decoder.Ctx, args []any) (err error) {
+	return cbParse(ctx, args, decoder.VectorXML)
 }
 
 // Parse json source and register it in the ctx.
-func cbYamlParse(ctx *Ctx, args []any) (err error) {
-	return cbParse(ctx, args, VectorYAML)
+func cbYamlParse(ctx *decoder.Ctx, args []any) (err error) {
+	return cbParse(ctx, args, decoder.VectorYAML)
 }
 
 // Parse source of type and register it in the ctx.
 //
-// Takes two arguments, the first should contains JSON text, the second - key to register parsed json in the ctx.
+// Takes two arguments, the first must contain JSON text, the second - key to register parsed json in the ctx.
 // Example of usage:
 // <code>jsonParse("{\"a\":\"foo\"}", "parsed0")
 // or
 // <code>jsonParse(jsonSrc, "parsed1")</code>
 // , where jsonSrc contains "{\"b\":[true,true,false]}".
-func cbParse(ctx *Ctx, args []any, typ VectorType) (err error) {
+func cbParse(ctx *decoder.Ctx, args []any, typ decoder.VectorType) (err error) {
 	if len(args) < 2 {
-		return ErrCbPoorArgs
+		return decoder.ErrCbPoorArgs
 	}
 	var src []byte
 	switch args[0].(type) {

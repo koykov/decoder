@@ -10,6 +10,23 @@ import (
 	"github.com/koykov/vector"
 )
 
+// DEPRECATED: remove later.
+type VectorType int
+
+const (
+	// DEPRECATED: remove later.
+	VectorJSON VectorType = iota
+	// DEPRECATED: remove later.
+	VectorURL
+	// DEPRECATED: remove later.
+	VectorXML
+	// DEPRECATED: remove later.
+	VectorYAML
+
+	// DEPRECATED: remove later.
+	VectorsSupported = 4
+)
+
 // Ctx represents decoder context object.
 //
 // Contains list of variables that can be used as source or destination.
@@ -104,6 +121,8 @@ func (ctx *Ctx) SetStatic(key string, val any) {
 }
 
 // SetVector parses source data and register it in context under given key.
+//
+// DEPRECATED: use SetVectorNode() instead.
 func (ctx *Ctx) SetVector(key string, data []byte, typ VectorType) (vec vector.Interface, err error) {
 	vec = ctx.getParser(typ)
 	if err = vec.Parse(data); err != nil {

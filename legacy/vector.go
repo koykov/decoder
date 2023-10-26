@@ -1,6 +1,7 @@
-package decoder
+package legacy
 
 import (
+	"github.com/koykov/decoder"
 	"github.com/koykov/jsonvector"
 	"github.com/koykov/urlvector"
 	"github.com/koykov/vector"
@@ -8,27 +9,16 @@ import (
 	"github.com/koykov/yamlvector"
 )
 
-type VectorType int
-
-const (
-	VectorJSON VectorType = iota
-	VectorURL
-	VectorXML
-	VectorYAML
-
-	VectorsSupported = 4
-)
-
 // Assign parser helper to the vector vec according given type.
-func ensureHelper(vec vector.Interface, typ VectorType) vector.Interface {
+func ensureHelper(vec vector.Interface, typ decoder.VectorType) vector.Interface {
 	switch typ {
-	case VectorJSON:
+	case decoder.VectorJSON:
 		vec.SetHelper(jsonvector.Helper{})
-	case VectorURL:
+	case decoder.VectorURL:
 		vec.SetHelper(urlvector.Helper{})
-	case VectorXML:
+	case decoder.VectorXML:
 		vec.SetHelper(xmlvector.Helper{})
-	case VectorYAML:
+	case decoder.VectorYAML:
 		// todo set proper helper when yamlvector package will implements.
 		vec.SetHelper(nil)
 	}
@@ -36,15 +26,15 @@ func ensureHelper(vec vector.Interface, typ VectorType) vector.Interface {
 }
 
 // Make new vector parser according given type.
-func newVector(typ VectorType) vector.Interface {
+func newVector(typ decoder.VectorType) vector.Interface {
 	switch typ {
-	case VectorJSON:
+	case decoder.VectorJSON:
 		return jsonvector.NewVector()
-	case VectorURL:
+	case decoder.VectorURL:
 		return urlvector.NewVector()
-	case VectorXML:
+	case decoder.VectorXML:
 		return xmlvector.NewVector()
-	case VectorYAML:
+	case decoder.VectorYAML:
 		return yamlvector.NewVector()
 	}
 	return nil
