@@ -8,23 +8,7 @@ import (
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
 	"github.com/koykov/vector"
-)
-
-// DEPRECATED: remove later.
-type VectorType int
-
-const (
-	// DEPRECATED: remove later.
-	VectorJSON VectorType = iota
-	// DEPRECATED: remove later.
-	VectorURL
-	// DEPRECATED: remove later.
-	VectorXML
-	// DEPRECATED: remove later.
-	VectorYAML
-
-	// DEPRECATED: remove later.
-	VectorsSupported = 4
+	"github.com/koykov/vector_inspector"
 )
 
 // Ctx represents decoder context object.
@@ -34,9 +18,7 @@ type Ctx struct {
 	// List of context variables and list len.
 	vars []ctxVar
 	ln   int
-	// Vector parsers list and list len.
-	p  [VectorsSupported][]vector.Interface
-	pl [VectorsSupported]int
+
 	// Internal buffers.
 	accB  []byte
 	buf   []byte
@@ -64,10 +46,9 @@ type Ctx struct {
 
 // Context variable object.
 type ctxVar struct {
-	key  string
-	val  any
-	ins  inspector.Inspector
-	node *vector.Node
+	key string
+	val any
+	ins inspector.Inspector
 }
 
 // NewCtx makes new context object.
@@ -93,11 +74,10 @@ func (ctx *Ctx) Set(key string, val any, ins inspector.Inspector) {
 	}
 	// Add new variable.
 	if ctx.ln < len(ctx.vars) {
-		// Use existing item in variable list..
+		// Use existing item in variable list.
 		ctx.vars[ctx.ln].key = key
 		ctx.vars[ctx.ln].val = val
 		ctx.vars[ctx.ln].ins = ins
-		ctx.vars[ctx.ln].node = nil
 	} else {
 		// Extend the variable list with new one.
 		ctx.vars = append(ctx.vars, ctxVar{
@@ -120,47 +100,12 @@ func (ctx *Ctx) SetStatic(key string, val any) {
 	ctx.Set(key, val, ins)
 }
 
-// SetVector parses source data and register it in context under given key.
-//
-// DEPRECATED: use SetVectorNode() instead.
-func (ctx *Ctx) SetVector(key string, data []byte, typ VectorType) (vec vector.Interface, err error) {
-	vec = ctx.getParser(typ)
-	if err = vec.Parse(data); err != nil {
-		return
-	}
-	node := vec.Root()
-	err = ctx.SetVectorNode(key, node)
-	return
-}
-
 // SetVectorNode directly registers node in context under given key.
 func (ctx *Ctx) SetVectorNode(key string, node *vector.Node) error {
 	if node == nil || node.Type() == vector.TypeNull {
 		return ErrEmptyNode
 	}
-	for i := 0; i < ctx.ln; i++ {
-		if ctx.vars[i].key == key {
-			// Update existing variable.
-			ctx.vars[i].node = node
-			ctx.vars[i].val, ctx.vars[i].ins = nil, nil
-			return nil
-		}
-	}
-	// Add new variable.
-	if ctx.ln < len(ctx.vars) {
-		// Use existing item in variable list..
-		ctx.vars[ctx.ln].key = key
-		ctx.vars[ctx.ln].node = node
-		ctx.vars[ctx.ln].val, ctx.vars[ctx.ln].ins = nil, nil
-	} else {
-		// Extend the variable list with new one.
-		ctx.vars = append(ctx.vars, ctxVar{
-			key:  key,
-			node: node,
-		})
-	}
-	// Increase variables count.
-	ctx.ln++
+	ctx.Set(key, node, vector_inspector.VectorInspector{})
 	return nil
 }
 
@@ -244,7 +189,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 		}
 		if v.key == ctx.bufS[0] {
 			// Var found.
-			if v.node != nil {
+			if node, ok := v.val.(*vector.Node); ok && node != nil {
 				// Var is JSON node.
 				if len(subset) > 0 {
 					// List of subsets provided.
@@ -254,7 +199,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 						if len(tail) > 0 {
 							// Fill preserved item with subset's value.
 							ctx.bufS[len(ctx.bufS)-1] = fastconv.B2S(tail)
-							ctx.bufX = v.node.Get(ctx.bufS[1:]...)
+							ctx.bufX = node.Get(ctx.bufS[1:]...)
 							if n, ok := ctx.bufX.(*vector.Node); ok && n.Type() != vector.TypeNull {
 								// Successful hunt.
 								break
@@ -262,7 +207,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 						}
 					}
 				} else {
-					ctx.bufX = v.node.Get(ctx.bufS[1:]...)
+					ctx.bufX = node.Get(ctx.bufS[1:]...)
 				}
 				return ctx.bufX
 			}
@@ -331,18 +276,6 @@ func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
 	return nil
 }
 
-// Get new JSON vector object from the context buffer.
-func (ctx *Ctx) getParser(typ VectorType) (v vector.Interface) {
-	if ctx.pl[typ] < len(ctx.p[typ]) {
-		v = ensureHelper(ctx.p[typ][ctx.pl[typ]], typ)
-	} else {
-		v = newVector(typ)
-		ctx.p[typ] = append(ctx.p[typ], v)
-	}
-	ctx.pl[typ]++
-	return v
-}
-
 // Split path to separate words using dot as separator.
 // So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
 func (ctx *Ctx) splitPath(path, separator string) {
@@ -367,16 +300,9 @@ func (ctx *Ctx) splitPath(path, separator string) {
 // Made to use together with pools.
 func (ctx *Ctx) Reset() {
 	for i := 0; i < ctx.ln; i++ {
-		ctx.vars[i].node = nil
+		ctx.vars[i].val = nil
 	}
 	ctx.ln = 0
-
-	for i := 0; i < VectorsSupported; i++ {
-		for j := 0; j < ctx.pl[i]; j++ {
-			ctx.p[i][j].Reset()
-		}
-		ctx.pl[i] = 0
-	}
 
 	for i := 0; i < ctx.lenBB; i++ {
 		ctx.bufBB[i] = ctx.bufBB[i][:0]
