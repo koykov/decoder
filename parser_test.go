@@ -6,13 +6,13 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	t.Run("v2v0", func(t *testing.T) { testParser(t) })
-	t.Run("v2v1", func(t *testing.T) { testParser(t) })
-	t.Run("v2v2", func(t *testing.T) { testParser(t) })
-	t.Run("f2v0", func(t *testing.T) { testParser(t) })
-	t.Run("v2c0", func(t *testing.T) { testParser(t) })
-	t.Run("v2ci0", func(t *testing.T) { testParser(t) })
-	t.Run("cb0", func(t *testing.T) { testParser(t) })
+	t.Run("v2v0", testParser)
+	t.Run("v2v1", testParser)
+	t.Run("v2v2", testParser)
+	t.Run("f2v0", testParser)
+	t.Run("v2c0", testParser)
+	t.Run("v2ci0", testParser)
+	t.Run("cb0", testParser)
 }
 
 func testParser(t *testing.T) {

@@ -7,6 +7,7 @@ func init() {
 	RegisterModFn("default", "def", modDefault)
 	RegisterModFn("ifThen", "if", modIfThen)
 	RegisterModFn("ifThenElse", "ifel", modIfThenElse)
+	RegisterModFnNS("bar", "baz", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
 
 	// Register builtin getter callbacks.
 	RegisterGetterFn("crc32", "", getterCrc32)
@@ -19,11 +20,11 @@ func init() {
 	RegisterGetterFn("appendTestHistory", "", getterAppendTestHistory)
 
 	// Register builtin callbacks.
-	RegisterCallbackFnNS("testns", "foo", "", func(_ *Ctx, _ []any) error { return nil })
 	RegisterCallbackFn("jsonParseAs", "jsonParse", cbJsonParse)
 	RegisterCallbackFn("urlParseAs", "urlParse", cbUrlParse)
 	RegisterCallbackFn("xmlParseAs", "xmlParse", cbXmlParse)
 	RegisterCallbackFn("yamlParseAs", "yamlParse", cbYamlParse)
+	RegisterCallbackFnNS("testns", "foo", "", func(_ *Ctx, _ []any) error { return nil })
 
 	// Register assign functions.
 	inspector.RegisterAssignFn(AssignVectorNode)
