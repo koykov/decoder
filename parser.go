@@ -144,10 +144,17 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 
 // Split expression to variable and mods list.
 func extractMods(p []byte) ([]byte, []mod) {
-	if bytes.Contains(p, vline) && !reSet.Match(p) {
+	hasVline := bytes.Contains(p, vline)
+	hasSet := reSet.Match(p)
+	modNoVar := reFunction.Match(p) && !hasVline
+	if (hasVline && !hasSet) || modNoVar {
 		mods := make([]mod, 0)
 		chunks := bytes.Split(p, vline)
-		for i := 1; i < len(chunks); i++ {
+		var idx = 1
+		if modNoVar {
+			idx = 0
+		}
+		for i := idx; i < len(chunks); i++ {
 			if m := reMod.FindSubmatch(chunks[i]); m != nil {
 				fn := GetModFn(fastconv.B2S(m[1]))
 				if fn == nil {
@@ -170,11 +177,11 @@ func extractMods(p []byte) ([]byte, []mod) {
 // Get list of arguments of modifier or callback, ex:
 // variable|mod(arg0, ..., argN)
 //
-//	^             ^
+// _____________^          ^
 //
 // callback(arg0, ..., argN)
 //
-//	^             ^
+// _________^          ^
 func extractArgs(l []byte) []*arg {
 	r := make([]*arg, 0)
 	if len(l) == 0 {

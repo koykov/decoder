@@ -9,6 +9,7 @@ func init() {
 	RegisterModFn("default", "def", modDefault)
 	RegisterModFn("ifThen", "if", modIfThen)
 	RegisterModFn("ifThenElse", "ifel", modIfThenElse)
+	RegisterModFnNS("bar", "baz", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
 
 	// Register builtin getter callbacks.
 	RegisterGetterFn("crc32", "", getterCrc32)
