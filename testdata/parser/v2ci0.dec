@@ -2,3 +2,4 @@ obj.Id = 17
 ctx.finance = response.fin as Finance
 ctx.perm = response.permission.(testns::Permission)
 obj.Balance = finance.Amount
+ctx.foo = bar::baz(response.x)
