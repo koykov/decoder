@@ -26,3 +26,5 @@ require (
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/tools v0.11.1 // indirect
 )
+
+replace github.com/koykov/decoder v1.0.3-0.20231031213026-5137c634afc3 => ../
