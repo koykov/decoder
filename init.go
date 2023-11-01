@@ -1,6 +1,8 @@
 package decoder
 
-import "github.com/koykov/inspector"
+import (
+	"github.com/koykov/inspector"
+)
 
 func init() {
 	// Register builtin modifiers.
@@ -20,10 +22,6 @@ func init() {
 	RegisterGetterFn("appendTestHistory", "", getterAppendTestHistory)
 
 	// Register builtin callbacks.
-	RegisterCallbackFn("jsonParseAs", "jsonParse", cbJsonParse)
-	RegisterCallbackFn("urlParseAs", "urlParse", cbUrlParse)
-	RegisterCallbackFn("xmlParseAs", "xmlParse", cbXmlParse)
-	RegisterCallbackFn("yamlParseAs", "yamlParse", cbYamlParse)
 	RegisterCallbackFnNS("testns", "foo", "", func(_ *Ctx, _ []any) error { return nil })
 
 	// Register assign functions.

@@ -9,6 +9,7 @@ import (
 
 	"github.com/koykov/inspector/testobj"
 	"github.com/koykov/inspector/testobj_ins"
+	"github.com/koykov/jsonvector"
 )
 
 type stage struct {
@@ -87,10 +88,15 @@ func assertDecode(t testing.TB, ctx *Ctx, obj *testobj.TestObject, target, jsonK
 	ctx.Reset()
 	ctx.Set("obj", obj, testobj_ins.TestObjectInspector{})
 	buf = append(buf[:0], jsonSrc[jsonKey]...)
-	_, err := ctx.SetVector("jso", buf, VectorJSON)
+
+	vec := jsonvector.Acquire()
+	defer jsonvector.Release(vec)
+	err := vec.Parse(buf)
 	if err != nil {
 		t.Error(err)
 	}
+	_ = ctx.SetVectorNode("jso", vec.Root())
+
 	ctx.SetStatic("ivar", int64(67))
 	ctx.SetStatic("uvar", uint64(1e6))
 	ctx.SetStatic("fvar", 3.1415)
