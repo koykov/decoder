@@ -7,4 +7,5 @@ func init() {
 	decoder.RegisterCallbackFn("urlParseAs", "urlParse", cbUrlParse)
 	decoder.RegisterCallbackFn("xmlParseAs", "xmlParse", cbXmlParse)
 	decoder.RegisterCallbackFn("yamlParseAs", "yamlParse", cbYamlParse)
+	decoder.RegisterCallbackFn("halParseAs", "halParse", cbHalParse)
 }

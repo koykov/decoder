@@ -10,7 +10,7 @@ func TestDecoder(t *testing.T) {
 	t.Run("decoder0", func(t *testing.T) { testDecoder(t, "src", scenarioDec0) })
 	t.Run("decoder1", func(t *testing.T) { testDecoder(t, "src", scenarioDec1) })
 	t.Run("decoder2", func(t *testing.T) { testDecoder(t, "src", scenarioDec2) })
-	t.Run("decoder3", func(t *testing.T) { testDecoder(t, "srcNested", scenarioDec3) })
+	// t.Run("decoder3", func(t *testing.T) { testDecoder(t, "srcNested", scenarioDec3) }) // check legacy package
 	t.Run("decoder4", func(t *testing.T) { testDecoder(t, "src", scenarioDec4) })
 }
 
