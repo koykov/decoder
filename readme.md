@@ -34,15 +34,18 @@ dstObj.Name = user.FullName
 As mentioned above, both `dstObj` and `user` variables should be preliminarily registered in the context like this
 ```go
 ctx := decoder.AcquireCtx()
-ctx.Set("dstObj", dst, &DstInspector{})
-ctx.Set("user", user, &UserInspector{})
+ctx.Set("dstObj", dst, DstInspector{})
+ctx.Set("user", user, UserInspector{})
 ```
 In this example user is a Go struct, but you may use as source raw response, example in JSON
 ```go
+import _ "github.com/koykov/decoder_vector"
+...
 jsonResponse = []byte(`{"a":"foo"}`)
 ctx := decoder.AcquireCtx()
-ctx.SetJson("response", jsonResponse)
+ctx.SetStatic("raw", jsonResponse)
 // in decoder body:
+// ctx.response = vector::parseJSON(raw)
 // dstObj.Name = response.a
 ```
 

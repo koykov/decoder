@@ -10,7 +10,7 @@ func TestDecoder(t *testing.T) {
 	t.Run("decoder0", func(t *testing.T) { testDecoder(t, "src", scenarioDec0) })
 	t.Run("decoder1", func(t *testing.T) { testDecoder(t, "src", scenarioDec1) })
 	t.Run("decoder2", func(t *testing.T) { testDecoder(t, "src", scenarioDec2) })
-	// t.Run("decoder3", func(t *testing.T) { testDecoder(t, "srcNested", scenarioDec3) }) // check legacy package
+	// t.Run("decoder3", func(t *testing.T) { testDecoder(t, "srcNested", scenarioDec3) }) // check decoder_legacy project
 	t.Run("decoder4", func(t *testing.T) { testDecoder(t, "src", scenarioDec4) })
 }
 
@@ -24,7 +24,7 @@ func testDecoder(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *
 func BenchmarkDecoder(b *testing.B) {
 	b.Run("decoder1", func(b *testing.B) { benchDecoder(b, "src", scenarioDec1) })
 	b.Run("decoder2", func(b *testing.B) { benchDecoder(b, "src", scenarioDec2) })
-	// b.Run("decoder3", func(b *testing.B) { benchDecoder(b, "srcNested", scenarioDec3) }) // check legacy package
+	// b.Run("decoder3", func(b *testing.B) { benchDecoder(b, "srcNested", scenarioDec3) }) // check decoder_legacy project
 	b.Run("decoder4", func(b *testing.B) { benchDecoder(b, "src", scenarioDec4) })
 }
 
@@ -69,7 +69,7 @@ func scenarioDec2(t testing.TB, obj *testobj.TestObject) {
 	assertF64(t, "Finance.History[1].Cost", obj.Finance.History[1].Cost, 164.5962)
 }
 
-// check legacy package
+// check decoder_legacy project
 // func scenarioDec3(t testing.TB, obj *testobj.TestObject) {
 // 	assertS(t, "Id", obj.Id, "xFF45")
 // 	assertF64(t, "Cost", obj.Cost, 123)
