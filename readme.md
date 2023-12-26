@@ -83,3 +83,20 @@ alloc-free trick.
 * `args` array of modifier arguments, specified in rule. 
 
 See [mod.go](mod.go) for details and [mod_builtin.go](mod_builtin.go) for more example of modifiers.
+
+## Extensions
+
+Decoders may be extended by including modules to the project. Currently supported modules:
+* [decoder_vector](https://github.com/koykov/decoder_vector) provide support of vector parsers.
+* [decoder_i18n](https://github.com/koykov/decoder_legacy) allows legacy features in the project.
+
+To enable necessary module just import it to the project, eg:
+```go
+import (
+	_ "https://github.com/koykov/decoder_vector"
+)
+```
+and vector's [features](https://github.com/koykov/decoder_vector) will be available inside templates.
+
+Feel free to develop your own extensions. Strongly recommend to register new modifiers using namespaces, like
+[this](https://github.com/koykov/decoder_vector/blob/master/init.go#L15).
