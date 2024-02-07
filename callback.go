@@ -9,7 +9,7 @@ var (
 	// Registry of callback functions.
 	callbackRegistry = map[string]CallbackFn{}
 
-	_ = RegisterCallbackFnNS
+	_, _ = RegisterCallbackFn, RegisterCallbackFnNS
 )
 
 // RegisterCallbackFn registers new callback to the registry.

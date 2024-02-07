@@ -11,4 +11,6 @@ var (
 	ErrGetterPoorArgs  = errors.New("arguments list in getter callback is too small")
 
 	ErrUnknownPool = errors.New("unknown pool")
+
+	_ = ErrCbPoorArgs
 )

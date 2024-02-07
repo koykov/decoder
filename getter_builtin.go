@@ -34,9 +34,9 @@ func getterCrc32(ctx *Ctx, buf *any, args []any) (err error) {
 		case *[]byte:
 			ctx.BufAcc.Write(*a.(*[]byte))
 		case string:
-			ctx.BufAcc.WriteStr(a.(string))
+			ctx.BufAcc.WriteString(a.(string))
 		case *string:
-			ctx.BufAcc.WriteStr(*a.(*string))
+			ctx.BufAcc.WriteString(*a.(*string))
 		case *vector.Node:
 			node := a.(*vector.Node)
 			if node != nil {
