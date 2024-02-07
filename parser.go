@@ -7,7 +7,7 @@ import (
 	"regexp"
 
 	"github.com/koykov/bytealg"
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 )
 
 var (
@@ -86,7 +86,7 @@ func Parse(src []byte) (ruleset Ruleset, err error) {
 				rule.dst = replaceQB(m[1])
 				rule.src = replaceQB(m[2])
 				// Parse getter callback.
-				fn := GetGetterFn(fastconv.B2S(m[2]))
+				fn := GetGetterFn(byteconv.B2S(m[2]))
 				if fn == nil {
 					err = fmt.Errorf("unknown getter function '%s' at line %d", m[2], i)
 					break
@@ -110,7 +110,7 @@ func Parse(src []byte) (ruleset Ruleset, err error) {
 			// Function expression caught.
 			rule.src = m[1]
 			// Parse callback.
-			fn := GetCallbackFn(fastconv.B2S(m[1]))
+			fn := GetCallbackFn(byteconv.B2S(m[1]))
 			if fn == nil {
 				err = fmt.Errorf("unknown callback function '%s' at line %d", m[1], i)
 				break
@@ -156,7 +156,7 @@ func extractMods(p []byte) ([]byte, []mod) {
 		}
 		for i := idx; i < len(chunks); i++ {
 			if m := reMod.FindSubmatch(chunks[i]); m != nil {
-				fn := GetModFn(fastconv.B2S(m[1]))
+				fn := GetModFn(byteconv.B2S(m[1]))
 				if fn == nil {
 					continue
 				}

@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/koykov/bytebuf"
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 )
 
 // Ruleset represents list of rules.
@@ -141,7 +141,7 @@ func (r *Ruleset) attrB(buf *bytebuf.Chain, key string, p []byte) {
 }
 
 func (r *Ruleset) attrS(buf *bytebuf.Chain, key, s string) {
-	r.attrB(buf, key, fastconv.S2B(s))
+	r.attrB(buf, key, byteconv.S2B(s))
 }
 
 func (r *Ruleset) attrI(buf *bytebuf.Chain, key string, i int) {
