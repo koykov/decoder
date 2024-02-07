@@ -37,9 +37,9 @@ type Ctx struct {
 	ipvl int
 
 	// External buffers to use in modifier and condition helpers.
-	BufAcc bytebuf.AccumulativeBuf
+	BufAcc bytebuf.Accumulative
 	// todo remove as unused later
-	Buf, Buf1, Buf2 bytebuf.ChainBuf
+	Buf, Buf1, Buf2 bytebuf.Chain
 
 	Err error
 }
