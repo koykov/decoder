@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 	"github.com/koykov/inspector/testobj"
 	"github.com/koykov/vector"
 	"github.com/koykov/x2bytes"
@@ -86,9 +86,9 @@ func atox(ctx *Ctx, buf *any, args []any, target target) (err error) {
 	case *string:
 		raw = *args[0].(*string)
 	case *[]byte:
-		raw = fastconv.B2S(*args[0].(*[]byte))
+		raw = byteconv.B2S(*args[0].(*[]byte))
 	case []byte:
-		raw = fastconv.B2S(args[0].([]byte))
+		raw = byteconv.B2S(args[0].([]byte))
 	default:
 		ok = false
 	}
@@ -158,7 +158,7 @@ func getterAppendTestHistory(_ *Ctx, buf *any, args []any) (err error) {
 		hr := testobj.TestHistory{DateUnix: time.Now().Unix()}
 		switch args[1].(type) {
 		case *[]byte:
-			hr.Cost, _ = strconv.ParseFloat(fastconv.B2S(*args[1].(*[]byte)), 64)
+			hr.Cost, _ = strconv.ParseFloat(byteconv.B2S(*args[1].(*[]byte)), 64)
 		case *vector.Node:
 			hr.Cost, _ = args[1].(*vector.Node).Float()
 		}

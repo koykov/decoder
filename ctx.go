@@ -5,7 +5,7 @@ import (
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/bytebuf"
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 	"github.com/koykov/inspector"
 	"github.com/koykov/vector"
 	"github.com/koykov/vector_inspector"
@@ -117,7 +117,7 @@ func (ctx *Ctx) SetVectorNode(key string, node *vector.Node) error {
 // * user.Bio.Birthday
 // * staticVar
 func (ctx *Ctx) Get(path string) any {
-	return ctx.get(fastconv.S2B(path), nil)
+	return ctx.get(byteconv.S2B(path), nil)
 }
 
 // AcquireBytes returns accumulative buffer.
@@ -142,7 +142,7 @@ func (ctx *Ctx) Bufferize(p []byte) []byte {
 func (ctx *Ctx) BufferizeString(s string) string {
 	off := len(ctx.accB)
 	ctx.accB = append(ctx.accB, s...)
-	return fastconv.B2S(ctx.accB[off:])
+	return byteconv.B2S(ctx.accB[off:])
 }
 
 // AcquireFrom receives new variable from given pool and register it to return batch after finish template processing.
@@ -176,7 +176,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 	}
 
 	// Split path to separate words using dot as separator.
-	ctx.splitPath(fastconv.B2S(path), ".")
+	ctx.splitPath(byteconv.B2S(path), ".")
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
@@ -198,7 +198,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 					for _, tail := range subset {
 						if len(tail) > 0 {
 							// Fill preserved item with subset's value.
-							ctx.bufS[len(ctx.bufS)-1] = fastconv.B2S(tail)
+							ctx.bufS[len(ctx.bufS)-1] = byteconv.B2S(tail)
 							ctx.bufX = node.Get(ctx.bufS[1:]...)
 							if n, ok := ctx.bufX.(*vector.Node); ok && n.Type() != vector.TypeNull {
 								// Successful hunt.
@@ -233,7 +233,7 @@ func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
 		return nil
 	}
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
@@ -243,9 +243,9 @@ func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
 			return nil
 		}
 		// Var-to-ctx case.
-		ctxPath := fastconv.B2S(path[len(ctx.bufS[0])+1:])
+		ctxPath := byteconv.B2S(path[len(ctx.bufS[0])+1:])
 		if len(insName) > 0 {
-			ins, err := inspector.GetInspector(fastconv.B2S(insName))
+			ins, err := inspector.GetInspector(byteconv.B2S(insName))
 			if err != nil {
 				return err
 			}
