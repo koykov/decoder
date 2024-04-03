@@ -54,71 +54,78 @@ func Parse(src []byte) (ruleset Ruleset, err error) {
 			// Ignore comments.
 			continue
 		}
-		rule := rule{}
+		var r rule
 		if reAssignV2C.Match(line) {
 			// Var-to-ctx expression caught.
 			if m := reAssignV2CAs.FindSubmatch(line); m != nil {
-				rule.dst = m[1]
-				rule.src = m[2]
-				rule.ins = m[3]
-			} else if m := reAssignV2CDot.FindSubmatch(line); m != nil {
-				rule.dst = m[1]
-				rule.src = m[2]
-				rule.ins = m[3]
-			} else if m := reAssignV2C.FindSubmatch(line); m != nil {
-				rule.dst = m[1]
-				rule.src = m[2]
+				r.dst = m[1]
+				r.src = m[2]
+				r.ins = m[3]
+			} else if m = reAssignV2CDot.FindSubmatch(line); m != nil {
+				r.dst = m[1]
+				r.src = m[2]
+				r.ins = m[3]
+			} else if m = reAssignV2C.FindSubmatch(line); m != nil {
+				r.dst = m[1]
+				r.src = m[2]
 			}
 			// Check static/variable.
-			if rule.static = isStatic(rule.src); rule.static {
-				rule.src = bytealg.Trim(rule.src, quotes)
+			if r.static = isStatic(r.src); r.static {
+				r.src = bytealg.Trim(r.src, quotes)
 			} else {
-				rule.src, rule.mod = extractMods(rule.src)
-				rule.src, rule.subset = extractSet(rule.src)
+				r.src, r.mod = extractMods(r.src)
+				r.src, r.subset = extractSet(r.src)
 			}
-			ruleset = append(ruleset, rule)
+			ruleset = append(ruleset, r)
 			continue
 		}
 		if reAssignV2V.Match(line) {
 			// Var-to-var expression caught.
 			if m := reAssignF2V.FindSubmatch(line); m != nil {
 				// Func-to-var expression caught.
-				rule.dst = replaceQB(m[1])
-				rule.src = replaceQB(m[2])
+				r.dst = replaceQB(m[1])
+				r.src = replaceQB(m[2])
 				// Parse getter callback.
 				fn := GetGetterFn(byteconv.B2S(m[2]))
-				if fn == nil {
-					err = fmt.Errorf("unknown getter function '%s' at line %d", m[2], i)
+				if fn != nil {
+					r.getter = fn
+					r.arg = extractArgs(m[3])
+				} else {
+					// Getter func not found, so try to fallback to mod func.
+					m = reAssignV2V.FindSubmatch(line)
+					r.src, r.mod = extractMods(m[2])
+					r.src, r.subset = extractSet(r.src)
+				}
+				if r.getter == nil && len(r.mod) == 0 {
+					err = fmt.Errorf("unknown getter nor modifier function '%s' at line %d", m[2], i)
 					break
 				}
-				rule.getter = fn
-				rule.arg = extractArgs(m[3])
-			} else if m := reAssignV2V.FindSubmatch(line); m != nil {
+			} else if m = reAssignV2V.FindSubmatch(line); m != nil {
 				// Var-to-var ...
-				rule.dst = replaceQB(m[1])
-				if rule.static = isStatic(m[2]); rule.static {
-					rule.src = bytealg.Trim(m[2], quotes)
+				r.dst = replaceQB(m[1])
+				if r.static = isStatic(m[2]); r.static {
+					r.src = bytealg.Trim(m[2], quotes)
 				} else {
-					rule.src, rule.mod = extractMods(m[2])
-					rule.src, rule.subset = extractSet(rule.src)
+					r.src, r.mod = extractMods(m[2])
+					r.src, r.subset = extractSet(r.src)
 				}
 			}
-			ruleset = append(ruleset, rule)
+			ruleset = append(ruleset, r)
 			continue
 		}
 		if m := reFunction.FindSubmatch(line); m != nil {
 			// Function expression caught.
-			rule.src = m[1]
+			r.src = m[1]
 			// Parse callback.
 			fn := GetCallbackFn(byteconv.B2S(m[1]))
 			if fn == nil {
 				err = fmt.Errorf("unknown callback function '%s' at line %d", m[1], i)
 				break
 			}
-			rule.callback = fn
-			rule.arg = extractArgs(m[2])
+			r.callback = fn
+			r.arg = extractArgs(m[2])
 
-			ruleset = append(ruleset, rule)
+			ruleset = append(ruleset, r)
 			continue
 		}
 		// Report unparsed error.
