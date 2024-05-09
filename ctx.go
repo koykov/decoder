@@ -171,7 +171,7 @@ func (ctx *Ctx) reserveBB() int {
 
 // Internal getter.
 func (ctx *Ctx) get(path []byte, subset [][]byte) any {
-	if len(path) == 0 {
+	if len(path) == 0 || ctx.ln == 0 {
 		return nil
 	}
 
@@ -182,21 +182,20 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 	}
 
 	// Look for first path chunk in vars.
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			// Vars limit reached, exit.
-			break
-		}
+	_ = ctx.vars[ctx.ln-1]
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			// Var found.
 			if node, ok := v.val.(*vector.Node); ok && node != nil {
 				// Var is JSON node.
-				if len(subset) > 0 {
+				if n := len(subset); n > 0 {
 					// List of subsets provided.
 					// Preserve item in []str buffer to check each key separately.
 					ctx.bufS = append(ctx.bufS, "")
-					for _, tail := range subset {
-						if len(tail) > 0 {
+					_ = subset[n-1]
+					for j := 0; j < n; j++ {
+						if tail := subset[j]; len(tail) > 0 {
 							// Fill preserved item with subset's value.
 							ctx.bufS[len(ctx.bufS)-1] = byteconv.B2S(tail)
 							ctx.bufX = node.Get(ctx.bufS[1:]...)
@@ -229,7 +228,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 //
 // Set val to destination by address path.
 func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
-	if len(path) == 0 {
+	if len(path) == 0 || ctx.ln == 0 {
 		return nil
 	}
 	ctx.bufS = ctx.bufS[:0]
@@ -258,10 +257,9 @@ func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
 		return nil
 	}
 	// Var-to-var case.
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			break
-		}
+	_ = ctx.vars[ctx.ln-1]
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			if v.ins != nil {
 				ctx.bufX = val
