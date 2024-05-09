@@ -49,9 +49,13 @@ func Decode(id string, ctx *Ctx) error {
 
 // DecodeRuleset applies decoder ruleset without using id.
 func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
-	for _, rule := range ruleset {
-		err = followRule(&rule, ctx)
-		if err != nil {
+	n := len(ruleset)
+	if n == 0 {
+		return nil
+	}
+	_ = ruleset[n-1]
+	for i := 0; i < n; i++ {
+		if err = followRule(&ruleset[i], ctx); err != nil {
 			return
 		}
 	}
@@ -59,76 +63,84 @@ func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
 }
 
 // Generic function to apply single rule.
-func followRule(rule *rule, ctx *Ctx) (err error) {
+func followRule(r *rule, ctx *Ctx) (err error) {
 	switch {
-	case rule.callback != nil:
+	case r.callback != nil:
 		// Rule is a callback.
 		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
-		if len(rule.arg) > 0 {
-			for _, arg_ := range rule.arg {
-				if arg_.static {
-					ctx.bufA = append(ctx.bufA, &arg_.val)
+		if n := len(r.arg); n > 0 {
+			_ = r.arg[n-1]
+			for i := 0; i < n; i++ {
+				a := r.arg[i]
+				if a.static {
+					ctx.bufA = append(ctx.bufA, &a.val)
 				} else {
-					val := ctx.get(arg_.val, arg_.subset)
+					val := ctx.get(a.val, a.subset)
 					ctx.bufA = append(ctx.bufA, val)
 				}
 			}
 		}
 		// Execute callback func.
-		err = rule.callback(ctx, ctx.bufA)
-	case rule.getter != nil:
+		err = r.callback(ctx, ctx.bufA)
+	case r.getter != nil:
 		// F2V rule.
 		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
-		if len(rule.arg) > 0 {
-			for _, arg_ := range rule.arg {
-				if arg_.static {
-					ctx.bufA = append(ctx.bufA, &arg_.val)
+		if n := len(r.arg); n > 0 {
+			_ = r.arg[n-1]
+			for i := 0; i < n; i++ {
+				a := r.arg[i]
+				if a.static {
+					ctx.bufA = append(ctx.bufA, &a.val)
 				} else {
-					val := ctx.get(arg_.val, arg_.subset)
+					val := ctx.get(a.val, a.subset)
 					ctx.bufA = append(ctx.bufA, val)
 				}
 			}
 		}
 		// Call getter callback func.
-		err = rule.getter(ctx, &ctx.bufX, ctx.bufA)
+		err = r.getter(ctx, &ctx.bufX, ctx.bufA)
 		if err != nil {
 			return
 		}
 		// Assign result to destination.
-		err = ctx.set(rule.dst, ctx.bufX, rule.ins)
-	case len(rule.dst) > 0 && len(rule.src) > 0 && rule.static:
+		err = ctx.set(r.dst, ctx.bufX, r.ins)
+	case len(r.dst) > 0 && len(r.src) > 0 && r.static:
 		// V2V rule with static source.
 		// Just assign the source it to destination.
-		ctx.buf = append(ctx.buf[:0], rule.src...)
-		err = ctx.set(rule.dst, &ctx.buf, rule.ins)
-	case len(rule.dst) > 0 && len(rule.src) > 0 && !rule.static:
+		ctx.buf = append(ctx.buf[:0], r.src...)
+		err = ctx.set(r.dst, &ctx.buf, r.ins)
+	case len(r.dst) > 0 && len(r.src) > 0 && !r.static:
 		// V2V rule with dynamic source.
 		// Get source value.
-		raw := ctx.get(rule.src, rule.subset)
+		raw := ctx.get(r.src, r.subset)
 		if ctx.Err != nil {
 			err = ctx.Err
 			return
 		}
 		// Apply modifiers.
-		if len(rule.mod) > 0 {
-			for _, mod_ := range rule.mod {
+		if n := len(r.mod); n > 0 {
+			_ = r.mod[n-1]
+			for i := 0; i < n; i++ {
+				m := &r.mod[i]
 				// Collect arguments to buffer.
 				ctx.bufA = ctx.bufA[:0]
-				if len(mod_.arg) > 0 {
-					for _, arg_ := range mod_.arg {
-						if arg_.static {
-							ctx.bufA = append(ctx.bufA, &arg_.val)
+				if k := len(m.arg); k > 0 {
+					_ = m.arg[k-1]
+					for j := 0; j < k; j++ {
+						a := m.arg[j]
+						if a.static {
+							ctx.bufA = append(ctx.bufA, &a.val)
 						} else {
-							val := ctx.get(arg_.val, arg_.subset)
+							val := ctx.get(a.val, a.subset)
 							ctx.bufA = append(ctx.bufA, val)
 						}
 					}
 				}
 				ctx.bufX = raw
 				// Call the modifier func.
-				ctx.Err = mod_.fn(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
+				ctx.Err = m.fn(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
 				if ctx.Err != nil {
 					break
 				}
@@ -139,7 +151,7 @@ func followRule(rule *rule, ctx *Ctx) (err error) {
 			return
 		}
 		// Assign to destination.
-		err = ctx.set(rule.dst, raw, rule.ins)
+		err = ctx.set(r.dst, raw, r.ins)
 	}
 	return
 }

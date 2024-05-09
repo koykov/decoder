@@ -22,12 +22,15 @@ const (
 
 // Calculate common crc32 hash of given arguments.
 func getterCrc32(ctx *Ctx, buf *any, args []any) (err error) {
-	if len(args) == 0 {
+	n := len(args)
+	if n == 0 {
 		err = ErrGetterPoorArgs
 		return
 	}
 	ctx.BufAcc.StakeOut()
-	for _, a := range args {
+	_ = args[n-1]
+	for i := 0; i < n; i++ {
+		a := args[i]
 		switch a.(type) {
 		case []byte:
 			ctx.BufAcc.Write(a.([]byte))
