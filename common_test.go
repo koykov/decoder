@@ -95,7 +95,7 @@ func assertDecode(t testing.TB, ctx *Ctx, obj *testobj.TestObject, target, jsonK
 	if err != nil {
 		t.Error(err)
 	}
-	_ = ctx.SetVectorNode("jso", vec.Root())
+	ctx.SetVector("jso", vec)
 
 	ctx.SetStatic("ivar", int64(67))
 	ctx.SetStatic("uvar", uint64(1e6))

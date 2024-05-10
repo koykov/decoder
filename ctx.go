@@ -100,7 +100,15 @@ func (ctx *Ctx) SetStatic(key string, val any) {
 	ctx.Set(key, val, ins)
 }
 
-// SetVectorNode directly registers node in context under given key.
+// SetVector directly register vector in context.
+func (ctx *Ctx) SetVector(key string, vec vector.Interface) {
+	if vec == nil {
+		return
+	}
+	ctx.Set(key, vec, vector_inspector.VectorInspector{})
+}
+
+// SetVectorNode directly registers vector's node in context under given key.
 func (ctx *Ctx) SetVectorNode(key string, node *vector.Node) error {
 	if node == nil || node.Type() == vector.TypeNull {
 		return ErrEmptyNode
@@ -187,8 +195,24 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			// Var found.
-			if node, ok := v.val.(*vector.Node); ok && node != nil {
-				// Var is JSON node.
+			// Check var is vector or node.
+			var (
+				node *vector.Node
+				ok   bool
+			)
+			switch x := v.val.(type) {
+			case vector.Interface:
+				node = x.Root()
+				ok = true
+			case *vector.Vector:
+				node = x.Root()
+				ok = true
+			case *vector.Node:
+				node = x
+				ok = true
+			}
+			if ok && node != nil {
+				// Var is vector node.
 				if n := len(subset); n > 0 {
 					// List of subsets provided.
 					// Preserve item in []str buffer to check each key separately.
@@ -199,7 +223,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 							// Fill preserved item with subset's value.
 							ctx.bufS[len(ctx.bufS)-1] = byteconv.B2S(tail)
 							ctx.bufX = node.Get(ctx.bufS[1:]...)
-							if n, ok := ctx.bufX.(*vector.Node); ok && n.Type() != vector.TypeNull {
+							if cn, ok := ctx.bufX.(*vector.Node); ok && cn.Type() != vector.TypeNull {
 								// Successful hunt.
 								break
 							}
