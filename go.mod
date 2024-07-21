@@ -4,10 +4,10 @@ go 1.18
 
 require (
 	github.com/koykov/bytealg v1.0.4
-	github.com/koykov/bytebuf v1.0.7
+	github.com/koykov/bytebuf v1.0.8
 	github.com/koykov/byteconv v1.0.0
 	github.com/koykov/inspector v1.4.6
-	github.com/koykov/jsonvector v1.2.4
+	github.com/koykov/jsonvector v1.2.5
 	github.com/koykov/vector v1.2.6
 	github.com/koykov/vector_inspector v1.0.6
 	github.com/koykov/x2bytes v1.0.2
