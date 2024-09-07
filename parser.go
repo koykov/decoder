@@ -10,6 +10,14 @@ import (
 	"github.com/koykov/byteconv"
 )
 
+type Parser struct {
+	// Decoder body to parse.
+	dec []byte
+
+	// Counters (depths) of conditions, loops and switches.
+	cc, cl, cs int
+}
+
 var (
 	// Byte constants.
 	nl      = []byte("\n")
@@ -147,6 +155,11 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 		return nil, fmt.Errorf("couldn't read file %s", fileName)
 	}
 	return Parse(raw)
+}
+
+func (p *Parser) parse() (rules Ruleset, err error) {
+	// todo implement me
+	return
 }
 
 // Split expression to variable and mods list.
