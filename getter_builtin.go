@@ -11,10 +11,10 @@ import (
 	"github.com/koykov/x2bytes"
 )
 
-type target int
+type atoxT int
 
 const (
-	atoi target = iota
+	atoi atoxT = iota
 	atou
 	atof
 	atob
@@ -74,7 +74,7 @@ func getterAtob(ctx *Ctx, buf *any, args []any) (err error) {
 	return atox(ctx, buf, args, atob)
 }
 
-func atox(ctx *Ctx, buf *any, args []any, target target) (err error) {
+func atox(ctx *Ctx, buf *any, args []any, target atoxT) (err error) {
 	if len(args) < 1 {
 		err = ErrGetterPoorArgs
 		return
