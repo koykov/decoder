@@ -49,9 +49,28 @@ var (
 
 // Parse parses the decoder rules.
 func Parse(src []byte) (ruleset Ruleset, err error) {
+	p := &Parser{dec: src}
+	return p.parse()
+}
+
+// ParseFile parses the file.
+func ParseFile(fileName string) (rules Ruleset, err error) {
+	_, err = os.Stat(fileName)
+	if os.IsNotExist(err) {
+		return
+	}
+	var raw []byte
+	raw, err = os.ReadFile(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't read file %s", fileName)
+	}
+	return Parse(raw)
+}
+
+func (p *Parser) parse() (ruleset Ruleset, err error) {
 	// Split body to separate lines.
 	// Each line contains only one expression.
-	lines := bytes.Split(src, nl)
+	lines := bytes.Split(p.dec, nl)
 	ruleset = make(Ruleset, 0, len(lines))
 	for i, line := range lines {
 		if len(line) == 0 || (len(line) > 1 && bytes.Equal(line[:2], comment)) {
@@ -140,25 +159,6 @@ func Parse(src []byte) (ruleset Ruleset, err error) {
 		err = fmt.Errorf("unknown rule '%s' a line %d", line, i)
 		break
 	}
-	return
-}
-
-// ParseFile parses the file.
-func ParseFile(fileName string) (rules Ruleset, err error) {
-	_, err = os.Stat(fileName)
-	if os.IsNotExist(err) {
-		return
-	}
-	var raw []byte
-	raw, err = os.ReadFile(fileName)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't read file %s", fileName)
-	}
-	return Parse(raw)
-}
-
-func (p *Parser) parse() (rules Ruleset, err error) {
-	// todo implement me
 	return
 }
 
