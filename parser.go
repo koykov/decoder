@@ -43,6 +43,10 @@ var (
 	reMod       = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 	reSet       = regexp.MustCompile(`(.*)\.{([^}]+)}`)
 
+	reLoop      = regexp.MustCompile(`for .*`)
+	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*\{` + "")
+	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*\{`)
+
 	// Suppress go vet warning.
 	_ = ParseFile
 )
@@ -82,7 +86,8 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 			continue
 		}
 		var r rule
-		if reAssignV2C.Match(line) {
+		switch {
+		case reAssignV2C.Match(line):
 			// Var-to-ctx expression caught.
 			if m := reAssignV2CAs.FindSubmatch(line); m != nil {
 				r.dst = m[1]
@@ -105,8 +110,7 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 			}
 			ruleset = append(ruleset, r)
 			continue
-		}
-		if reAssignV2V.Match(line) {
+		case reAssignV2V.Match(line):
 			// Var-to-var expression caught.
 			if m := reAssignF2V.FindSubmatch(line); m != nil {
 				// Func-to-var expression caught.
@@ -139,8 +143,8 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 			}
 			ruleset = append(ruleset, r)
 			continue
-		}
-		if m := reFunction.FindSubmatch(line); m != nil {
+		case reFunction.Match(line):
+			m := reFunction.FindSubmatch(line)
 			// Function expression caught.
 			r.src = m[1]
 			// Parse callback.
@@ -154,6 +158,8 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 
 			ruleset = append(ruleset, r)
 			continue
+		case reLoop.Match(line):
+			// todo process loop
 		}
 		// Report unparsed error.
 		err = fmt.Errorf("unknown rule '%s' a line %d", line, i)
