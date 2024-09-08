@@ -159,7 +159,26 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 			ruleset = append(ruleset, r)
 			continue
 		case reLoop.Match(line):
-			// todo process loop
+			if m := reLoopRange.FindSubmatch(line); m != nil {
+				r.typ = typeLoopRange
+				// todo implement me
+			} else if m := reLoopCount.FindSubmatch(line); m != nil {
+				r.typ = typeLoopCount
+				// todo implement me
+			} else {
+				return ruleset, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", line, i)
+			}
+			t := newTarget(p)
+			_ = t
+			p.cl++
+
+			if r.child, err = p.parse(); err != nil {
+				return ruleset, err
+			}
+			ruleset = append(ruleset, r)
+			continue
+		case true:
+			// todo check loop end
 		}
 		// Report unparsed error.
 		err = fmt.Errorf("unknown rule '%s' a line %d", line, i)

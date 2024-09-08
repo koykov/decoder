@@ -7,11 +7,21 @@ import (
 	"github.com/koykov/byteconv"
 )
 
+// rtype of the node.
+type rtype int
+
+const (
+	typeOperator rtype = iota
+	typeLoopRange
+	typeLoopCount
+)
+
 // Ruleset represents list of rules.
 type Ruleset []rule
 
 // Rule object that describes one line in decoder's body.
 type rule struct {
+	typ rtype
 	// Destination/source pair.
 	dst, src, ins []byte
 	// List of keys, that need to check sequentially in the source object.
