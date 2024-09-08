@@ -26,6 +26,8 @@ type rule struct {
 	mod []mod
 	// List of arguments for getter or callback.
 	arg []*arg
+	// List of children nodes.
+	child Ruleset
 }
 
 // Argument for getter/callback/modifier.
