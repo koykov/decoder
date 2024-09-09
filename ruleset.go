@@ -61,16 +61,18 @@ func (rs *Ruleset) HumanReadable() []byte {
 		return nil
 	}
 	var buf bytebuf.Chain
-	rs.hrHelper(&buf)
+	rs.hrHelper(&buf, 0)
 	return buf.Bytes()
 }
 
 // Internal human-readable helper.
-func (rs *Ruleset) hrHelper(buf *bytebuf.Chain) {
-	buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+func (rs *Ruleset) hrHelper(buf *bytebuf.Chain, depth int) {
+	if depth == 0 {
+		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+	}
 	buf.WriteString("<rules>\n")
 	for _, r := range *rs {
-		buf.WriteByte('\t')
+		buf.WriteByteN('\t', depth+1)
 		buf.WriteString(`<rule`)
 		rs.attrI(buf, "type", int(r.typ))
 
@@ -97,24 +99,33 @@ func (rs *Ruleset) hrHelper(buf *bytebuf.Chain) {
 			}
 		}
 
-		if len(r.mod) > 0 {
+		if len(r.mod) > 0 || len(r.child) > 0 {
 			buf.WriteByte('>')
 		}
 		if len(r.mod) > 0 {
-			buf.WriteByte('\n').WriteString("\t\t<mods>\n")
+			buf.WriteByte('\n').
+				WriteByteN('\t', depth+2).
+				WriteString("<mods>\n")
 			for _, mod := range r.mod {
-				buf.WriteString("\t\t\t").WriteString(`<mod name="`).Write(mod.id).WriteByte('"')
+				buf.WriteByteN('\t', depth+3).
+					WriteString(`<mod name="`).Write(mod.id).WriteByte('"')
 				rs.hrArgs(buf, mod.arg)
 				buf.WriteString("/>\n")
 			}
-			buf.WriteString("\t\t</mods>\n")
+			buf.WriteByteN('\t', depth+2).
+				WriteString("</mods>\n")
 		}
 
-		if len(r.mod) > 0 {
-			buf.WriteByte('\t').WriteString("</rule>\n")
+		if len(r.mod) > 0 || len(r.child) > 0 {
+			if len(r.child) > 0 {
+				rs.hrHelper(buf, depth+1)
+			}
+			buf.WriteByteN('\t', depth+1).
+				WriteString("</rule>\n")
 		} else {
 			buf.WriteString("/>\n")
 		}
+
 	}
 	buf.WriteString("</rules>\n")
 }
