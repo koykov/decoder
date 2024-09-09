@@ -56,60 +56,61 @@ var (
 )
 
 // HumanReadable builds human-readable view of the rules list.
-func (r *Ruleset) HumanReadable() []byte {
-	if len(*r) == 0 {
+func (rs *Ruleset) HumanReadable() []byte {
+	if len(*rs) == 0 {
 		return nil
 	}
 	var buf bytebuf.Chain
-	r.hrHelper(&buf)
+	rs.hrHelper(&buf)
 	return buf.Bytes()
 }
 
 // Internal human-readable helper.
-func (r *Ruleset) hrHelper(buf *bytebuf.Chain) {
+func (rs *Ruleset) hrHelper(buf *bytebuf.Chain) {
 	buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 	buf.WriteString("<rules>\n")
-	for _, rule := range *r {
+	for _, r := range *rs {
 		buf.WriteByte('\t')
 		buf.WriteString(`<rule`)
+		rs.attrI(buf, "type", int(r.typ))
 
 		switch {
-		case rule.callback != nil:
-			r.attrB(buf, "callback", rule.src)
-			r.hrArgs(buf, rule.arg)
-		case rule.getter != nil:
-			r.attrB(buf, "dst", rule.dst)
-			r.attrB(buf, "getter", rule.src)
-			r.hrArgs(buf, rule.arg)
+		case r.callback != nil:
+			rs.attrB(buf, "callback", r.src)
+			rs.hrArgs(buf, r.arg)
+		case r.getter != nil:
+			rs.attrB(buf, "dst", r.dst)
+			rs.attrB(buf, "getter", r.src)
+			rs.hrArgs(buf, r.arg)
 		default:
-			r.attrB(buf, "dst", rule.dst)
-			if rule.static {
-				r.attrB(buf, "src", rule.src)
-				r.attrI(buf, "static", 1)
+			rs.attrB(buf, "dst", r.dst)
+			if r.static {
+				rs.attrB(buf, "src", r.src)
+				rs.attrI(buf, "static", 1)
 			} else {
 				buf.WriteString(` src="`)
-				r.hrVal(buf, rule.src, rule.subset)
+				rs.hrVal(buf, r.src, r.subset)
 				buf.WriteByte('"')
 			}
-			if len(rule.ins) > 0 {
-				r.attrB(buf, "ins", rule.ins)
+			if len(r.ins) > 0 {
+				rs.attrB(buf, "ins", r.ins)
 			}
 		}
 
-		if len(rule.mod) > 0 {
+		if len(r.mod) > 0 {
 			buf.WriteByte('>')
 		}
-		if len(rule.mod) > 0 {
+		if len(r.mod) > 0 {
 			buf.WriteByte('\n').WriteString("\t\t<mods>\n")
-			for _, mod := range rule.mod {
+			for _, mod := range r.mod {
 				buf.WriteString("\t\t\t").WriteString(`<mod name="`).Write(mod.id).WriteByte('"')
-				r.hrArgs(buf, mod.arg)
+				rs.hrArgs(buf, mod.arg)
 				buf.WriteString("/>\n")
 			}
 			buf.WriteString("\t\t</mods>\n")
 		}
 
-		if len(rule.mod) > 0 {
+		if len(r.mod) > 0 {
 			buf.WriteByte('\t').WriteString("</rule>\n")
 		} else {
 			buf.WriteString("/>\n")
@@ -119,7 +120,7 @@ func (r *Ruleset) hrHelper(buf *bytebuf.Chain) {
 }
 
 // Human readable helper for value.
-func (r *Ruleset) hrVal(buf *bytebuf.Chain, v []byte, set [][]byte) {
+func (rs *Ruleset) hrVal(buf *bytebuf.Chain, v []byte, set [][]byte) {
 	buf.Write(v)
 	if len(set) > 0 {
 		buf.WriteString(".{")
@@ -134,7 +135,7 @@ func (r *Ruleset) hrVal(buf *bytebuf.Chain, v []byte, set [][]byte) {
 }
 
 // Human-readable helper for args list.
-func (r *Ruleset) hrArgs(buf *bytebuf.Chain, args []*arg) {
+func (rs *Ruleset) hrArgs(buf *bytebuf.Chain, args []*arg) {
 	if len(args) > 0 {
 		for j, a := range args {
 			pfx := "arg"
@@ -142,20 +143,20 @@ func (r *Ruleset) hrArgs(buf *bytebuf.Chain, args []*arg) {
 				pfx = "sarg"
 			}
 			buf.WriteByte(' ').WriteString(pfx).WriteInt(int64(j)).WriteString(`="`)
-			r.hrVal(buf, a.val, a.subset)
+			rs.hrVal(buf, a.val, a.subset)
 			buf.WriteByte('"')
 		}
 	}
 }
 
-func (r *Ruleset) attrB(buf *bytebuf.Chain, key string, p []byte) {
+func (rs *Ruleset) attrB(buf *bytebuf.Chain, key string, p []byte) {
 	buf.WriteByte(' ').WriteString(key).WriteString(`="`).Write(bytes.ReplaceAll(p, hrQ, hrQR)).WriteByte('"')
 }
 
-func (r *Ruleset) attrS(buf *bytebuf.Chain, key, s string) {
-	r.attrB(buf, key, byteconv.S2B(s))
+func (rs *Ruleset) attrS(buf *bytebuf.Chain, key, s string) {
+	rs.attrB(buf, key, byteconv.S2B(s))
 }
 
-func (r *Ruleset) attrI(buf *bytebuf.Chain, key string, i int) {
+func (rs *Ruleset) attrI(buf *bytebuf.Chain, key string, i int) {
 	buf.WriteByte(' ').WriteString(key).WriteString(`="`).WriteInt(int64(i)).WriteByte('"')
 }
