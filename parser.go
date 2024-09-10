@@ -187,6 +187,12 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 	return
 }
 
+func (p *Parser) processCtl(ruleset Ruleset, root *rule, ctl []byte, pos int) ([]Ruleset, int, bool, error) {
+	_, _, _, _ = ruleset, root, ctl, pos
+	// todo implement me
+	return nil, 0, false, nil
+}
+
 // Split expression to variable and mods list.
 func extractMods(p []byte) ([]byte, []mod) {
 	hasVline := bytes.Contains(p, vline)
