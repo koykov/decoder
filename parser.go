@@ -187,6 +187,16 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 	return
 }
 
+func (p *Parser) parse1() (ruleset Ruleset, err error) {
+	// todo implement me
+	return
+}
+
+func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
+	// todo implement me
+	return nil, offset, false
+}
+
 func (p *Parser) processCtl(ruleset Ruleset, root *rule, ctl []byte, pos int) ([]Ruleset, int, bool, error) {
 	_, _, _, _ = ruleset, root, ctl, pos
 	// todo implement me
