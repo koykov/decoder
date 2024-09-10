@@ -85,7 +85,7 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 			// Ignore comments.
 			continue
 		}
-		var r rule
+		r := rule{typ: typeOperator}
 		switch {
 		case reAssignV2C.Match(line):
 			// Var-to-ctx expression caught.
