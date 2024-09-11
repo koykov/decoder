@@ -77,7 +77,7 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 	lines := bytes.Split(p.dec, nl)
 	ruleset = make(Ruleset, 0, len(lines))
 	for i, line := range lines {
-		if len(line) == 0 || (len(line) > 1 && bytes.Equal(line[:2], comment)) {
+		if len(line) == 0 || bytes.HasPrefix(line[:2], comment) {
 			continue
 		}
 		line = bytealg.Trim(line, noFmt)
