@@ -203,6 +203,17 @@ func (p *Parser) processCtl(ruleset Ruleset, root *rule, ctl []byte, pos int) ([
 	return nil, 0, false, nil
 }
 
+func (p *Parser) skipFmt(offset int) (int, bool) {
+	n := len(p.body)
+	for i := offset; i < n; i++ {
+		c := p.body[i]
+		if c != '\n' && c != '\r' && c != '\t' && c != ' ' {
+			return i, i == n-1
+		}
+	}
+	return n - 1, true
+}
+
 // Split expression to variable and mods list.
 func extractMods(p []byte) ([]byte, []mod) {
 	hasVline := bytes.Contains(p, vline)
