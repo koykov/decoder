@@ -12,7 +12,7 @@ import (
 
 type Parser struct {
 	// Decoder body to parse.
-	dec []byte
+	body []byte
 
 	// Counters (depths) of conditions, loops and switches.
 	cc, cl, cs int
@@ -53,7 +53,7 @@ var (
 
 // Parse parses the decoder rules.
 func Parse(src []byte) (ruleset Ruleset, err error) {
-	p := &Parser{dec: src}
+	p := &Parser{body: src}
 	return p.parse()
 }
 
@@ -74,7 +74,7 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 func (p *Parser) parse() (ruleset Ruleset, err error) {
 	// Split body to separate lines.
 	// Each line contains only one expression.
-	lines := bytes.Split(p.dec, nl)
+	lines := bytes.Split(p.body, nl)
 	ruleset = make(Ruleset, 0, len(lines))
 	for i, line := range lines {
 		if len(line) == 0 || bytes.HasPrefix(line[:2], comment) {
