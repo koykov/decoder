@@ -52,9 +52,11 @@ var (
 )
 
 // Parse parses the decoder rules.
-func Parse(src []byte) (ruleset Ruleset, err error) {
+func Parse(src []byte) (Ruleset, error) {
 	p := &Parser{body: src}
-	return p.parse()
+	t := newTarget(p)
+	ruleset, _, err := p.parse1(nil, 0, t)
+	return ruleset, err
 }
 
 // ParseFile parses the file.
@@ -187,23 +189,36 @@ func (p *Parser) parse() (ruleset Ruleset, err error) {
 	return
 }
 
-func (p *Parser) parse1(offset int) (ruleset Ruleset, err error) {
+func (p *Parser) parse1(dst Ruleset, offset int, t *target) (Ruleset, int, error) {
 	var (
 		ctl []byte
 		eol bool
+		err error
 	)
-	for ctl, offset, eol = p.nextCtl(offset); !eol; {
+	for !eol {
+		ctl, offset, eol = p.nextCtl(offset)
 		if len(ctl) == 0 {
 			continue
 		}
+		r := rule{typ: typeOperator}
+		if dst, err = p.processCtl(dst, &r, ctl, offset); err != nil {
+			return dst, offset, err
+		}
 		offset += len(ctl)
 	}
-	return
+	return dst, offset, nil
 }
 
 func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
-	// todo implement me
-	return nil, offset, false
+	var eol bool
+	if offset, eol = p.skipFmt(offset); eol {
+		return nil, offset, true
+	}
+	i := bytes.IndexAny(p.body[offset:], "\n\r{}")
+	if i == -1 {
+		return p.body[offset:], offset, false
+	}
+	return p.body[offset : offset+i], offset, false
 }
 
 func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ruleset, error) {
@@ -225,7 +240,7 @@ func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ru
 		_ = t
 		p.cl++
 
-		if root.child, err = p.parse1(offset); err != nil {
+		if root.child, offset, err = p.parse1(root.child, offset, t); err != nil {
 			return dst, err
 		}
 		dst = append(dst, *root)
