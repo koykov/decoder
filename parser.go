@@ -84,127 +84,127 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 	return Parse(raw)
 }
 
-func (p *Parser) parse() (ruleset Ruleset, err error) {
-	// Split body to separate lines.
-	// Each line contains only one expression.
-	lines := bytes.Split(p.body, nl)
-	ruleset = make(Ruleset, 0, len(lines))
-	for i, line := range lines {
-		if len(line) == 0 || bytes.HasPrefix(line[:2], comment) {
-			continue
-		}
-		line = bytealg.Trim(line, noFmt)
-		if len(line) == 0 || line[0] == '#' {
-			// Ignore comments.
-			continue
-		}
-		r := rule{typ: typeOperator}
-		switch {
-		case reAssignV2C.Match(line):
-			// Var-to-ctx expression caught.
-			if m := reAssignV2CAs.FindSubmatch(line); m != nil {
-				r.dst = m[1]
-				r.src = m[2]
-				r.ins = m[3]
-			} else if m = reAssignV2CDot.FindSubmatch(line); m != nil {
-				r.dst = m[1]
-				r.src = m[2]
-				r.ins = m[3]
-			} else if m = reAssignV2C.FindSubmatch(line); m != nil {
-				r.dst = m[1]
-				r.src = m[2]
-			}
-			// Check static/variable.
-			if r.static = isStatic(r.src); r.static {
-				r.src = bytealg.Trim(r.src, quotes)
-			} else {
-				r.src, r.mod = extractMods(r.src)
-				r.src, r.subset = extractSet(r.src)
-			}
-			ruleset = append(ruleset, r)
-			continue
-		case reAssignV2V.Match(line):
-			// Var-to-var expression caught.
-			if m := reAssignF2V.FindSubmatch(line); m != nil {
-				// Func-to-var expression caught.
-				r.dst = replaceQB(m[1])
-				r.src = replaceQB(m[2])
-				// Parse getter callback.
-				fn := GetGetterFn(byteconv.B2S(m[2]))
-				if fn != nil {
-					r.getter = fn
-					r.arg = extractArgs(m[3])
-				} else {
-					// Getter func not found, so try to fallback to mod func.
-					m = reAssignV2V.FindSubmatch(line)
-					r.src, r.mod = extractMods(m[2])
-					r.src, r.subset = extractSet(r.src)
-				}
-				if r.getter == nil && len(r.mod) == 0 {
-					err = fmt.Errorf("unknown getter nor modifier function '%s' at line %d", m[2], i)
-					break
-				}
-			} else if m = reAssignV2V.FindSubmatch(line); m != nil {
-				// Var-to-var ...
-				r.dst = replaceQB(m[1])
-				if r.static = isStatic(m[2]); r.static {
-					r.src = bytealg.Trim(m[2], quotes)
-				} else {
-					r.src, r.mod = extractMods(m[2])
-					r.src, r.subset = extractSet(r.src)
-				}
-			}
-			ruleset = append(ruleset, r)
-			continue
-		case reFunction.Match(line):
-			m := reFunction.FindSubmatch(line)
-			// Function expression caught.
-			r.src = m[1]
-			// Parse callback.
-			fn := GetCallbackFn(byteconv.B2S(m[1]))
-			if fn == nil {
-				err = fmt.Errorf("unknown callback function '%s' at line %d", m[1], i)
-				break
-			}
-			r.callback = fn
-			r.arg = extractArgs(m[2])
-
-			ruleset = append(ruleset, r)
-			continue
-		case reLoop.Match(line):
-			if m := reLoopRange.FindSubmatch(line); m != nil {
-				r.typ = typeLoopRange
-				// todo implement me
-			} else if m := reLoopCount.FindSubmatch(line); m != nil {
-				r.typ = typeLoopCount
-				// todo implement me
-			} else {
-				return ruleset, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", line, i)
-			}
-			t := newTarget(p)
-			_ = t
-			p.cl++
-
-			if r.child, err = p.parse(); err != nil {
-				return ruleset, err
-			}
-			ruleset = append(ruleset, r)
-			continue
-		case true:
-			// todo check loop end
-		}
-		// Report unparsed error.
-		err = fmt.Errorf("unknown rule '%s' a line %d", line, i)
-		break
-	}
-	return
-}
+// func (p *Parser) parse() (ruleset Ruleset, err error) {
+// 	// Split body to separate lines.
+// 	// Each line contains only one expression.
+// 	lines := bytes.Split(p.body, nl)
+// 	ruleset = make(Ruleset, 0, len(lines))
+// 	for i, line := range lines {
+// 		if len(line) == 0 || bytes.HasPrefix(line[:2], comment) {
+// 			continue
+// 		}
+// 		line = bytealg.Trim(line, noFmt)
+// 		if len(line) == 0 || line[0] == '#' {
+// 			// Ignore comments.
+// 			continue
+// 		}
+// 		r := rule{typ: typeOperator}
+// 		switch {
+// 		case reAssignV2C.Match(line):
+// 			// Var-to-ctx expression caught.
+// 			if m := reAssignV2CAs.FindSubmatch(line); m != nil {
+// 				r.dst = m[1]
+// 				r.src = m[2]
+// 				r.ins = m[3]
+// 			} else if m = reAssignV2CDot.FindSubmatch(line); m != nil {
+// 				r.dst = m[1]
+// 				r.src = m[2]
+// 				r.ins = m[3]
+// 			} else if m = reAssignV2C.FindSubmatch(line); m != nil {
+// 				r.dst = m[1]
+// 				r.src = m[2]
+// 			}
+// 			// Check static/variable.
+// 			if r.static = isStatic(r.src); r.static {
+// 				r.src = bytealg.Trim(r.src, quotes)
+// 			} else {
+// 				r.src, r.mod = extractMods(r.src)
+// 				r.src, r.subset = extractSet(r.src)
+// 			}
+// 			ruleset = append(ruleset, r)
+// 			continue
+// 		case reAssignV2V.Match(line):
+// 			// Var-to-var expression caught.
+// 			if m := reAssignF2V.FindSubmatch(line); m != nil {
+// 				// Func-to-var expression caught.
+// 				r.dst = replaceQB(m[1])
+// 				r.src = replaceQB(m[2])
+// 				// Parse getter callback.
+// 				fn := GetGetterFn(byteconv.B2S(m[2]))
+// 				if fn != nil {
+// 					r.getter = fn
+// 					r.arg = extractArgs(m[3])
+// 				} else {
+// 					// Getter func not found, so try to fallback to mod func.
+// 					m = reAssignV2V.FindSubmatch(line)
+// 					r.src, r.mod = extractMods(m[2])
+// 					r.src, r.subset = extractSet(r.src)
+// 				}
+// 				if r.getter == nil && len(r.mod) == 0 {
+// 					err = fmt.Errorf("unknown getter nor modifier function '%s' at line %d", m[2], i)
+// 					break
+// 				}
+// 			} else if m = reAssignV2V.FindSubmatch(line); m != nil {
+// 				// Var-to-var ...
+// 				r.dst = replaceQB(m[1])
+// 				if r.static = isStatic(m[2]); r.static {
+// 					r.src = bytealg.Trim(m[2], quotes)
+// 				} else {
+// 					r.src, r.mod = extractMods(m[2])
+// 					r.src, r.subset = extractSet(r.src)
+// 				}
+// 			}
+// 			ruleset = append(ruleset, r)
+// 			continue
+// 		case reFunction.Match(line):
+// 			m := reFunction.FindSubmatch(line)
+// 			// Function expression caught.
+// 			r.src = m[1]
+// 			// Parse callback.
+// 			fn := GetCallbackFn(byteconv.B2S(m[1]))
+// 			if fn == nil {
+// 				err = fmt.Errorf("unknown callback function '%s' at line %d", m[1], i)
+// 				break
+// 			}
+// 			r.callback = fn
+// 			r.arg = extractArgs(m[2])
+//
+// 			ruleset = append(ruleset, r)
+// 			continue
+// 		case reLoop.Match(line):
+// 			if m := reLoopRange.FindSubmatch(line); m != nil {
+// 				r.typ = typeLoopRange
+// 				// todo implement me
+// 			} else if m := reLoopCount.FindSubmatch(line); m != nil {
+// 				r.typ = typeLoopCount
+// 				// todo implement me
+// 			} else {
+// 				return ruleset, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", line, i)
+// 			}
+// 			t := newTarget(p)
+// 			_ = t
+// 			p.cl++
+//
+// 			if r.child, err = p.parse(); err != nil {
+// 				return ruleset, err
+// 			}
+// 			ruleset = append(ruleset, r)
+// 			continue
+// 		case true:
+// 			// todo check loop end
+// 		}
+// 		// Report unparsed error.
+// 		err = fmt.Errorf("unknown rule '%s' a line %d", line, i)
+// 		break
+// 	}
+// 	return
+// }
 
 func (p *Parser) parse1(dst Ruleset, offset int, t *target) (Ruleset, int, error) {
 	var (
-		ctl []byte
-		eol bool
-		err error
+		ctl     []byte
+		eol, up bool
+		err     error
 	)
 	for !eol {
 		ctl, offset, eol = p.nextCtl(offset)
@@ -212,10 +212,14 @@ func (p *Parser) parse1(dst Ruleset, offset int, t *target) (Ruleset, int, error
 			continue
 		}
 		r := rule{typ: typeOperator}
-		if dst, err = p.processCtl(dst, &r, ctl, offset); err != nil {
+		if dst, up, err = p.processCtl(dst, &r, ctl, offset); err != nil {
 			return dst, offset, err
 		}
 		offset += len(ctl)
+		if up {
+			break
+		}
+
 	}
 	return dst, offset, nil
 }
@@ -236,11 +240,11 @@ func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
 	return p.body[offset : offset+i], offset, false
 }
 
-func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ruleset, error) {
+func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ruleset, bool, error) {
 	var err error
 	switch {
 	case ctl[0] == '#' || bytes.HasPrefix(ctl, comment):
-		return dst, nil
+		return dst, false, nil
 	case reLoop.Match(ctl):
 		if m := reLoopRange.FindSubmatch(ctl); m != nil {
 			root.typ = typeLoopRange
@@ -265,7 +269,7 @@ func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ru
 			root.loopLimStatic = isStatic(m[4])
 			root.loopCntOp = p.parseOp(m[5])
 		} else {
-			return dst, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", string(ctl), offset)
+			return dst, false, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", string(ctl), offset)
 		}
 		t := newTarget(p)
 		_ = t
@@ -273,11 +277,12 @@ func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ru
 
 		offset += len(ctl)
 		if root.child, offset, err = p.parse1(root.child, offset, t); err != nil {
-			return dst, err
+			return dst, false, err
 		}
 		dst = append(dst, *root)
 	case ctl[0] == '}':
 		// todo check target and exit from current branch (loop/switch/condition)
+		return dst, true, err
 	case reAssignV2C.Match(ctl):
 		// Var-to-ctx expression caught.
 		if m := reAssignV2CAs.FindSubmatch(ctl); m != nil {
@@ -347,9 +352,9 @@ func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ru
 
 		dst = append(dst, *root)
 	default:
-		return dst, fmt.Errorf("unknown rule '%s' at position %d", string(ctl), offset)
+		return dst, false, fmt.Errorf("unknown rule '%s' at position %d", string(ctl), offset)
 	}
-	return dst, nil
+	return dst, false, nil
 }
 
 func (p *Parser) skipFmt(offset int) (int, bool) {
