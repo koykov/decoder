@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rules>
-	<rule dst="bid.Id" src="1" static="1"/>
-	<rule dst="bid.Ext.HSum" getter="crc32" arg0="response.title" arg1="response.val"/>
-	<rule dst="bid.Ext.Processed" src="response.Done">
+	<rule type="0" dst="bid.Id" src="1" static="1"/>
+	<rule type="0" dst="bid.Ext.HSum" getter="crc32" arg0="response.title" arg1="response.val"/>
+	<rule type="0" dst="bid.Ext.Processed" src="response.Done">
 		<mods>
 			<mod name="default" sarg0="false"/>
 		</mods>

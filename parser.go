@@ -214,9 +214,13 @@ func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
 	if offset, eol = p.skipFmt(offset); eol {
 		return nil, offset, true
 	}
-	i := bytes.IndexAny(p.body[offset:], "\n\r{}")
+	i := bytes.IndexAny(p.body[offset:], "\n\r")
 	if i == -1 {
 		return p.body[offset:], offset, false
+	}
+	ctl := p.body[offset : offset+i]
+	if j := bytes.IndexByte(ctl, '{'); j > 0 && ctl[j-1] != '.' {
+		return p.body[offset : offset+j], offset, false
 	}
 	return p.body[offset : offset+i], offset, false
 }
