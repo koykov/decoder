@@ -24,6 +24,7 @@ var (
 	vline   = []byte("|")
 	space   = []byte(" ")
 	comma   = []byte(",")
+	uscore  = []byte("_")
 	dot     = []byte(".")
 	empty   = []byte("")
 	qbO     = []byte("[")
@@ -31,6 +32,16 @@ var (
 	noFmt   = []byte(" \t\n\r")
 	quotes  = []byte("\"'`")
 	comment = []byte("//")
+
+	// Operation constants.
+	opEq  = []byte("==")
+	opNq  = []byte("!=")
+	opGt  = []byte(">")
+	opGtq = []byte(">=")
+	opLt  = []byte("<")
+	opLtq = []byte("<=")
+	opInc = []byte("++")
+	opDec = []byte("--")
 
 	// Regexp to parse expressions.
 	reAssignV2CAs  = regexp.MustCompile(`((?:context|ctx)\.[\w\d\\.\[\]]+)\s*=\s*(.*) as ([:\w]*)`)
@@ -220,7 +231,7 @@ func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
 	}
 	ctl := p.body[offset : offset+i]
 	if j := bytes.IndexByte(ctl, '{'); j > 0 && ctl[j-1] != '.' {
-		return p.body[offset : offset+j], offset, false
+		return p.body[offset : offset+j+1], offset, false
 	}
 	return p.body[offset : offset+i], offset, false
 }
@@ -233,10 +244,26 @@ func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ru
 	case reLoop.Match(ctl):
 		if m := reLoopRange.FindSubmatch(ctl); m != nil {
 			root.typ = typeLoopRange
-			// todo implement me
+			if bytes.Contains(m[1], comma) {
+				kv := bytes.Split(m[1], comma)
+				root.loopKey = bytealg.Trim(kv[0], space)
+				if bytes.Equal(root.loopKey, uscore) {
+					root.loopKey = nil
+				}
+				root.loopVal = bytealg.Trim(kv[1], space)
+			} else {
+				root.loopKey = bytealg.Trim(m[1], space)
+			}
+			root.loopSrc = m[2]
 		} else if m := reLoopCount.FindSubmatch(ctl); m != nil {
 			root.typ = typeLoopCount
-			// todo implement me
+			root.loopCnt = m[1]
+			root.loopCntInit = m[2]
+			root.loopCntStatic = isStatic(m[2])
+			root.loopCondOp = p.parseOp(m[3])
+			root.loopLim = m[4]
+			root.loopLimStatic = isStatic(m[4])
+			root.loopCntOp = p.parseOp(m[5])
 		} else {
 			return dst, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", string(ctl), offset)
 		}
@@ -244,6 +271,7 @@ func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ru
 		_ = t
 		p.cl++
 
+		offset += len(ctl)
 		if root.child, offset, err = p.parse1(root.child, offset, t); err != nil {
 			return dst, err
 		}
@@ -333,6 +361,31 @@ func (p *Parser) skipFmt(offset int) (int, bool) {
 		}
 	}
 	return n - 1, true
+}
+
+func (p *Parser) parseOp(src []byte) Op {
+	var op Op
+	switch {
+	case bytes.Equal(src, opEq):
+		op = OpEq
+	case bytes.Equal(src, opNq):
+		op = OpNq
+	case bytes.Equal(src, opGt):
+		op = OpGt
+	case bytes.Equal(src, opGtq):
+		op = OpGtq
+	case bytes.Equal(src, opLt):
+		op = OpLt
+	case bytes.Equal(src, opLtq):
+		op = OpLtq
+	case bytes.Equal(src, opInc):
+		op = OpInc
+	case bytes.Equal(src, opDec):
+		op = OpDec
+	default:
+		op = OpUnk
+	}
+	return op
 }
 
 // Split expression to variable and mods list.

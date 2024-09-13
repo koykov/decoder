@@ -38,6 +38,19 @@ type rule struct {
 	arg []*arg
 	// List of children nodes.
 	child Ruleset
+
+	// Loop stuff.
+	loopKey       []byte
+	loopVal       []byte
+	loopSrc       []byte
+	loopCnt       []byte
+	loopCntInit   []byte
+	loopCntStatic bool
+	loopCntOp     Op
+	loopCondOp    Op
+	loopLim       []byte
+	loopLimStatic bool
+	loopBrkD      int
 }
 
 // Argument for getter/callback/modifier.
