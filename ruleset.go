@@ -83,7 +83,8 @@ func (rs *Ruleset) hrHelper(buf *bytebuf.Chain, depth int) {
 	if depth == 0 {
 		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 	}
-	buf.WriteString("<rules>\n")
+	buf.WriteByteN('\t', depth).
+		WriteString("<rules>\n")
 	for _, r := range *rs {
 		buf.WriteByteN('\t', depth+1)
 		buf.WriteString(`<rule`)
@@ -102,7 +103,7 @@ func (rs *Ruleset) hrHelper(buf *bytebuf.Chain, depth int) {
 			if r.static {
 				rs.attrB(buf, "src", r.src)
 				rs.attrI(buf, "static", 1)
-			} else {
+			} else if len(r.src) > 0 {
 				buf.WriteString(` src="`)
 				rs.hrVal(buf, r.src, r.subset)
 				buf.WriteByte('"')
@@ -131,7 +132,8 @@ func (rs *Ruleset) hrHelper(buf *bytebuf.Chain, depth int) {
 
 		if len(r.mod) > 0 || len(r.child) > 0 {
 			if len(r.child) > 0 {
-				rs.hrHelper(buf, depth+1)
+				buf.WriteByte('\n')
+				r.child.hrHelper(buf, depth+2)
 			}
 			buf.WriteByteN('\t', depth+1).
 				WriteString("</rule>\n")
@@ -140,7 +142,7 @@ func (rs *Ruleset) hrHelper(buf *bytebuf.Chain, depth int) {
 		}
 
 	}
-	buf.WriteString("</rules>\n")
+	buf.WriteByteN('\t', depth).WriteString("</rules>\n")
 }
 
 // Human readable helper for value.
@@ -174,6 +176,9 @@ func (rs *Ruleset) hrArgs(buf *bytebuf.Chain, args []*arg) {
 }
 
 func (rs *Ruleset) attrB(buf *bytebuf.Chain, key string, p []byte) {
+	if len(p) == 0 {
+		return
+	}
 	buf.WriteByte(' ').WriteString(key).WriteString(`="`).Write(bytes.ReplaceAll(p, hrQ, hrQR)).WriteByte('"')
 }
 
