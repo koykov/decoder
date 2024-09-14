@@ -66,7 +66,7 @@ var (
 func Parse(src []byte) (Ruleset, error) {
 	p := &Parser{body: src}
 	t := newTarget(p)
-	ruleset, _, err := p.parse1(nil, 0, t)
+	ruleset, _, err := p.parse1(nil, nil, 0, t)
 	return ruleset, err
 }
 
@@ -84,7 +84,7 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 	return Parse(raw)
 }
 
-func (p *Parser) parse1(dst Ruleset, offset int, t *target) (Ruleset, int, error) {
+func (p *Parser) parse1(dst Ruleset, root *rule, offset int, t *target) (Ruleset, int, error) {
 	var (
 		ctl     []byte
 		eol, up bool
@@ -96,14 +96,12 @@ func (p *Parser) parse1(dst Ruleset, offset int, t *target) (Ruleset, int, error
 			continue
 		}
 		r := rule{typ: typeOperator}
-		if dst, up, err = p.processCtl(dst, &r, ctl, offset); err != nil {
+		if dst, offset, up, err = p.processCtl(dst, root, &r, ctl, offset); err != nil {
 			return dst, offset, err
 		}
-		offset += len(ctl)
 		if up {
 			break
 		}
-
 	}
 	return dst, offset, nil
 }
@@ -124,121 +122,131 @@ func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
 	return p.body[offset : offset+i], offset, false
 }
 
-func (p *Parser) processCtl(dst Ruleset, root *rule, ctl []byte, offset int) (Ruleset, bool, error) {
+func (p *Parser) processCtl(dst Ruleset, root, node *rule, ctl []byte, offset int) (Ruleset, int, bool, error) {
 	var err error
 	switch {
 	case ctl[0] == '#' || bytes.HasPrefix(ctl, comment):
-		return dst, false, nil
+		offset += len(ctl)
+		return dst, offset, false, nil
 	case reLoop.Match(ctl):
 		if m := reLoopRange.FindSubmatch(ctl); m != nil {
-			root.typ = typeLoopRange
+			node.typ = typeLoopRange
 			if bytes.Contains(m[1], comma) {
 				kv := bytes.Split(m[1], comma)
-				root.loopKey = bytealg.Trim(kv[0], space)
-				if bytes.Equal(root.loopKey, uscore) {
-					root.loopKey = nil
+				node.loopKey = bytealg.Trim(kv[0], space)
+				if bytes.Equal(node.loopKey, uscore) {
+					node.loopKey = nil
 				}
-				root.loopVal = bytealg.Trim(kv[1], space)
+				node.loopVal = bytealg.Trim(kv[1], space)
 			} else {
-				root.loopKey = bytealg.Trim(m[1], space)
+				node.loopKey = bytealg.Trim(m[1], space)
 			}
-			root.loopSrc = m[2]
+			node.loopSrc = m[2]
 		} else if m := reLoopCount.FindSubmatch(ctl); m != nil {
-			root.typ = typeLoopCount
-			root.loopCnt = m[1]
-			root.loopCntInit = m[2]
-			root.loopCntStatic = isStatic(m[2])
-			root.loopCondOp = p.parseOp(m[3])
-			root.loopLim = m[4]
-			root.loopLimStatic = isStatic(m[4])
-			root.loopCntOp = p.parseOp(m[5])
+			node.typ = typeLoopCount
+			node.loopCnt = m[1]
+			node.loopCntInit = m[2]
+			node.loopCntStatic = isStatic(m[2])
+			node.loopCondOp = p.parseOp(m[3])
+			node.loopLim = m[4]
+			node.loopLimStatic = isStatic(m[4])
+			node.loopCntOp = p.parseOp(m[5])
 		} else {
-			return dst, false, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", string(ctl), offset)
+			return dst, offset, false, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", string(ctl), offset)
 		}
 		t := newTarget(p)
 		_ = t
 		p.cl++
 
 		offset += len(ctl)
-		if root.child, offset, err = p.parse1(root.child, offset, t); err != nil {
-			return dst, false, err
+		if node.child, offset, err = p.parse1(node.child, node, offset, t); err != nil {
+			return dst, offset, false, err
 		}
-		dst = append(dst, *root)
+		dst = append(dst, *node)
 	case ctl[0] == '}':
-		// todo check target and exit from current branch (loop/switch/condition)
-		return dst, true, err
+		offset++
+		switch root.typ {
+		case typeLoopCount, typeLoopRange:
+			p.cl--
+		default:
+			// todo check other cases
+		}
+		return dst, offset, true, err
 	case reAssignV2C.Match(ctl):
 		// Var-to-ctx expression caught.
 		if m := reAssignV2CAs.FindSubmatch(ctl); m != nil {
-			root.dst = m[1]
-			root.src = m[2]
-			root.ins = m[3]
+			node.dst = m[1]
+			node.src = m[2]
+			node.ins = m[3]
 		} else if m = reAssignV2CDot.FindSubmatch(ctl); m != nil {
-			root.dst = m[1]
-			root.src = m[2]
-			root.ins = m[3]
+			node.dst = m[1]
+			node.src = m[2]
+			node.ins = m[3]
 		} else if m = reAssignV2C.FindSubmatch(ctl); m != nil {
-			root.dst = m[1]
-			root.src = m[2]
+			node.dst = m[1]
+			node.src = m[2]
 		}
 		// Check static/variable.
-		if root.static = isStatic(root.src); root.static {
-			root.src = bytealg.Trim(root.src, quotes)
+		if node.static = isStatic(node.src); node.static {
+			node.src = bytealg.Trim(node.src, quotes)
 		} else {
-			root.src, root.mod = extractMods(root.src)
-			root.src, root.subset = extractSet(root.src)
+			node.src, node.mod = extractMods(node.src)
+			node.src, node.subset = extractSet(node.src)
 		}
-		dst = append(dst, *root)
+		dst = append(dst, *node)
+		offset += len(ctl)
 	case reAssignV2V.Match(ctl):
 		// Var-to-var expression caught.
 		if m := reAssignF2V.FindSubmatch(ctl); m != nil {
 			// Func-to-var expression caught.
-			root.dst = replaceQB(m[1])
-			root.src = replaceQB(m[2])
+			node.dst = replaceQB(m[1])
+			node.src = replaceQB(m[2])
 			// Parse getter callback.
 			fn := GetGetterFn(byteconv.B2S(m[2]))
 			if fn != nil {
-				root.getter = fn
-				root.arg = extractArgs(m[3])
+				node.getter = fn
+				node.arg = extractArgs(m[3])
 			} else {
 				// Getter func not found, so try to fallback to mod func.
 				m = reAssignV2V.FindSubmatch(ctl)
-				root.src, root.mod = extractMods(m[2])
-				root.src, root.subset = extractSet(root.src)
+				node.src, node.mod = extractMods(m[2])
+				node.src, node.subset = extractSet(node.src)
 			}
-			if root.getter == nil && len(root.mod) == 0 {
+			if node.getter == nil && len(node.mod) == 0 {
 				err = fmt.Errorf("unknown getter nor modifier function '%s' at offset %d", m[2], offset)
 				break
 			}
 		} else if m = reAssignV2V.FindSubmatch(ctl); m != nil {
 			// Var-to-var ...
-			root.dst = replaceQB(m[1])
-			if root.static = isStatic(m[2]); root.static {
-				root.src = bytealg.Trim(m[2], quotes)
+			node.dst = replaceQB(m[1])
+			if node.static = isStatic(m[2]); node.static {
+				node.src = bytealg.Trim(m[2], quotes)
 			} else {
-				root.src, root.mod = extractMods(m[2])
-				root.src, root.subset = extractSet(root.src)
+				node.src, node.mod = extractMods(m[2])
+				node.src, node.subset = extractSet(node.src)
 			}
 		}
-		dst = append(dst, *root)
+		dst = append(dst, *node)
+		offset += len(ctl)
 	case reFunction.Match(ctl):
 		m := reFunction.FindSubmatch(ctl)
 		// Function expression caught.
-		root.src = m[1]
+		node.src = m[1]
 		// Parse callback.
 		fn := GetCallbackFn(byteconv.B2S(m[1]))
 		if fn == nil {
 			err = fmt.Errorf("unknown callback function '%s' at offset %d", m[1], offset)
 			break
 		}
-		root.callback = fn
-		root.arg = extractArgs(m[2])
+		node.callback = fn
+		node.arg = extractArgs(m[2])
 
-		dst = append(dst, *root)
+		dst = append(dst, *node)
+		offset += len(ctl)
 	default:
-		return dst, false, fmt.Errorf("unknown rule '%s' at position %d", string(ctl), offset)
+		return dst, offset, false, fmt.Errorf("unknown rule '%s' at position %d", string(ctl), offset)
 	}
-	return dst, false, nil
+	return dst, offset, false, err
 }
 
 func (p *Parser) skipFmt(offset int) (int, bool) {
