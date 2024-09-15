@@ -90,8 +90,9 @@ func (p *Parser) parse1(dst Ruleset, root *rule, offset int, t *target) (Ruleset
 		eol, up bool
 		err     error
 	)
-	for !eol {
+	for !t.reached(p) || t.eqZero() {
 		ctl, offset, eol = p.nextCtl(offset)
+		_ = eol
 		if len(ctl) == 0 {
 			continue
 		}
@@ -161,7 +162,6 @@ func (p *Parser) processCtl(dst Ruleset, root, node *rule, ctl []byte, offset in
 			return dst, offset, false, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", string(ctl), offset)
 		}
 		t := newTarget(p)
-		_ = t
 		p.cl++
 
 		offset += len(ctl)
