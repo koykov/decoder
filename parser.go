@@ -87,12 +87,13 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 func (p *Parser) parse1(dst Ruleset, root *rule, offset int, t *target) (Ruleset, int, error) {
 	var (
 		ctl     []byte
-		eol, up bool
+		eof, up bool
 		err     error
 	)
 	for !t.reached(p) || t.eqZero() {
-		ctl, offset, eol = p.nextCtl(offset)
-		_ = eol
+		if ctl, offset, eof = p.nextCtl(offset); eof {
+			return dst, offset, nil
+		}
 		if len(ctl) == 0 {
 			continue
 		}
@@ -108,8 +109,8 @@ func (p *Parser) parse1(dst Ruleset, root *rule, offset int, t *target) (Ruleset
 }
 
 func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
-	var eol bool
-	if offset, eol = p.skipFmt(offset); eol {
+	var eof bool
+	if offset, eof = p.skipFmt(offset); eof {
 		return nil, offset, true
 	}
 	i := bytes.IndexAny(p.body[offset:], "\n\r")
