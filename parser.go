@@ -119,6 +119,12 @@ func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
 	if j := bytes.IndexByte(ctl, '{'); j > 0 && ctl[j-1] != '.' {
 		return p.body[offset : offset+j+1], offset, false
 	}
+	if j := bytes.IndexByte(ctl, ';'); j > 0 && !bytes.HasPrefix(ctl, []byte("for")) {
+		return p.body[offset : offset+j], offset, false
+	}
+	if j := bytes.IndexByte(ctl, '}'); j > 0 && bytes.Index(ctl, []byte(".{")) == -1 {
+		return p.body[offset : offset+j], offset, false
+	}
 	return p.body[offset : offset+i], offset, false
 }
 
@@ -253,7 +259,7 @@ func (p *Parser) skipFmt(offset int) (int, bool) {
 	n := len(p.body)
 	for i := offset; i < n; i++ {
 		c := p.body[i]
-		if c != '\n' && c != '\r' && c != '\t' && c != ' ' {
+		if c != '\n' && c != '\r' && c != '\t' && c != ' ' && c != ';' {
 			return i, i == n-1
 		}
 	}

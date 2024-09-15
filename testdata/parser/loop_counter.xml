@@ -3,6 +3,7 @@
 	<rule type="2">
 		<rules>
 			<rule type="0" dst="obj.MaxIndex" src="i"/>
+			<rule type="0" dst="obj.StaticIndex" src="156" static="1"/>
 		</rules>
 	</rule>
 </rules>

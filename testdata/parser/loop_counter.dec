@@ -1,3 +1,1 @@
-for i:=0; i<10; i++ {
-  obj.MaxIndex = i
-}
+for i:=0; i<10; i++ {obj.MaxIndex = i;obj.StaticIndex = 156}
