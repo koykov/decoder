@@ -66,7 +66,7 @@ var (
 func Parse(src []byte) (Ruleset, error) {
 	p := &Parser{body: src}
 	t := newTarget(p)
-	ruleset, _, err := p.parse1(nil, nil, 0, t)
+	ruleset, _, err := p.parse(nil, nil, 0, t)
 	return ruleset, err
 }
 
@@ -84,7 +84,7 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 	return Parse(raw)
 }
 
-func (p *Parser) parse1(dst Ruleset, root *rule, offset int, t *target) (Ruleset, int, error) {
+func (p *Parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset, int, error) {
 	var (
 		ctl     []byte
 		eof, up bool
@@ -166,7 +166,7 @@ func (p *Parser) processCtl(dst Ruleset, root, node *rule, ctl []byte, offset in
 		p.cl++
 
 		offset += len(ctl)
-		if node.child, offset, err = p.parse1(node.child, node, offset, t); err != nil {
+		if node.child, offset, err = p.parse(node.child, node, offset, t); err != nil {
 			return dst, offset, false, err
 		}
 		dst = append(dst, *node)
