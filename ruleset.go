@@ -168,7 +168,10 @@ func (rs *Ruleset) hrArgs(buf *bytebuf.Chain, args []*arg) {
 			if a.static {
 				pfx = "sarg"
 			}
-			buf.WriteByte(' ').WriteString(pfx).WriteInt(int64(j)).WriteString(`="`)
+			buf.WriteByte(' ').
+				WriteString(pfx).
+				WriteInt(int64(j)).
+				WriteString(`="`)
 			rs.hrVal(buf, a.val, a.subset)
 			buf.WriteByte('"')
 		}
@@ -179,7 +182,11 @@ func (rs *Ruleset) attrB(buf *bytebuf.Chain, key string, p []byte) {
 	if len(p) == 0 {
 		return
 	}
-	buf.WriteByte(' ').WriteString(key).WriteString(`="`).Write(bytes.ReplaceAll(p, hrQ, hrQR)).WriteByte('"')
+	buf.WriteByte(' ').
+		WriteString(key).
+		WriteString(`="`).
+		Write(bytes.ReplaceAll(p, hrQ, hrQR)).
+		WriteByte('"')
 }
 
 func (rs *Ruleset) attrS(buf *bytebuf.Chain, key, s string) {
@@ -187,5 +194,9 @@ func (rs *Ruleset) attrS(buf *bytebuf.Chain, key, s string) {
 }
 
 func (rs *Ruleset) attrI(buf *bytebuf.Chain, key string, i int) {
-	buf.WriteByte(' ').WriteString(key).WriteString(`="`).WriteInt(int64(i)).WriteByte('"')
+	buf.WriteByte(' ').
+		WriteString(key).
+		WriteString(`="`).
+		WriteInt(int64(i)).
+		WriteByte('"')
 }
