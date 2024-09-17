@@ -25,7 +25,10 @@ func testParser(t *testing.T) {
 		return
 	}
 	if len(st.expect) > 0 {
-		rs, _ := Parse(st.origin)
+		rs, err := Parse(st.origin)
+		if err != nil {
+			t.Error(err)
+		}
 		r := rs.HumanReadable()
 		if !bytes.Equal(r, st.expect) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))

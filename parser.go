@@ -92,7 +92,7 @@ func (p *Parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset,
 	)
 	for !t.reached(p) || t.eqZero() {
 		if ctl, offset, eof = p.nextCtl(offset); eof {
-			return dst, offset, nil
+			break
 		}
 		if len(ctl) == 0 {
 			continue
@@ -108,7 +108,7 @@ func (p *Parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset,
 	if !t.reached(p) {
 		err = ErrUnbalancedCtl
 	}
-	return dst, offset, nil
+	return dst, offset, err
 }
 
 func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
