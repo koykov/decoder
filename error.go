@@ -10,6 +10,8 @@ var (
 	ErrCbPoorArgs      = errors.New("arguments list in callback is too small")
 	ErrGetterPoorArgs  = errors.New("arguments list in getter callback is too small")
 
+	ErrUnbalancedCtl = errors.New("unbalanced control structures found")
+
 	ErrUnknownPool = errors.New("unknown pool")
 
 	_ = ErrCbPoorArgs

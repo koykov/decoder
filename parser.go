@@ -105,6 +105,9 @@ func (p *Parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset,
 			break
 		}
 	}
+	if !t.reached(p) {
+		err = ErrUnbalancedCtl
+	}
 	return dst, offset, nil
 }
 
