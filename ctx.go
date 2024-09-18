@@ -406,4 +406,5 @@ func (ctx *Ctx) Reset() {
 	ctx.Buf2.Reset()
 
 	ctx.brkD = 0
+	ctx.rl.Reset()
 }
