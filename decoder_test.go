@@ -14,6 +14,7 @@ func TestDecoder(t *testing.T) {
 	t.Run("decoder4", func(t *testing.T) { testDecoder(t, "src", scenarioDec4) })
 
 	t.Run("loop0", func(t *testing.T) { testDecoder(t, "src", scenarioNop) })
+	t.Run("loop1", func(t *testing.T) { testDecoder(t, "src", scenarioLoop1) })
 }
 
 func testDecoder(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -83,4 +84,8 @@ func scenarioDec2(t testing.TB, obj *testobj.TestObject) {
 
 func scenarioDec4(t testing.TB, obj *testobj.TestObject) {
 	assertB(t, "Name", obj.Name, []byte(`2677594116`))
+}
+
+func scenarioLoop1(t testing.TB, obj *testobj.TestObject) {
+	assertI32(t, "Status", obj.Status, 66)
 }

@@ -14,5 +14,6 @@
   },
   "ext": {
     "perm": [false, true, true]
-  }
+  },
+  "list": [{"a": "b"}, {"a": "c"}, {"a": "d"}]
 }

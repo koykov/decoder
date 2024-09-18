@@ -19,6 +19,9 @@ type Ctx struct {
 	vars []ctxVar
 	ln   int
 
+	// Check square brackets flag.
+	chQB bool
+
 	// Internal buffers.
 	accB  []byte
 	buf   []byte
@@ -31,6 +34,7 @@ type Ctx struct {
 	bufBl bool
 	bufX  any
 	bufA  []any
+	bufLC []int64
 	// Range loop helper.
 	rl *RangeLoop
 
@@ -400,6 +404,7 @@ func (ctx *Ctx) Reset() {
 	ctx.buf = ctx.buf[:0]
 	ctx.bufS = ctx.bufS[:0]
 	ctx.bufA = ctx.bufA[:0]
+	ctx.bufLC = ctx.bufLC[:0]
 	ctx.BufAcc.Reset()
 	ctx.Buf.Reset()
 	ctx.Buf1.Reset()

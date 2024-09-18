@@ -66,8 +66,19 @@ func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
 func followRule(r *rule, ctx *Ctx) (err error) {
 	switch {
 	case r.typ == typeLoopRange:
+		// Evaluate range loops.
+		// See Ctx.rloop().
 		ctx.brkD = 0
 		ctx.rloop(r.loopSrc, r, r.child)
+		if ctx.Err != nil {
+			err = ctx.Err
+			return
+		}
+	case r.typ == typeLoopCount:
+		// Evaluate counter loops.
+		// See Ctx.cloop().
+		ctx.brkD = 0
+		ctx.cloop(r, r.child)
 		if ctx.Err != nil {
 			err = ctx.Err
 			return
