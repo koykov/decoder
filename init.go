@@ -49,7 +49,7 @@ obj.Status = jso.person.state|default(1)`)
 		WithDescription("Testing stuff: don't use in production.")
 
 	// Register builtin callbacks.
-	RegisterCallbackFnNS("testns", "foo", "", func(_ *Ctx, _ []any) error { return nil }).
+	RegisterCallbackFnNS("testns", "foo", "nop", func(_ *Ctx, _ []any) error { return nil }).
 		WithDescription("Testing stuff: don't use in production.")
 
 	// Register assign functions.

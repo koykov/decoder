@@ -12,6 +12,8 @@ func TestDecoder(t *testing.T) {
 	t.Run("decoder2", func(t *testing.T) { testDecoder(t, "src", scenarioDec2) })
 	// t.Run("decoder3", func(t *testing.T) { testDecoder(t, "srcNested", scenarioDec3) }) // check decoder_legacy project
 	t.Run("decoder4", func(t *testing.T) { testDecoder(t, "src", scenarioDec4) })
+
+	t.Run("loop0", func(t *testing.T) { testDecoder(t, "src", scenarioNop) })
 }
 
 func testDecoder(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -37,6 +39,10 @@ func benchDecoder(b *testing.B, jsonKey string, assertFn func(t testing.TB, obj 
 		assertFn(b, obj)
 		obj.Clear()
 	}
+}
+
+func scenarioNop(t testing.TB, obj *testobj.TestObject) {
+	_, _ = t, obj
 }
 
 func scenarioDec0(t testing.TB, obj *testobj.TestObject) {

@@ -31,6 +31,11 @@ type Ctx struct {
 	bufBl bool
 	bufX  any
 	bufA  []any
+	// Range loop helper.
+	rl *RangeLoop
+
+	// Break depth.
+	brkD int
 
 	// List of variables taken from ipools and registered to return back.
 	ipv  []ipoolVar
@@ -317,6 +322,58 @@ func (ctx *Ctx) splitPath(path, separator string) {
 	}
 }
 
+func (ctx *Ctx) rloop(path []byte, r *rule, rs Ruleset) {
+	ctx.bufS = ctx.bufS[:0]
+	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
+	if len(ctx.bufS) == 0 {
+		return
+	}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
+		if v.key == ctx.bufS[0] {
+			// Look for free-range loop object in single-ordered list, see RangeLoop.
+			var rl *RangeLoop
+			if ctx.rl == nil {
+				// No range loops, create new one.
+				ctx.rl = NewRangeLoop(r, rs, ctx)
+				rl = ctx.rl
+			} else {
+				// Move forward over the list while new RL will found.
+				crl := ctx.rl
+				for {
+					if crl.stat == rlFree {
+						// Found it.
+						rl = crl
+						break
+					}
+					if crl.stat != rlFree {
+						// RL is in use, need to go deeper.
+						if crl.next != nil {
+							crl = crl.next
+							continue
+						} else {
+							// End of the list, create new free RL and exit from the loop.
+							crl.next = NewRangeLoop(r, rs, ctx)
+							rl = crl.next
+							break
+						}
+					}
+				}
+				// Prepare RL object.
+				rl.cntr = 0
+				rl.r = r
+				rl.rs = rs
+				rl.ctx = ctx
+			}
+			// Mark RL as inuse and loop over var using inspector.
+			rl.stat = rlInuse
+			ctx.Err = v.ins.Loop(v.val, rl, &ctx.buf, ctx.bufS[1:]...)
+			rl.stat = rlFree
+			return
+		}
+	}
+}
+
 // Reset the context.
 //
 // Made to use together with pools.
@@ -347,4 +404,6 @@ func (ctx *Ctx) Reset() {
 	ctx.Buf.Reset()
 	ctx.Buf1.Reset()
 	ctx.Buf2.Reset()
+
+	ctx.brkD = 0
 }
