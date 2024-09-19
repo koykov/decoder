@@ -124,8 +124,8 @@ func (rs *Ruleset) hrHelper(buf *bytebuf.Chain, depth int) {
 			rs.attrS(buf, "cond", r.loopCondOp.String())
 			rs.attrB(buf, "limit", r.loopLim)
 			rs.attrS(buf, "op", r.loopCntOp.String())
-			rs.attrI(buf, "brkD", r.loopBrkD)
 		}
+		rs.attrI(buf, "brkD", r.loopBrkD)
 
 		if len(r.mod) > 0 || len(r.child) > 0 {
 			buf.WriteByte('>')

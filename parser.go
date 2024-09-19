@@ -192,7 +192,7 @@ func (p *Parser) processCtl(dst Ruleset, root, r *rule, ctl []byte, offset int) 
 		r.typ = typeLBreak
 		m := reLoopLBrk.FindSubmatch(ctl)
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
-			root.loopBrkD = int(i)
+			r.loopBrkD = int(i)
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
@@ -204,7 +204,7 @@ func (p *Parser) processCtl(dst Ruleset, root, r *rule, ctl []byte, offset int) 
 		r.typ = typeBreak
 		m := reLoopBrk.FindSubmatch(ctl)
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
-			root.loopBrkD = int(i)
+			r.loopBrkD = int(i)
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
