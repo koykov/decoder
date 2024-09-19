@@ -1,0 +1,3 @@
+for k, v := range jso.ext.perm {
+  testns::nop(k, v)
+}

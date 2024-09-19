@@ -65,6 +65,38 @@ func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
 // Generic function to apply single rule.
 func followRule(r *rule, ctx *Ctx) (err error) {
 	switch {
+	case r.typ == typeLoopRange:
+		// Evaluate range loops.
+		// See Ctx.rloop().
+		ctx.brkD = 0
+		ctx.rloop(r.loopSrc, r, r.child)
+		if ctx.Err != nil {
+			err = ctx.Err
+			return
+		}
+	case r.typ == typeLoopCount:
+		// Evaluate counter loops.
+		// See Ctx.cloop().
+		ctx.brkD = 0
+		ctx.cloop(r, r.child)
+		if ctx.Err != nil {
+			err = ctx.Err
+			return
+		}
+	case r.typ == typeBreak:
+		// todo cover with test after condition implementation
+		// Break the loop.
+		ctx.brkD = r.loopBrkD
+		err = ErrBreakLoop
+	case r.typ == typeLBreak:
+		// todo cover with test after condition implementation
+		// Lazy break the loop.
+		ctx.brkD = r.loopBrkD
+		err = ErrLBreakLoop
+	case r.typ == typeContinue:
+		// todo cover with test after condition implementation
+		// Go to next iteration of loop.
+		err = ErrContLoop
 	case r.callback != nil:
 		// Rule is a callback.
 		// Collect arguments.

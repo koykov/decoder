@@ -1,0 +1,3 @@
+for i:=0; i<jso.person.status; i++ {
+  obj.Status = i
+}

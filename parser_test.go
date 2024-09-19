@@ -13,6 +13,12 @@ func TestParser(t *testing.T) {
 	t.Run("v2c0", testParser)
 	t.Run("v2ci0", testParser)
 	t.Run("cb0", testParser)
+
+	t.Run("loop_counter", testParser)
+	t.Run("loop_range", testParser)
+	t.Run("loop_break", testParser)
+	t.Run("loop_lazybreak", testParser)
+	t.Run("loop_continue", testParser)
 }
 
 func testParser(t *testing.T) {
@@ -23,7 +29,10 @@ func testParser(t *testing.T) {
 		return
 	}
 	if len(st.expect) > 0 {
-		rs, _ := Parse(st.origin)
+		rs, err := Parse(st.origin)
+		if err != nil {
+			t.Error(err)
+		}
 		r := rs.HumanReadable()
 		if !bytes.Equal(r, st.expect) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))

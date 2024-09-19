@@ -49,8 +49,14 @@ obj.Status = jso.person.state|default(1)`)
 		WithDescription("Testing stuff: don't use in production.")
 
 	// Register builtin callbacks.
-	RegisterCallbackFnNS("testns", "foo", "", func(_ *Ctx, _ []any) error { return nil }).
+	RegisterCallbackFnNS("testns", "foo", "nop", func(_ *Ctx, _ []any) error { return nil }).
 		WithDescription("Testing stuff: don't use in production.")
+	RegisterCallbackFnNS("fmt", "print", "", cbPrint).
+		WithParam("args ...any", "Arguments to print.").
+		WithDescription("Print args to console.")
+	RegisterCallbackFnNS("fmt", "println", "", cbPrintln).
+		WithParam("args ...any", "Arguments to print.").
+		WithDescription("Print args to console with trailing newline.")
 
 	// Register assign functions.
 	inspector.RegisterAssignFn(AssignVectorNode)

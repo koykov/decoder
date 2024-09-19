@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rules>
-	<rule dst="obj.Id" src="17" static="1"/>
-	<rule dst="ctx.finance" src="response.fin" ins="Finance"/>
-	<rule dst="ctx.perm" src="response.permission" ins="testns::Permission"/>
-	<rule dst="obj.Balance" src="finance.Amount"/>
-	<rule dst="ctx.foo" src="bar::baz(response.x)">
+	<rule type="0" dst="obj.Id" src="17" static="1"/>
+	<rule type="0" dst="ctx.finance" src="response.fin" ins="Finance"/>
+	<rule type="0" dst="ctx.perm" src="response.permission" ins="testns::Permission"/>
+	<rule type="0" dst="obj.Balance" src="finance.Amount"/>
+	<rule type="0" dst="ctx.foo" src="bar::baz(response.x)">
 		<mods>
 			<mod name="bar::baz" arg0="response.x"/>
 		</mods>

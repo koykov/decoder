@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules>
+	<rule type="1" key="k" val="v" src="history" cond="unk" op="unk">
+		<rules>
+			<rule type="2" counter="i" cond="<" limit="10" op="++">
+				<rules>
+					<rule callback="fmt::println" arg0="k" arg1="v"/>
+					<rule type="3" brkD="2"/>
+				</rules>
+			</rule>
+		</rules>
+	</rule>
+</rules>
