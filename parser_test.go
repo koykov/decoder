@@ -13,10 +13,12 @@ func TestParser(t *testing.T) {
 	t.Run("v2c0", testParser)
 	t.Run("v2ci0", testParser)
 	t.Run("cb0", testParser)
+
 	t.Run("loop_counter", testParser)
 	t.Run("loop_range", testParser)
 	t.Run("loop_break", testParser)
 	t.Run("loop_lazybreak", testParser)
+	t.Run("loop_continue", testParser)
 }
 
 func testParser(t *testing.T) {
