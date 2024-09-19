@@ -14,6 +14,9 @@ const (
 	typeOperator rtype = iota
 	typeLoopRange
 	typeLoopCount
+	typeLBreak
+	typeBreak
+	typeContinue
 )
 
 // Ruleset represents list of rules.
