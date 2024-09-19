@@ -83,6 +83,20 @@ func followRule(r *rule, ctx *Ctx) (err error) {
 			err = ctx.Err
 			return
 		}
+	case r.typ == typeBreak:
+		// todo cover with test after condition implementation
+		// Break the loop.
+		ctx.brkD = r.loopBrkD
+		err = ErrBreakLoop
+	case r.typ == typeLBreak:
+		// todo cover with test after condition implementation
+		// Lazy break the loop.
+		ctx.brkD = r.loopBrkD
+		err = ErrLBreakLoop
+	case r.typ == typeContinue:
+		// todo cover with test after condition implementation
+		// Go to next iteration of loop.
+		err = ErrContLoop
 	case r.callback != nil:
 		// Rule is a callback.
 		// Collect arguments.
