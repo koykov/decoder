@@ -91,7 +91,7 @@ func (rs *Ruleset) hrHelper(buf *bytebuf.Chain, depth int) {
 	for _, r := range *rs {
 		buf.WriteByteN('\t', depth+1)
 		buf.WriteString(`<rule`)
-		rs.attrI(buf, "type", int(r.typ))
+		rs.attrIF(buf, "type", int(r.typ), depth == 0)
 
 		switch {
 		case r.callback != nil:
@@ -114,6 +114,17 @@ func (rs *Ruleset) hrHelper(buf *bytebuf.Chain, depth int) {
 			if len(r.ins) > 0 {
 				rs.attrB(buf, "ins", r.ins)
 			}
+		}
+
+		if r.typ == typeLoopCount || r.typ == typeLoopRange {
+			rs.attrB(buf, "key", r.loopKey)
+			rs.attrB(buf, "val", r.loopVal)
+			rs.attrB(buf, "src", r.loopSrc)
+			rs.attrB(buf, "counter", r.loopCnt)
+			rs.attrS(buf, "cond", r.loopCondOp.String())
+			rs.attrB(buf, "limit", r.loopLim)
+			rs.attrS(buf, "op", r.loopCntOp.String())
+			rs.attrI(buf, "brkD", r.loopBrkD)
 		}
 
 		if len(r.mod) > 0 || len(r.child) > 0 {
@@ -197,6 +208,13 @@ func (rs *Ruleset) attrS(buf *bytebuf.Chain, key, s string) {
 }
 
 func (rs *Ruleset) attrI(buf *bytebuf.Chain, key string, i int) {
+	rs.attrIF(buf, key, i, false)
+}
+
+func (rs *Ruleset) attrIF(buf *bytebuf.Chain, key string, i int, force bool) {
+	if i == 0 && !force {
+		return
+	}
 	buf.WriteByte(' ').
 		WriteString(key).
 		WriteString(`="`).

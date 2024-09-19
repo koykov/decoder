@@ -2,8 +2,7 @@
 <rules>
 	<rule type="2" counter="i" cond="<" limit="10" op="++">
 		<rules>
-			<rule dst="obj.MaxIndex" src="i"/>
-			<rule dst="obj.StaticIndex" src="156" static="1"/>
+			<rule type="4"/>
 		</rules>
 	</rule>
 </rules>
