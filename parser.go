@@ -11,12 +11,11 @@ import (
 	"github.com/koykov/byteconv"
 )
 
-type Parser struct {
+type parser struct {
+	target
+
 	// Decoder body to parse.
 	body []byte
-
-	// Counters (depths) of conditions, loops and switches.
-	cc, cl, cs int
 }
 
 var (
@@ -36,6 +35,7 @@ var (
 	loopBrk  = []byte("break")
 	loopLBrk = []byte("lazybreak")
 	loopCont = []byte("continue")
+	_, _     = nl, noFmt
 
 	// Operation constants.
 	opEq  = []byte("==")
@@ -70,8 +70,8 @@ var (
 
 // Parse parses the decoder rules.
 func Parse(src []byte) (Ruleset, error) {
-	p := &Parser{body: src}
-	t := newTarget(p)
+	p := &parser{body: src}
+	t := p.targetSnapshot()
 	ruleset, _, err := p.parse(nil, nil, 0, t)
 	return ruleset, err
 }
@@ -90,7 +90,7 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 	return Parse(raw)
 }
 
-func (p *Parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset, int, error) {
+func (p *parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset, int, error) {
 	var (
 		ctl     []byte
 		eof, up bool
@@ -117,7 +117,7 @@ func (p *Parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset,
 	return dst, offset, err
 }
 
-func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
+func (p *parser) nextCtl(offset int) ([]byte, int, bool) {
 	var eof bool
 	if offset, eof = p.skipFmt(offset); eof {
 		return nil, offset, true
@@ -139,7 +139,7 @@ func (p *Parser) nextCtl(offset int) ([]byte, int, bool) {
 	return p.body[offset : offset+i], offset, false
 }
 
-func (p *Parser) processCtl(dst Ruleset, root, r *rule, ctl []byte, offset int) (Ruleset, int, bool, error) {
+func (p *parser) processCtl(dst Ruleset, root, r *rule, ctl []byte, offset int) (Ruleset, int, bool, error) {
 	var err error
 	switch {
 	case ctl[0] == '#' || bytes.HasPrefix(ctl, comment):
@@ -171,7 +171,7 @@ func (p *Parser) processCtl(dst Ruleset, root, r *rule, ctl []byte, offset int) 
 		} else {
 			return dst, offset, false, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", string(ctl), offset)
 		}
-		t := newTarget(p)
+		t := p.targetSnapshot()
 		p.cl++
 
 		offset += len(ctl)
@@ -293,7 +293,7 @@ func (p *Parser) processCtl(dst Ruleset, root, r *rule, ctl []byte, offset int) 
 	return dst, offset, false, err
 }
 
-func (p *Parser) skipFmt(offset int) (int, bool) {
+func (p *parser) skipFmt(offset int) (int, bool) {
 	n := len(p.body)
 	for i := offset; i < n; i++ {
 		c := p.body[i]
@@ -304,7 +304,7 @@ func (p *Parser) skipFmt(offset int) (int, bool) {
 	return n - 1, true
 }
 
-func (p *Parser) parseOp(src []byte) Op {
+func (p *parser) parseOp(src []byte) Op {
 	var op Op
 	switch {
 	case bytes.Equal(src, opEq):
@@ -327,6 +327,11 @@ func (p *Parser) parseOp(src []byte) Op {
 		op = OpUnk
 	}
 	return op
+}
+
+func (p *parser) targetSnapshot() *target {
+	cpy := p.target
+	return &cpy
 }
 
 // Split expression to variable and mods list.
