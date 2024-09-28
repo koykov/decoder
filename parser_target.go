@@ -1,34 +1,21 @@
 package decoder
 
-const (
-	// Types of targets.
-	targetCond = iota
-	targetLoop
-	targetSwitch
-)
-
 // Target is a storage of depths needed to provide proper out from conditions, loops and switches control structures.
-type target map[int]int
-
-// Create new target based on current parser state.
-func newTarget(p *Parser) *target {
-	return &target{
-		targetCond:   p.cc,
-		targetLoop:   p.cl,
-		targetSwitch: p.cs,
-	}
+type target struct {
+	// Counters (depths) of conditions, loops and switches.
+	cc, cl, cs int
 }
 
 // Check if parser reached the target.
-func (t *target) reached(p *Parser) bool {
-	return (*t)[targetCond] == p.cc &&
-		(*t)[targetLoop] == p.cl &&
-		(*t)[targetSwitch] == p.cs
+func (t *target) reached(p *parser) bool {
+	return t.cc == p.cc &&
+		t.cl == p.cl &&
+		t.cs == p.cs
 }
 
 // Check if target is a root.
 func (t *target) eqZero() bool {
-	return (*t)[targetCond] == 0 &&
-		(*t)[targetLoop] == 0 &&
-		(*t)[targetSwitch] == 0
+	return t.cc == 0 &&
+		t.cl == 0 &&
+		t.cs == 0
 }
