@@ -8,7 +8,7 @@ import (
 
 // Counter loop method to evaluate expressions like:
 // for i:=0; i<10; i++ { ... }
-func (ctx *Ctx) cloop(r *rule, rs Ruleset) {
+func (ctx *Ctx) cloop(r *node, _ []node) {
 	var (
 		cnt, lim  int64
 		allowIter bool

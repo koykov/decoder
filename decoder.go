@@ -9,7 +9,7 @@ import (
 // All temporary and intermediate data should be store in context logic to make using of decoders thread-safe.
 type Decoder struct {
 	Id string
-	rs Ruleset
+	rs Tree
 }
 
 var (
@@ -19,7 +19,7 @@ var (
 )
 
 // RegisterDecoder registers decoder ruleset in the registry.
-func RegisterDecoder(id string, rules Ruleset) {
+func RegisterDecoder(id string, rules Tree) {
 	decoder := Decoder{
 		Id: id,
 		rs: rules,
@@ -48,22 +48,22 @@ func Decode(id string, ctx *Ctx) error {
 }
 
 // DecodeRuleset applies decoder ruleset without using id.
-func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
-	n := len(ruleset)
+func DecodeRuleset(ruleset Tree, ctx *Ctx) (err error) {
+	n := len(ruleset.nodes)
 	if n == 0 {
 		return nil
 	}
-	_ = ruleset[n-1]
+	_ = ruleset.nodes[n-1]
 	for i := 0; i < n; i++ {
-		if err = followRule(&ruleset[i], ctx); err != nil {
+		if err = followRule(&ruleset.nodes[i], ctx); err != nil {
 			return
 		}
 	}
 	return
 }
 
-// Generic function to apply single rule.
-func followRule(r *rule, ctx *Ctx) (err error) {
+// Generic function to apply single node.
+func followRule(r *node, ctx *Ctx) (err error) {
 	switch {
 	case r.typ == typeLoopRange:
 		// Evaluate range loops.
@@ -116,7 +116,7 @@ func followRule(r *rule, ctx *Ctx) (err error) {
 		// Execute callback func.
 		err = r.callback(ctx, ctx.bufA)
 	case r.getter != nil:
-		// F2V rule.
+		// F2V node.
 		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
 		if n := len(r.arg); n > 0 {
@@ -139,12 +139,12 @@ func followRule(r *rule, ctx *Ctx) (err error) {
 		// Assign result to destination.
 		err = ctx.set(r.dst, ctx.bufX, r.ins)
 	case len(r.dst) > 0 && len(r.src) > 0 && r.static:
-		// V2V rule with static source.
+		// V2V node with static source.
 		// Just assign the source it to destination.
 		ctx.buf = append(ctx.buf[:0], r.src...)
 		err = ctx.set(r.dst, &ctx.buf, r.ins)
 	case len(r.dst) > 0 && len(r.src) > 0 && !r.static:
-		// V2V rule with dynamic source.
+		// V2V node with dynamic source.
 		// Get source value.
 		raw := ctx.get(r.src, r.subset)
 		if ctx.Err != nil {

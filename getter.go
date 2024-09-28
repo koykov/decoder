@@ -2,7 +2,7 @@ package decoder
 
 // GetterFn represents signature of getter callback function.
 //
-// args contains list of all arguments you passed in decoder rule.
+// args contains list of all arguments you passed in decoder node.
 type GetterFn func(ctx *Ctx, buf *any, args []any) error
 
 type GetterFnTuple struct {
