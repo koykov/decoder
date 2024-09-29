@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule type="2" counter="i" cond="<" limit="10" op="++">
-		<rules>
-			<rule type="4"/>
-		</rules>
-	</rule>
-</rules>
+<nodes>
+	<node type="2" counter="i" cond="<" limit="10" op="++">
+		<nodes>
+			<node type="4"/>
+		</nodes>
+	</node>
+</nodes>

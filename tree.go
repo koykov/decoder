@@ -7,9 +7,11 @@ import (
 	"github.com/koykov/byteconv"
 )
 
-// Tree represents list of rules.
+type Ruleset []node
+
+// Tree represents list of nodes.
 type Tree struct {
-	nodes []node
+	nodes Ruleset
 	hsum  uint64
 }
 
@@ -28,7 +30,13 @@ var (
 	hrQR = []byte(`&quot;`)
 )
 
-// HumanReadable builds human-readable view of the rules list.
+// Ruleset returns list of root nodes as old ruleset.
+// Implements to support old types.
+func (t *Tree) Ruleset() Ruleset {
+	return t.nodes
+}
+
+// HumanReadable builds human-readable view of the nodes list.
 func (t *Tree) HumanReadable() []byte {
 	if len(t.nodes) == 0 {
 		return nil
@@ -44,7 +52,7 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []node, depth int) {
 		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 	}
 	buf.WriteByteN('\t', depth).
-		WriteString("<rules>\n")
+		WriteString("<nodes>\n")
 	for _, n := range nodes {
 		buf.WriteByteN('\t', depth+1)
 		buf.WriteString(`<node`)
@@ -113,7 +121,7 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []node, depth int) {
 		}
 
 	}
-	buf.WriteByteN('\t', depth).WriteString("</rules>\n")
+	buf.WriteByteN('\t', depth).WriteString("</nodes>\n")
 }
 
 // Human readable helper for value.

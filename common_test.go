@@ -52,7 +52,7 @@ func init() {
 
 				st.origin, _ = os.ReadFile(path)
 				rules, _ := Parse(st.origin)
-				RegisterDecoder(st.key, rules)
+				RegisterDecoderKey(st.key, rules)
 
 				stages = append(stages, st)
 			}

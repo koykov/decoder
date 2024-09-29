@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule type="0" dst="dst.ID" src="obj.user_id"/>
-	<rule type="0" dst="dst.Name" src="John Ruth" static="1"/>
-	<rule type="0" dst="dst.Finance.Balance" src="obj.cost.total"/>
-	<rule type="0" dst="dst.Weight" src="12.45" static="1"/>
-</rules>
+<nodes>
+	<node type="0" dst="dst.ID" src="obj.user_id"/>
+	<node type="0" dst="dst.Name" src="John Ruth" static="1"/>
+	<node type="0" dst="dst.Finance.Balance" src="obj.cost.total"/>
+	<node type="0" dst="dst.Weight" src="12.45" static="1"/>
+</nodes>

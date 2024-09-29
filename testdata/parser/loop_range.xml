@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule type="1" key="k" val="v" src="history.List" cond="unk" op="unk">
-		<rules>
-			<rule dst="obj.MaxIndex" src="k"/>
-		</rules>
-	</rule>
-</rules>
+<nodes>
+	<node type="1" key="k" val="v" src="history.List" cond="unk" op="unk">
+		<nodes>
+			<node dst="obj.MaxIndex" src="k"/>
+		</nodes>
+	</node>
+</nodes>

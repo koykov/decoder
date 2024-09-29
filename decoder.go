@@ -1,61 +1,89 @@
 package decoder
 
-import (
-	"sync"
-)
-
 // Decoder represents main decoder object.
 // Decoder contains only parsed ruleset.
 // All temporary and intermediate data should be store in context logic to make using of decoders thread-safe.
 type Decoder struct {
-	Id string
-	rs Tree
+	ID   int
+	Key  string
+	tree *Tree
 }
 
-var (
-	// Decoders registry.
-	mux      sync.Mutex
-	registry = map[string]*Decoder{}
-)
+var decDB = initDB()
 
-// RegisterDecoder registers decoder ruleset in the registry.
-func RegisterDecoder(id string, rules Tree) {
-	decoder := Decoder{
-		Id: id,
-		rs: rules,
-	}
-	mux.Lock()
-	registry[id] = &decoder
-	mux.Unlock()
+// RegisterDecoder saves decoder by ID and key in the registry.
+//
+// You may use to access to the decoder both ID or key.
+// This function can be used in any time to register new decoders or overwrite existing to provide dynamics.
+func RegisterDecoder(id int, key string, tree *Tree) {
+	decDB.set(id, key, tree)
+}
+
+// RegisterDecoderID saves decoder using only ID.
+//
+// See RegisterDecoder().
+func RegisterDecoderID(id int, tree *Tree) {
+	decDB.set(id, "-1", tree)
+}
+
+// RegisterDecoderKey saves decoder using only key.
+//
+// See RegisterDecoder().
+func RegisterDecoderKey(key string, tree *Tree) {
+	decDB.set(-1, key, tree)
 }
 
 // Decode applies decoder rules using given id.
 //
 // ctx should contain all variables mentioned in the decoder's body.
-func Decode(id string, ctx *Ctx) error {
-	var (
-		decoder *Decoder
-		ok      bool
-	)
-	mux.Lock()
-	decoder, ok = registry[id]
-	mux.Unlock()
-	if !ok {
+func Decode(key string, ctx *Ctx) error {
+	dec := decDB.getKey(key)
+	if dec == nil {
 		return ErrDecoderNotFound
 	}
 	// Decode corresponding ruleset.
-	return DecodeRuleset(decoder.rs, ctx)
+	return DecodeRuleset(dec.tree.nodes, ctx)
+}
+
+// DecodeFallback applies decoder rules using one of keys: key or fallback key.
+//
+// Using this func you can handle cases when some objects have custom decoders and all other should use default decoders.
+// Example:
+// decoder registry:
+// * decoderUser
+// * decoderUser-15
+// user object with id 15
+// Call of decoder.DecoderFallback("decUser-15", "decUser", ctx) will take decoder decUser-15 from registry.
+// In other case, for user #4:
+// call of decoder.DecoderFallback("decUser-4", "decUser", ctx) will take default template decUser from registry.
+func DecodeFallback(key, fbKey string, ctx *Ctx) error {
+	dec := decDB.getKey1(key, fbKey)
+	if dec == nil {
+		return ErrDecoderNotFound
+	}
+	// Decode corresponding ruleset.
+	return DecodeRuleset(dec.tree.nodes, ctx)
+}
+
+// DecodeByID applies decoder rules using given id.
+func DecodeByID(id int, ctx *Ctx) error {
+	dec := decDB.getID(id)
+	if dec == nil {
+		return ErrDecoderNotFound
+	}
+	// Decode corresponding ruleset.
+	return DecodeRuleset(dec.tree.nodes, ctx)
 }
 
 // DecodeRuleset applies decoder ruleset without using id.
-func DecodeRuleset(ruleset Tree, ctx *Ctx) (err error) {
-	n := len(ruleset.nodes)
+func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
+	n := len(ruleset)
 	if n == 0 {
-		return nil
+		return
 	}
-	_ = ruleset.nodes[n-1]
+	_ = ruleset[n-1]
 	for i := 0; i < n; i++ {
-		if err = followRule(&ruleset.nodes[i], ctx); err != nil {
+		if err = followRule(&ruleset[i], ctx); err != nil {
 			return
 		}
 	}
@@ -187,3 +215,5 @@ func followRule(r *node, ctx *Ctx) (err error) {
 	}
 	return
 }
+
+var _, _, _, _ = RegisterDecoder, RegisterDecoderID, DecodeFallback, DecodeByID

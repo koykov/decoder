@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule type="0" dst="user.Registered" src="1" static="1"/>
-	<rule type="0" callback="testns::foo" arg0="user" arg1="req" sarg2="true"/>
-	<rule type="0" dst="user.Status" src="15" static="1"/>
-</rules>
+<nodes>
+	<node type="0" dst="user.Registered" src="1" static="1"/>
+	<node type="0" callback="testns::foo" arg0="user" arg1="req" sarg2="true"/>
+	<node type="0" dst="user.Status" src="15" static="1"/>
+</nodes>

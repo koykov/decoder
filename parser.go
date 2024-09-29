@@ -3,6 +3,7 @@ package decoder
 import (
 	"bytes"
 	"fmt"
+	"hash/crc64"
 	"os"
 	"regexp"
 	"strconv"
@@ -64,23 +65,30 @@ var (
 	reLoopBrk   = regexp.MustCompile(`break (\d+)`)
 	reLoopLBrk  = regexp.MustCompile(`lazybreak (\d+)`)
 
+	crc64Tab = crc64.MakeTable(crc64.ISO)
+
 	// Suppress go vet warning.
 	_ = ParseFile
 )
 
 // Parse parses the decoder rules.
-func Parse(src []byte) (Tree, error) {
+func Parse(src []byte) (*Tree, error) {
 	p := &parser{body: src}
+	hsum := crc64.Checksum(p.body, crc64Tab)
+	if tree := decDB.getTreeByHash(hsum); tree != nil {
+		return tree, nil
+	}
+
 	t := p.targetSnapshot()
 	nodes, _, err := p.parse(nil, nil, 0, t)
-	return Tree{
+	return &Tree{
 		nodes: nodes,
 		hsum:  0,
 	}, err
 }
 
 // ParseFile parses the file.
-func ParseFile(fileName string) (tree Tree, err error) {
+func ParseFile(fileName string) (tree *Tree, err error) {
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
 		return
@@ -88,7 +96,7 @@ func ParseFile(fileName string) (tree Tree, err error) {
 	var raw []byte
 	raw, err = os.ReadFile(fileName)
 	if err != nil {
-		return Tree{}, fmt.Errorf("couldn't read file %s", fileName)
+		return
 	}
 	return Parse(raw)
 }
