@@ -162,7 +162,7 @@ func (ctx *Ctx) BufferizeString(s string) string {
 	return byteconv.B2S(ctx.accB[off:])
 }
 
-// AcquireFrom receives new variable from given pool and register it to return batch after finish template processing.
+// AcquireFrom receives new variable from given pool and register it to return batch after finish decoder processing.
 func (ctx *Ctx) AcquireFrom(pool string) (any, error) {
 	v, err := ipoolRegistry.acquire(pool)
 	if err != nil {

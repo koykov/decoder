@@ -1,7 +1,7 @@
 # Decoder
 
 Dynamic decoders based on [inspector](https://github.com/koykov/inspector) framework
-and vector packages, like [jsonvector](https://github.com/koykov/jsonvector). 
+and vector packages, like [jsonvector](https://github.com/koykov/jsonvector).
 
 ## Basics
 
@@ -80,7 +80,7 @@ Modifier arguments:
 * `buf` is a type-free buffer that receives result of modifier's work. Please note the type `*any` is an
 alloc-free trick.
 * `val` if a value of variable from left side of modifier separator (`|`).
-* `args` array of modifier arguments, specified in rule. 
+* `args` array of modifier arguments, specified in rule.
 
 See [mod.go](mod.go) for details and [mod_builtin.go](mod_builtin.go) for more example of modifiers.
 
@@ -96,7 +96,7 @@ import (
 	_ "https://github.com/koykov/decoder_vector"
 )
 ```
-and vector's [features](https://github.com/koykov/decoder_vector) will be available inside templates.
+and vector's [features](https://github.com/koykov/decoder_vector) will be available inside decoders.
 
 Feel free to develop your own extensions. Strongly recommend to register new modifiers using namespaces, like
 [this](https://github.com/koykov/decoder_vector/blob/master/init.go#L15).

@@ -55,7 +55,7 @@ func Decode(key string, ctx *Ctx) error {
 // user object with id 15
 // Call of decoder.DecoderFallback("decUser-15", "decUser", ctx) will take decoder decUser-15 from registry.
 // In other case, for user #4:
-// call of decoder.DecoderFallback("decUser-4", "decUser", ctx) will take default template decUser from registry.
+// call of decoder.DecoderFallback("decUser-4", "decUser", ctx) will take default decoder decUser from registry.
 func DecodeFallback(key, fbKey string, ctx *Ctx) error {
 	dec := decDB.getKey1(key, fbKey)
 	if dec == nil {
