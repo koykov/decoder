@@ -162,7 +162,7 @@ func (ctx *Ctx) BufferizeString(s string) string {
 	return byteconv.B2S(ctx.accB[off:])
 }
 
-// AcquireFrom receives new variable from given pool and register it to return batch after finish template processing.
+// AcquireFrom receives new variable from given pool and register it to return batch after finish decoder processing.
 func (ctx *Ctx) AcquireFrom(pool string) (any, error) {
 	v, err := ipoolRegistry.acquire(pool)
 	if err != nil {
@@ -326,7 +326,7 @@ func (ctx *Ctx) splitPath(path, separator string) {
 	}
 }
 
-func (ctx *Ctx) rloop(path []byte, r *rule, rs Ruleset) {
+func (ctx *Ctx) rloop(path []byte, r *node, nodes []node) {
 	ctx.bufS = ctx.bufS[:0]
 	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
@@ -339,7 +339,7 @@ func (ctx *Ctx) rloop(path []byte, r *rule, rs Ruleset) {
 			var rl *RangeLoop
 			if ctx.rl == nil {
 				// No range loops, create new one.
-				ctx.rl = NewRangeLoop(r, rs, ctx)
+				ctx.rl = NewRangeLoop(r, nodes, ctx)
 				rl = ctx.rl
 			} else {
 				// Move forward over the list while new RL will found.
@@ -357,7 +357,7 @@ func (ctx *Ctx) rloop(path []byte, r *rule, rs Ruleset) {
 							continue
 						} else {
 							// End of the list, create new free RL and exit from the loop.
-							crl.next = NewRangeLoop(r, rs, ctx)
+							crl.next = NewRangeLoop(r, nodes, ctx)
 							rl = crl.next
 							break
 						}
@@ -365,8 +365,8 @@ func (ctx *Ctx) rloop(path []byte, r *rule, rs Ruleset) {
 				}
 				// Prepare RL object.
 				rl.cntr = 0
-				rl.r = r
-				rl.rs = rs
+				rl.n = r
+				rl.nodes = nodes
 				rl.ctx = ctx
 			}
 			// Mark RL as inuse and loop over var using inspector.

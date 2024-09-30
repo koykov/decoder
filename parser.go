@@ -3,6 +3,7 @@ package decoder
 import (
 	"bytes"
 	"fmt"
+	"hash/crc64"
 	"os"
 	"regexp"
 	"strconv"
@@ -64,20 +65,30 @@ var (
 	reLoopBrk   = regexp.MustCompile(`break (\d+)`)
 	reLoopLBrk  = regexp.MustCompile(`lazybreak (\d+)`)
 
+	crc64Tab = crc64.MakeTable(crc64.ISO)
+
 	// Suppress go vet warning.
 	_ = ParseFile
 )
 
 // Parse parses the decoder rules.
-func Parse(src []byte) (Ruleset, error) {
+func Parse(src []byte) (*Tree, error) {
 	p := &parser{body: src}
+	hsum := crc64.Checksum(p.body, crc64Tab)
+	if tree := decDB.getTreeByHash(hsum); tree != nil {
+		return tree, nil
+	}
+
 	t := p.targetSnapshot()
-	ruleset, _, err := p.parse(nil, nil, 0, t)
-	return ruleset, err
+	nodes, _, err := p.parse(nil, nil, 0, t)
+	return &Tree{
+		nodes: nodes,
+		hsum:  0,
+	}, err
 }
 
 // ParseFile parses the file.
-func ParseFile(fileName string) (rules Ruleset, err error) {
+func ParseFile(fileName string) (tree *Tree, err error) {
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
 		return
@@ -85,12 +96,12 @@ func ParseFile(fileName string) (rules Ruleset, err error) {
 	var raw []byte
 	raw, err = os.ReadFile(fileName)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't read file %s", fileName)
+		return
 	}
 	return Parse(raw)
 }
 
-func (p *parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset, int, error) {
+func (p *parser) parse(dst []node, root *node, offset int, t *target) ([]node, int, error) {
 	var (
 		ctl     []byte
 		eof, up bool
@@ -103,7 +114,7 @@ func (p *parser) parse(dst Ruleset, root *rule, offset int, t *target) (Ruleset,
 		if len(ctl) == 0 {
 			continue
 		}
-		r := rule{typ: typeOperator}
+		r := node{typ: typeOperator}
 		if dst, offset, up, err = p.processCtl(dst, root, &r, ctl, offset); err != nil {
 			return dst, offset, err
 		}
@@ -139,7 +150,7 @@ func (p *parser) nextCtl(offset int) ([]byte, int, bool) {
 	return p.body[offset : offset+i], offset, false
 }
 
-func (p *parser) processCtl(dst Ruleset, root, r *rule, ctl []byte, offset int) (Ruleset, int, bool, error) {
+func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) ([]node, int, bool, error) {
 	var err error
 	switch {
 	case ctl[0] == '#' || bytes.HasPrefix(ctl, comment):
@@ -288,7 +299,7 @@ func (p *parser) processCtl(dst Ruleset, root, r *rule, ctl []byte, offset int) 
 		dst = append(dst, *r)
 		offset += len(ctl)
 	default:
-		return dst, offset, false, fmt.Errorf("unknown rule '%s' at position %d", string(ctl), offset)
+		return dst, offset, false, fmt.Errorf("unknown node '%s' at position %d", string(ctl), offset)
 	}
 	return dst, offset, false, err
 }

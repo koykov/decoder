@@ -2,7 +2,7 @@ package decoder
 
 // CallbackFn represents the signature of callback function.
 //
-// args contains list of all arguments you passed in decoder rule.
+// args contains list of all arguments you passed in decoder node.
 type CallbackFn func(ctx *Ctx, args []any) error
 
 type CallbackFnTuple struct {

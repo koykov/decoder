@@ -1,57 +1,85 @@
 package decoder
 
-import (
-	"sync"
-)
-
 // Decoder represents main decoder object.
 // Decoder contains only parsed ruleset.
 // All temporary and intermediate data should be store in context logic to make using of decoders thread-safe.
 type Decoder struct {
-	Id string
-	rs Ruleset
+	ID   int
+	Key  string
+	tree *Tree
 }
 
-var (
-	// Decoders registry.
-	mux      sync.Mutex
-	registry = map[string]*Decoder{}
-)
+var decDB = initDB()
 
-// RegisterDecoder registers decoder ruleset in the registry.
-func RegisterDecoder(id string, rules Ruleset) {
-	decoder := Decoder{
-		Id: id,
-		rs: rules,
-	}
-	mux.Lock()
-	registry[id] = &decoder
-	mux.Unlock()
+// RegisterDecoder saves decoder by ID and key in the registry.
+//
+// You may use to access to the decoder both ID or key.
+// This function can be used in any time to register new decoders or overwrite existing to provide dynamics.
+func RegisterDecoder(id int, key string, tree *Tree) {
+	decDB.set(id, key, tree)
+}
+
+// RegisterDecoderID saves decoder using only ID.
+//
+// See RegisterDecoder().
+func RegisterDecoderID(id int, tree *Tree) {
+	decDB.set(id, "-1", tree)
+}
+
+// RegisterDecoderKey saves decoder using only key.
+//
+// See RegisterDecoder().
+func RegisterDecoderKey(key string, tree *Tree) {
+	decDB.set(-1, key, tree)
 }
 
 // Decode applies decoder rules using given id.
 //
 // ctx should contain all variables mentioned in the decoder's body.
-func Decode(id string, ctx *Ctx) error {
-	var (
-		decoder *Decoder
-		ok      bool
-	)
-	mux.Lock()
-	decoder, ok = registry[id]
-	mux.Unlock()
-	if !ok {
+func Decode(key string, ctx *Ctx) error {
+	dec := decDB.getKey(key)
+	if dec == nil {
 		return ErrDecoderNotFound
 	}
 	// Decode corresponding ruleset.
-	return DecodeRuleset(decoder.rs, ctx)
+	return DecodeRuleset(dec.tree.nodes, ctx)
+}
+
+// DecodeFallback applies decoder rules using one of keys: key or fallback key.
+//
+// Using this func you can handle cases when some objects have custom decoders and all other should use default decoders.
+// Example:
+// decoder registry:
+// * decoderUser
+// * decoderUser-15
+// user object with id 15
+// Call of decoder.DecoderFallback("decUser-15", "decUser", ctx) will take decoder decUser-15 from registry.
+// In other case, for user #4:
+// call of decoder.DecoderFallback("decUser-4", "decUser", ctx) will take default decoder decUser from registry.
+func DecodeFallback(key, fbKey string, ctx *Ctx) error {
+	dec := decDB.getKey1(key, fbKey)
+	if dec == nil {
+		return ErrDecoderNotFound
+	}
+	// Decode corresponding ruleset.
+	return DecodeRuleset(dec.tree.nodes, ctx)
+}
+
+// DecodeByID applies decoder rules using given id.
+func DecodeByID(id int, ctx *Ctx) error {
+	dec := decDB.getID(id)
+	if dec == nil {
+		return ErrDecoderNotFound
+	}
+	// Decode corresponding ruleset.
+	return DecodeRuleset(dec.tree.nodes, ctx)
 }
 
 // DecodeRuleset applies decoder ruleset without using id.
 func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
 	n := len(ruleset)
 	if n == 0 {
-		return nil
+		return
 	}
 	_ = ruleset[n-1]
 	for i := 0; i < n; i++ {
@@ -62,8 +90,8 @@ func DecodeRuleset(ruleset Ruleset, ctx *Ctx) (err error) {
 	return
 }
 
-// Generic function to apply single rule.
-func followRule(r *rule, ctx *Ctx) (err error) {
+// Generic function to apply single node.
+func followRule(r *node, ctx *Ctx) (err error) {
 	switch {
 	case r.typ == typeLoopRange:
 		// Evaluate range loops.
@@ -116,7 +144,7 @@ func followRule(r *rule, ctx *Ctx) (err error) {
 		// Execute callback func.
 		err = r.callback(ctx, ctx.bufA)
 	case r.getter != nil:
-		// F2V rule.
+		// F2V node.
 		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
 		if n := len(r.arg); n > 0 {
@@ -139,12 +167,12 @@ func followRule(r *rule, ctx *Ctx) (err error) {
 		// Assign result to destination.
 		err = ctx.set(r.dst, ctx.bufX, r.ins)
 	case len(r.dst) > 0 && len(r.src) > 0 && r.static:
-		// V2V rule with static source.
+		// V2V node with static source.
 		// Just assign the source it to destination.
 		ctx.buf = append(ctx.buf[:0], r.src...)
 		err = ctx.set(r.dst, &ctx.buf, r.ins)
 	case len(r.dst) > 0 && len(r.src) > 0 && !r.static:
-		// V2V rule with dynamic source.
+		// V2V node with dynamic source.
 		// Get source value.
 		raw := ctx.get(r.src, r.subset)
 		if ctx.Err != nil {
@@ -187,3 +215,5 @@ func followRule(r *rule, ctx *Ctx) (err error) {
 	}
 	return
 }
+
+var _, _, _, _ = RegisterDecoder, RegisterDecoderID, DecodeFallback, DecodeByID

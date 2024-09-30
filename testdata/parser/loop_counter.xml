@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule type="2" counter="i" cond="<" limit="10" op="++">
-		<rules>
-			<rule dst="obj.MaxIndex" src="i"/>
-			<rule dst="obj.StaticIndex" src="156" static="1"/>
-		</rules>
-	</rule>
-</rules>
+<nodes>
+	<node type="2" counter="i" cond="<" limit="10" op="++">
+		<nodes>
+			<node dst="obj.MaxIndex" src="i"/>
+			<node dst="obj.StaticIndex" src="156" static="1"/>
+		</nodes>
+	</node>
+</nodes>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rules>
-	<rule type="0" dst="obj.Id" src="17" static="1"/>
-	<rule type="0" dst="ctx.finance" src="response.fin" ins="Finance"/>
-	<rule type="0" dst="ctx.perm" src="response.permission" ins="testns::Permission"/>
-	<rule type="0" dst="obj.Balance" src="finance.Amount"/>
-	<rule type="0" dst="ctx.foo" src="bar::baz(response.x)">
+<nodes>
+	<node type="0" dst="obj.Id" src="17" static="1"/>
+	<node type="0" dst="ctx.finance" src="response.fin" ins="Finance"/>
+	<node type="0" dst="ctx.perm" src="response.permission" ins="testns::Permission"/>
+	<node type="0" dst="obj.Balance" src="finance.Amount"/>
+	<node type="0" dst="ctx.foo" src="bar::baz(response.x)">
 		<mods>
 			<mod name="bar::baz" arg0="response.x"/>
 		</mods>
-	</rule>
-</rules>
+	</node>
+</nodes>

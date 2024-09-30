@@ -13,37 +13,37 @@ const (
 
 // RangeLoop is a object that injects to inspector to perform range loop execution.
 type RangeLoop struct {
-	cntr int
-	stat uint
-	r    *rule
-	rs   Ruleset
-	ctx  *Ctx
-	next *RangeLoop
+	cntr  int
+	stat  uint
+	n     *node
+	nodes []node
+	ctx   *Ctx
+	next  *RangeLoop
 }
 
 // NewRangeLoop makes new RL.
-func NewRangeLoop(r *rule, rs Ruleset, ctx *Ctx) *RangeLoop {
+func NewRangeLoop(r *node, nodes []node, ctx *Ctx) *RangeLoop {
 	rl := RangeLoop{
-		r:   r,
-		rs:  rs,
-		ctx: ctx,
+		n:     r,
+		nodes: nodes,
+		ctx:   ctx,
 	}
 	return &rl
 }
 
 // RequireKey checks if node requires a key to store in the context.
 func (rl *RangeLoop) RequireKey() bool {
-	return len(rl.r.loopKey) > 0
+	return len(rl.n.loopKey) > 0
 }
 
 // SetKey saves key to the context.
 func (rl *RangeLoop) SetKey(val any, ins inspector.Inspector) {
-	rl.ctx.Set(byteconv.B2S(rl.r.loopKey), val, ins)
+	rl.ctx.Set(byteconv.B2S(rl.n.loopKey), val, ins)
 }
 
 // SetVal saves value to the context.
 func (rl *RangeLoop) SetVal(val any, ins inspector.Inspector) {
-	rl.ctx.Set(byteconv.B2S(rl.r.loopVal), val, ins)
+	rl.ctx.Set(byteconv.B2S(rl.n.loopVal), val, ins)
 }
 
 // Iterate performs the iteration.
@@ -54,8 +54,8 @@ func (rl *RangeLoop) Iterate() inspector.LoopCtl {
 
 	rl.cntr++
 	var err, lerr error
-	for i := 0; i < len(rl.r.child); i++ {
-		ch := &rl.r.child[i]
+	for i := 0; i < len(rl.n.child); i++ {
+		ch := &rl.n.child[i]
 		err = followRule(ch, rl.ctx)
 		if err == ErrLBreakLoop {
 			lerr = err
@@ -86,7 +86,7 @@ func (rl *RangeLoop) Reset() {
 		crl.stat = rlFree
 		crl.cntr = 0
 		crl.ctx = nil
-		crl.rs = nil
+		crl.nodes = crl.nodes[:0]
 		crl = crl.next
 	}
 }
