@@ -31,17 +31,17 @@ func (ctx *Ctx) cloop(r *node, _ []node) {
 	for {
 		// Check iteration allowance.
 		switch r.loopCondOp {
-		case OpLt:
+		case opLt:
 			allowIter = valLC < lim
-		case OpLtq:
+		case opLtq:
 			allowIter = valLC <= lim
-		case OpGt:
+		case opGt:
 			allowIter = valLC > lim
-		case OpGtq:
+		case opGtq:
 			allowIter = valLC >= lim
-		case OpEq:
+		case opEq:
 			allowIter = valLC == lim
-		case OpNq:
+		case opNq:
 			allowIter = valLC != lim
 		default:
 			ctx.Err = ErrWrongLoopCond
@@ -74,10 +74,10 @@ func (ctx *Ctx) cloop(r *node, _ []node) {
 
 		// Modify counter var.
 		switch r.loopCntOp {
-		case OpInc:
+		case opInc:
 			valLC++
 			ctx.bufLC[idxLC]++
-		case OpDec:
+		case opDec:
 			valLC--
 			ctx.bufLC[idxLC]--
 		default:

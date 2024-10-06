@@ -1,0 +1,3 @@
+if testns::check(obj.Id, 15.123, "foobar", false) {
+  obj.Id = 255
+}
