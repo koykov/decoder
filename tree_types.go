@@ -11,6 +11,7 @@ const (
 	typeBreak
 	typeContinue
 	typeCond
+	typeCondOK
 	typeCondTrue
 	typeCondFalse
 	typeElse

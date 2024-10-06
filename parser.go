@@ -75,6 +75,7 @@ var (
 	reCondAsOK    = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\) as (\w*)\s*;\s*([!\w]+)\s*{`)
 	reCondDotOK   = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)\.\((\w*)\)\s*;\s*([!\w]+)\s*{`)
 	reCondExprOK  = regexp.MustCompile(`if .*;\s*([!:\w]+)(.*)(.*)\s*{`)
+	reCondElse    = regexp.MustCompile(`}\s*else\s*{`)
 
 	crc64Tab = crc64.MakeTable(crc64.ISO)
 
@@ -202,13 +203,17 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 	case reCond.Match(ctl):
-		dst, offset, err = p.processCond(dst, root, ctl, offset)
+		dst, offset, err = p.processCond(dst, r, ctl, offset)
+	case reCondElse.Match(ctl):
+		root.typ = typeDiv
+		dst = append(dst, *root)
+		offset += len(ctl)
 	case ctl[0] == '}':
 		offset++
 		switch root.typ {
 		case typeLoopCount, typeLoopRange:
 			p.cl--
-		case typeCond, typeElse:
+		case typeCond, typeElse, typeDiv:
 			p.cc--
 		default:
 			// todo check other cases
@@ -366,8 +371,7 @@ func (p *parser) processCond(nodes []node, root *node, ctl []byte, offset int) (
 	t := p.targetSnapshot()
 	p.cc++
 
-	subNodes = make([]node, 0)
-	subNodes, offset, err = p.parse(subNodes, root, pos+len(ctl), t)
+	subNodes, offset, err = p.parse(subNodes, &node{typ: typeCond}, pos+len(ctl), t)
 	split = splitNodes(subNodes)
 
 	if len(split) > 0 {

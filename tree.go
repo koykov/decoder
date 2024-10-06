@@ -81,6 +81,71 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []node, depth int) {
 			}
 		}
 
+		if n.typ == typeCond {
+			if len(n.condL) > 0 {
+				t.attrB(buf, "left", n.condL)
+			}
+			if n.condOp != 0 {
+				t.attrS(buf, "op", n.condOp.String())
+			}
+			if len(n.condR) > 0 {
+				t.attrB(buf, "right", n.condR)
+			}
+			if len(n.condHlp) > 0 {
+				t.attrB(buf, "helper", n.condHlp)
+				if n.condLC > lcNone {
+					t.attrS(buf, "lc", n.condLC.String())
+				}
+				if len(n.condHlpArg) > 0 {
+					for j, a := range n.condHlpArg {
+						pfx := "arg"
+						if a.static {
+							pfx = "sarg"
+						}
+						buf.WriteByte(' ').
+							WriteString(pfx).
+							WriteInt(int64(j)).
+							WriteString(`="`).
+							Write(a.val).
+							WriteByte('"')
+					}
+				}
+			}
+		}
+
+		if n.typ == typeCondOK {
+			t.attrB(buf, "var", n.condOKL)
+			t.attrB(buf, "varOK", n.condOKR)
+
+			if len(n.condHlp) > 0 {
+				t.attrB(buf, "helper", n.condHlp)
+				if len(n.condHlpArg) > 0 {
+					for j, a := range n.condHlpArg {
+						pfx := "arg"
+						if a.static {
+							pfx = "sarg"
+						}
+						buf.WriteByte(' ').
+							WriteString(pfx).
+							WriteInt(int64(j)).
+							WriteString(`="`).
+							Write(a.val).
+							WriteByte('"')
+					}
+				}
+			}
+
+			if len(n.condL) > 0 {
+				t.attrB(buf, "left", n.condL)
+			}
+			if n.condOp != 0 {
+				t.attrS(buf, "op", n.condOp.String())
+			}
+			if len(n.condR) > 0 {
+				t.attrB(buf, "right", n.condR)
+			}
+		}
+
 		if n.typ == typeLoopCount || n.typ == typeLoopRange {
 			t.attrB(buf, "key", n.loopKey)
 			t.attrB(buf, "val", n.loopVal)
