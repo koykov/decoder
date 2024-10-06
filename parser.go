@@ -204,6 +204,39 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		dst = append(dst, *r)
 	case reCond.Match(ctl):
 		dst, offset, err = p.processCond(dst, r, ctl, offset)
+	case reCondOK.Match(ctl):
+		root.typ = typeCondOK
+		var m [][]byte
+		m = reCondAsOK.FindSubmatch(ctl)
+		if m == nil {
+			m = reCondDotOK.FindSubmatch(ctl)
+		}
+		if m == nil {
+			m = reCondOK.FindSubmatch(ctl)
+		}
+		root.condOKL, root.condOKR = m[1], m[2]
+		root.condHlp, root.condHlpArg = m[3], extractArgs(m[4])
+		if len(m[5]) > 0 {
+			root.condIns = m[5]
+		}
+		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExprOK, ctl)
+
+		t := p.targetSnapshot()
+		p.cc++
+
+		var subNodes []node
+		subNodes, offset, err = p.parse(subNodes, root, offset, t)
+		split := splitNodes(subNodes)
+		if len(split) > 0 {
+			nodeTrue := node{typ: typeCondTrue, child: split[0]}
+			root.child = append(root.child, nodeTrue)
+		}
+		if len(split) > 1 {
+			nodeFalse := node{typ: typeCondFalse, child: split[1]}
+			root.child = append(root.child, nodeFalse)
+		}
+
+		dst = append(dst, *root)
 	case reCondElse.Match(ctl):
 		root.typ = typeDiv
 		dst = append(dst, *root)
@@ -213,7 +246,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		switch root.typ {
 		case typeLoopCount, typeLoopRange:
 			p.cl--
-		case typeCond, typeElse, typeDiv:
+		case typeCond, typeCondOK, typeElse, typeDiv:
 			p.cc--
 		default:
 			// todo check other cases
