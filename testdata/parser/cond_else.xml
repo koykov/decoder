@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="6" left="obj.Balance" op=">" right="0">
+		<nodes>
+			<node type="8">
+				<nodes>
+					<node dst="order.Cost" src="obj.Balance"/>
+				</nodes>
+			</node>
+			<node type="9">
+				<nodes>
+					<node dst="order.Status" src="false" static="1"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>
