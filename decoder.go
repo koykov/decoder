@@ -125,6 +125,12 @@ func followRule(r *node, ctx *Ctx) (err error) {
 		// todo cover with test after condition implementation
 		// Go to next iteration of loop.
 		err = ErrContLoop
+	case r.typ == typeCond:
+		// todo implement me
+	case r.typ == typeCondOK:
+		// todo implement me
+	case r.typ == typeCondTrue || r.typ == typeCondFalse:
+		// todo implement me
 	case r.callback != nil:
 		// Rule is a callback.
 		// Collect arguments.
