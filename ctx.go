@@ -1,6 +1,7 @@
 package decoder
 
 import (
+	"bytes"
 	"strings"
 
 	"github.com/koykov/bytealg"
@@ -29,6 +30,7 @@ type Ctx struct {
 	lenBB int
 	bufS  []string
 	bufI  int64
+	bufI_ int
 	bufU  uint64
 	bufF  float64
 	bufBl bool
@@ -59,6 +61,11 @@ type ctxVar struct {
 	val any
 	ins inspector.Inspector
 }
+
+var (
+	qbL = []byte("[")
+	qbR = []byte("]")
+)
 
 // NewCtx makes new context object.
 func NewCtx() *Ctx {
@@ -378,6 +385,52 @@ func (ctx *Ctx) rloop(path []byte, r *node, nodes []node) {
 	}
 }
 
+func (ctx *Ctx) replaceQB(path []byte) []byte {
+	qbLi := bytes.Index(path, qbL)
+	qbRi := bytes.Index(path, qbR)
+	if qbLi != -1 && qbRi != -1 && qbLi < qbRi && qbRi < len(path) {
+		ctx.BufAcc.StakeOut()
+		ctx.BufAcc.Write(path[0:qbLi]).Write(dot)
+		ctx.chQB = false
+		ctx.bufX = ctx.get(path[qbLi+1:qbRi], nil)
+		if ctx.bufX != nil {
+			if err := ctx.BufAcc.WriteX(ctx.bufX).Error(); err != nil {
+				ctx.Err = err
+				ctx.chQB = true
+				return nil
+			}
+		}
+		ctx.chQB = true
+		ctx.BufAcc.Write(path[qbRi+1:])
+		path = ctx.BufAcc.StakedBytes()
+	}
+	return path
+}
+
+// Compare method.
+func (ctx *Ctx) cmp(path []byte, cond op, right []byte) bool {
+	// Split path.
+	ctx.bufS = ctx.bufS[:0]
+	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
+	if len(ctx.bufS) == 0 {
+		return false
+	}
+
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
+		if v.key == ctx.bufS[0] {
+			// Compare var with right value using inspector.
+			ctx.Err = v.ins.Compare(v.val, inspector.Op(cond), byteconv.B2S(right), &ctx.bufBl, ctx.bufS[1:]...)
+			if ctx.Err != nil {
+				return false
+			}
+			return ctx.bufBl
+		}
+	}
+
+	return false
+}
+
 // Reset the context.
 //
 // Made to use together with pools.
@@ -405,6 +458,7 @@ func (ctx *Ctx) Reset() {
 	ctx.bufS = ctx.bufS[:0]
 	ctx.bufA = ctx.bufA[:0]
 	ctx.bufLC = ctx.bufLC[:0]
+	ctx.bufI, ctx.bufI_ = 0, 0
 	ctx.BufAcc.Reset()
 	ctx.Buf.Reset()
 	ctx.Buf1.Reset()
