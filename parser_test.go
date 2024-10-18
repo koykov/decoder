@@ -24,6 +24,7 @@ func TestParser(t *testing.T) {
 	t.Run("cond_else", testParser)
 	t.Run("cond_helper", testParser)
 	t.Run("condOK", testParser)
+	t.Run("condNotOK", testParser)
 }
 
 func testParser(t *testing.T) {

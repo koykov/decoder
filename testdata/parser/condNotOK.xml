@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="7" var="x" varOK="tst" helper="testns::condHelper" arg0="vars" left="tst" op="!=" right="true">
+		<nodes>
+			<node type="8">
+				<nodes>
+					<node dst="obj.Balance" src="finance.Amount"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>

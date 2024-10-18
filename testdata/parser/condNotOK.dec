@@ -1,0 +1,3 @@
+if x, tst := testns::condHelper(vars); !tst {
+  obj.Balance = finance.Amount
+}
