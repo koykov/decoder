@@ -178,16 +178,18 @@ func followRule(r *node, ctx *Ctx) (err error) {
 		if ok {
 			// True case.
 			if len(r.child) > 0 {
-				err = DecodeRuleset(r.child[0].child, ctx)
+				err = followRule(&r.child[0], ctx)
 			}
 		} else {
 			// Else case.
 			if len(r.child) > 1 {
-				err = DecodeRuleset(r.child[1].child, ctx)
+				err = followRule(&r.child[1], ctx)
 			}
 		}
 	case r.typ == typeCondTrue || r.typ == typeCondFalse:
-		// todo implement me
+		if err = DecodeRuleset(r.child, ctx); err != nil {
+			return
+		}
 	case r.callback != nil:
 		// Rule is a callback.
 		// Collect arguments.
