@@ -15,6 +15,9 @@ func TestDecoder(t *testing.T) {
 
 	t.Run("loop0", func(t *testing.T) { testDecoder(t, "src", scenarioNop) })
 	t.Run("loop1", func(t *testing.T) { testDecoder(t, "src", scenarioLoop1) })
+
+	t.Run("cond", func(t *testing.T) { testDecoder(t, "src", scenarioCond) })
+	t.Run("cond_else", func(t *testing.T) { testDecoder(t, "src", scenarioCond1) })
 }
 
 func testDecoder(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -29,6 +32,12 @@ func BenchmarkDecoder(b *testing.B) {
 	b.Run("decoder2", func(b *testing.B) { benchDecoder(b, "src", scenarioDec2) })
 	// b.Run("decoder3", func(b *testing.B) { benchDecoder(b, "srcNested", scenarioDec3) }) // check decoder_legacy project
 	b.Run("decoder4", func(b *testing.B) { benchDecoder(b, "src", scenarioDec4) })
+
+	b.Run("loop0", func(b *testing.B) { benchDecoder(b, "src", scenarioNop) })
+	b.Run("loop1", func(b *testing.B) { benchDecoder(b, "src", scenarioLoop1) })
+
+	b.Run("cond", func(b *testing.B) { benchDecoder(b, "src", scenarioCond) })
+	b.Run("cond_else", func(b *testing.B) { benchDecoder(b, "src", scenarioCond1) })
 }
 
 func benchDecoder(b *testing.B, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -88,4 +97,12 @@ func scenarioDec4(t testing.TB, obj *testobj.TestObject) {
 
 func scenarioLoop1(t testing.TB, obj *testobj.TestObject) {
 	assertI32(t, "Status", obj.Status, 66)
+}
+
+func scenarioCond(t testing.TB, obj *testobj.TestObject) {
+	assertU64(t, "Ustate", obj.Ustate, 17)
+}
+
+func scenarioCond1(t testing.TB, obj *testobj.TestObject) {
+	assertU64(t, "Ustate", obj.Ustate, 23)
 }

@@ -19,6 +19,11 @@ func TestParser(t *testing.T) {
 	t.Run("loop_break", testParser)
 	t.Run("loop_lazybreak", testParser)
 	t.Run("loop_continue", testParser)
+
+	t.Run("cond", testParser)
+	t.Run("cond_else", testParser)
+	t.Run("cond_helper", testParser)
+	t.Run("condOK", testParser)
 }
 
 func testParser(t *testing.T) {

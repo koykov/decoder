@@ -1,0 +1,5 @@
+if jso.person.status < 50 {
+  obj.Ustate = 17
+} else {
+  obj.Ustate = 23
+}
