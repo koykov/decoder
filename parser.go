@@ -205,7 +205,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		return dst, offset, false, err
 	}
 	if reCondOK.Match(ctl) {
-		root.typ = typeCondOK
+		r.typ = typeCondOK
 		var m [][]byte
 		m = reCondAsOK.FindSubmatch(ctl)
 		if m == nil {
@@ -214,29 +214,30 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		if m == nil {
 			m = reCondOK.FindSubmatch(ctl)
 		}
-		root.condOKL, root.condOKR = m[1], m[2]
-		root.condHlp, root.condHlpArg = m[3], extractArgs(m[4])
+		r.condOKL, r.condOKR = m[1], m[2]
+		r.condHlp, r.condHlpArg = m[3], extractArgs(m[4])
 		if len(m[5]) > 0 {
-			root.condIns = m[5]
+			r.condIns = m[5]
 		}
-		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExprOK, ctl)
+		r.condL, r.condR, r.condStaticL, r.condStaticR, r.condOp = p.parseCondExpr(reCondExprOK, ctl)
 
 		t := p.targetSnapshot()
 		p.cc++
 
 		var subNodes []node
-		subNodes, offset, err = p.parse(subNodes, root, offset, t)
+		offset += len(ctl)
+		subNodes, offset, err = p.parse(subNodes, r, offset, t)
 		split := splitNodes(subNodes)
 		if len(split) > 0 {
 			nodeTrue := node{typ: typeCondTrue, child: split[0]}
-			root.child = append(root.child, nodeTrue)
+			r.child = append(r.child, nodeTrue)
 		}
 		if len(split) > 1 {
 			nodeFalse := node{typ: typeCondFalse, child: split[1]}
-			root.child = append(root.child, nodeFalse)
+			r.child = append(r.child, nodeFalse)
 		}
 
-		dst = append(dst, *root)
+		dst = append(dst, *r)
 		return dst, offset, false, err
 	}
 	if reCond.Match(ctl) {
