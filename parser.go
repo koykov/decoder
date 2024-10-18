@@ -164,11 +164,11 @@ func (p *parser) nextCtl(offset int) ([]byte, int, bool) {
 
 func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) ([]node, int, bool, error) {
 	var err error
-	switch {
-	case ctl[0] == '#' || bytes.HasPrefix(ctl, comment):
+	if ctl[0] == '#' || bytes.HasPrefix(ctl, comment) {
 		offset += len(ctl)
 		return dst, offset, false, nil
-	case reLoop.Match(ctl):
+	}
+	if reLoop.Match(ctl) {
 		if m := reLoopRange.FindSubmatch(ctl); m != nil {
 			r.typ = typeLoopRange
 			if bytes.Contains(m[1], comma) {
@@ -202,9 +202,9 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			return dst, offset, false, err
 		}
 		dst = append(dst, *r)
-	case reCond.Match(ctl):
-		dst, offset, err = p.processCond(dst, r, ctl, offset)
-	case reCondOK.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reCondOK.Match(ctl) {
 		root.typ = typeCondOK
 		var m [][]byte
 		m = reCondAsOK.FindSubmatch(ctl)
@@ -237,11 +237,19 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 
 		dst = append(dst, *root)
-	case reCondElse.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reCond.Match(ctl) {
+		dst, offset, err = p.processCond(dst, r, ctl, offset)
+		return dst, offset, false, err
+	}
+	if reCondElse.Match(ctl) {
 		root.typ = typeDiv
 		dst = append(dst, *root)
 		offset += len(ctl)
-	case ctl[0] == '}':
+		return dst, offset, false, err
+	}
+	if ctl[0] == '}' {
 		offset++
 		switch root.typ {
 		case typeLoopCount, typeLoopRange:
@@ -252,7 +260,8 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			// todo check other cases
 		}
 		return dst, offset, true, err
-	case reLoopLBrk.Match(ctl):
+	}
+	if reLoopLBrk.Match(ctl) {
 		r.typ = typeLBreak
 		m := reLoopLBrk.FindSubmatch(ctl)
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
@@ -260,11 +269,15 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case bytes.Equal(ctl, loopLBrk):
+		return dst, offset, false, err
+	}
+	if bytes.Equal(ctl, loopLBrk) {
 		r.typ = typeLBreak
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case reLoopBrk.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reLoopBrk.Match(ctl) {
 		r.typ = typeBreak
 		m := reLoopBrk.FindSubmatch(ctl)
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
@@ -272,15 +285,21 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case bytes.Equal(ctl, loopBrk):
+		return dst, offset, false, err
+	}
+	if bytes.Equal(ctl, loopBrk) {
 		r.typ = typeBreak
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case bytes.Equal(ctl, loopCont):
+		return dst, offset, false, err
+	}
+	if bytes.Equal(ctl, loopCont) {
 		r.typ = typeContinue
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case reAssignV2C.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reAssignV2C.Match(ctl) {
 		// Var-to-ctx expression caught.
 		if m := reAssignV2CAs.FindSubmatch(ctl); m != nil {
 			r.dst = m[1]
@@ -303,7 +322,9 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case reAssignV2V.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reAssignV2V.Match(ctl) {
 		// Var-to-var expression caught.
 		if m := reAssignF2V.FindSubmatch(ctl); m != nil {
 			// Func-to-var expression caught.
@@ -322,7 +343,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			}
 			if r.getter == nil && len(r.mod) == 0 {
 				err = fmt.Errorf("unknown getter nor modifier function '%s' at offset %d", m[2], offset)
-				break
+				return dst, offset, false, err
 			}
 		} else if m = reAssignV2V.FindSubmatch(ctl); m != nil {
 			// Var-to-var ...
@@ -336,7 +357,9 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case reFunction.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reFunction.Match(ctl) {
 		m := reFunction.FindSubmatch(ctl)
 		// Function expression caught.
 		r.src = m[1]
@@ -344,17 +367,16 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		fn := GetCallbackFn(byteconv.B2S(m[1]))
 		if fn == nil {
 			err = fmt.Errorf("unknown callback function '%s' at offset %d", m[1], offset)
-			break
+			return dst, offset, false, err
 		}
 		r.callback = fn
 		r.arg = extractArgs(m[2])
 
 		dst = append(dst, *r)
 		offset += len(ctl)
-	default:
-		return dst, offset, false, fmt.Errorf("unknown node '%s' at position %d", string(ctl), offset)
+		return dst, offset, false, err
 	}
-	return dst, offset, false, err
+	return dst, offset, false, fmt.Errorf("unknown node '%s' at position %d", string(ctl), offset)
 }
 
 func (p *parser) processCond(nodes []node, root *node, ctl []byte, offset int) ([]node, int, error) {
