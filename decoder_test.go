@@ -13,8 +13,8 @@ func TestDecoder(t *testing.T) {
 	// t.Run("decoder3", func(t *testing.T) { testDecoder(t, "srcNested", scenarioDec3) }) // check decoder_legacy project
 	t.Run("decoder4", func(t *testing.T) { testDecoder(t, "src", scenarioDec4) })
 
-	t.Run("loop0", func(t *testing.T) { testDecoder(t, "src", scenarioNop) })
-	t.Run("loop1", func(t *testing.T) { testDecoder(t, "src", scenarioLoop1) })
+	t.Run("loop_range", func(t *testing.T) { testDecoder(t, "src", scenarioNop) })
+	t.Run("loop_counter", func(t *testing.T) { testDecoder(t, "src", scenarioLoop1) })
 
 	t.Run("cond", func(t *testing.T) { testDecoder(t, "src", scenarioCond) })
 	t.Run("cond_else", func(t *testing.T) { testDecoder(t, "src", scenarioCond1) })
