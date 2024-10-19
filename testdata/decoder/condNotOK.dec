@@ -1,0 +1,5 @@
+if x, allow := testns::condHelperNotOK(jso.identifier); !allow {
+  obj.Name = "N/D"
+} else {
+  obj.Name = x
+}

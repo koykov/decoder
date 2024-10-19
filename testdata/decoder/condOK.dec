@@ -1,0 +1,3 @@
+if x, ok := testns::condHelperOK(jso.identifier); ok {
+  obj.Id = x
+}

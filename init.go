@@ -49,8 +49,6 @@ obj.Status = jso.person.state|default(1)`)
 		WithDescription("Testing stuff: don't use in production.")
 
 	// Register builtin callbacks.
-	RegisterCallbackFnNS("testns", "foo", "nop", func(_ *Ctx, _ []any) error { return nil }).
-		WithDescription("Testing stuff: don't use in production.")
 	RegisterCallbackFnNS("fmt", "print", "", cbPrint).
 		WithParam("args ...any", "Arguments to print.").
 		WithDescription("Print args to console.")
@@ -60,4 +58,12 @@ obj.Status = jso.person.state|default(1)`)
 
 	// Register assign functions.
 	inspector.RegisterAssignFn(AssignVectorNode)
+
+	// Register testing stuff.
+	RegisterCondOKFnNS("testns", "condHelperOK", func(_ *Ctx, v *any, ok *bool, _ []any) { *v, *ok = 15, true }).
+		WithDescription("Testing stuff: don't use in production.")
+	RegisterCondOKFnNS("testns", "condHelperNotOK", func(_ *Ctx, v *any, ok *bool, _ []any) { *v, *ok = 17, false }).
+		WithDescription("Testing stuff: don't use in production.")
+	RegisterCallbackFnNS("testns", "foo", "nop", func(_ *Ctx, _ []any) error { return nil }).
+		WithDescription("Testing stuff: don't use in production.")
 }
