@@ -1,3 +1,4 @@
 for i:=0; i<jso.person.status; i++ {
+  if i==50 {lazybreak}
   obj.Status = i
 }

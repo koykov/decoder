@@ -35,8 +35,8 @@ func BenchmarkDecoder(b *testing.B) {
 	// b.Run("decoder3", func(b *testing.B) { benchDecoder(b, "srcNested", scenarioDec3) }) // check decoder_legacy project
 	b.Run("decoder4", func(b *testing.B) { benchDecoder(b, "src", scenarioDec4) })
 
-	b.Run("loop0", func(b *testing.B) { benchDecoder(b, "src", scenarioNop) })
-	b.Run("loop1", func(b *testing.B) { benchDecoder(b, "src", scenarioLoop1) })
+	b.Run("loop_range", func(b *testing.B) { benchDecoder(b, "src", scenarioNop) })
+	b.Run("loop_counter", func(b *testing.B) { benchDecoder(b, "src", scenarioLoop1) })
 
 	b.Run("cond", func(b *testing.B) { benchDecoder(b, "src", scenarioCond) })
 	b.Run("cond_else", func(b *testing.B) { benchDecoder(b, "src", scenarioCond1) })
@@ -101,7 +101,7 @@ func scenarioDec4(t testing.TB, obj *testobj.TestObject) {
 }
 
 func scenarioLoop1(t testing.TB, obj *testobj.TestObject) {
-	assertI32(t, "Status", obj.Status, 66)
+	assertI32(t, "Status", obj.Status, 50)
 }
 
 func scenarioCond(t testing.TB, obj *testobj.TestObject) {
