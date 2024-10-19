@@ -1,0 +1,3 @@
+if obj.Id == 17 {
+  obj.Balance = finance.Amount
+}

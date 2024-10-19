@@ -19,6 +19,9 @@ var (
 	ErrLBreakLoop    = errors.New("lazybreak loop")
 	ErrContLoop      = errors.New("continue loop")
 
+	ErrSenselessCond   = errors.New("comparison of two static args")
+	ErrCondHlpNotFound = errors.New("condition helper not found")
+
 	ErrUnknownPool = errors.New("unknown pool")
 
 	_ = ErrCbPoorArgs

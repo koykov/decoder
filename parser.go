@@ -36,17 +36,19 @@ var (
 	loopBrk  = []byte("break")
 	loopLBrk = []byte("lazybreak")
 	loopCont = []byte("continue")
+	condLen  = []byte("len")
+	condCap  = []byte("cap")
 	_, _     = nl, noFmt
 
 	// Operation constants.
-	opEq  = []byte("==")
-	opNq  = []byte("!=")
-	opGt  = []byte(">")
-	opGtq = []byte(">=")
-	opLt  = []byte("<")
-	opLtq = []byte("<=")
-	opInc = []byte("++")
-	opDec = []byte("--")
+	opEq_  = []byte("==")
+	opNq_  = []byte("!=")
+	opGt_  = []byte(">")
+	opGtq_ = []byte(">=")
+	opLt_  = []byte("<")
+	opLtq_ = []byte("<=")
+	opInc_ = []byte("++")
+	opDec_ = []byte("--")
 
 	// Regexp to parse expressions.
 	reAssignV2CAs  = regexp.MustCompile(`((?:context|ctx)\.[\w\d\\.\[\]]+)\s*=\s*(.*) as ([:\w]*)`)
@@ -64,6 +66,16 @@ var (
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*\{`)
 	reLoopBrk   = regexp.MustCompile(`break (\d+)`)
 	reLoopLBrk  = regexp.MustCompile(`lazybreak (\d+)`)
+
+	reCond        = regexp.MustCompile(`if .*`)
+	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)\s*{`)
+	reCondHelper  = regexp.MustCompile(`if ([^(]+)\(*([^)]*)\)\s*{`)
+	reCondComplex = regexp.MustCompile(`if .*&&|\|\||\(|\).*\s*{`)
+	reCondOK      = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)(.*)\s*;\s*([!\w]+)\s*{`)
+	reCondAsOK    = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\) as (\w*)\s*;\s*([!\w]+)\s*{`)
+	reCondDotOK   = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)\.\((\w*)\)\s*;\s*([!\w]+)\s*{`)
+	reCondExprOK  = regexp.MustCompile(`if .*;\s*([!:\w]+)(.*)(.*)\s*{`)
+	reCondElse    = regexp.MustCompile(`}\s*else\s*{`)
 
 	crc64Tab = crc64.MakeTable(crc64.ISO)
 
@@ -152,11 +164,11 @@ func (p *parser) nextCtl(offset int) ([]byte, int, bool) {
 
 func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) ([]node, int, bool, error) {
 	var err error
-	switch {
-	case ctl[0] == '#' || bytes.HasPrefix(ctl, comment):
+	if ctl[0] == '#' || bytes.HasPrefix(ctl, comment) {
 		offset += len(ctl)
 		return dst, offset, false, nil
-	case reLoop.Match(ctl):
+	}
+	if reLoop.Match(ctl) {
 		if m := reLoopRange.FindSubmatch(ctl); m != nil {
 			r.typ = typeLoopRange
 			if bytes.Contains(m[1], comma) {
@@ -190,16 +202,67 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			return dst, offset, false, err
 		}
 		dst = append(dst, *r)
-	case ctl[0] == '}':
+		return dst, offset, false, err
+	}
+	if reCondOK.Match(ctl) {
+		r.typ = typeCondOK
+		var m [][]byte
+		m = reCondAsOK.FindSubmatch(ctl)
+		if m == nil {
+			m = reCondDotOK.FindSubmatch(ctl)
+		}
+		if m == nil {
+			m = reCondOK.FindSubmatch(ctl)
+		}
+		r.condOKL, r.condOKR = m[1], m[2]
+		r.condHlp, r.condHlpArg = m[3], extractArgs(m[4])
+		if len(m[5]) > 0 {
+			r.condIns = m[5]
+		}
+		r.condL, r.condR, r.condStaticL, r.condStaticR, r.condOp = p.parseCondExpr(reCondExprOK, ctl)
+
+		t := p.targetSnapshot()
+		p.cc++
+
+		var subNodes []node
+		offset += len(ctl)
+		subNodes, offset, err = p.parse(subNodes, &node{typ: typeCondOK}, offset, t)
+		split := splitNodes(subNodes)
+		if len(split) > 0 {
+			nodeTrue := node{typ: typeCondTrue, child: split[0]}
+			r.child = append(r.child, nodeTrue)
+		}
+		if len(split) > 1 {
+			nodeFalse := node{typ: typeCondFalse, child: split[1]}
+			r.child = append(r.child, nodeFalse)
+		}
+
+		dst = append(dst, *r)
+		return dst, offset, false, err
+	}
+	if reCond.Match(ctl) {
+		dst, offset, err = p.processCond(dst, r, ctl, offset)
+		return dst, offset, false, err
+	}
+	if reCondElse.Match(ctl) {
+		root.typ = typeDiv
+		dst = append(dst, *root)
+		offset += len(ctl)
+		return dst, offset, false, err
+	}
+	if ctl[0] == '}' {
 		offset++
 		switch root.typ {
 		case typeLoopCount, typeLoopRange:
 			p.cl--
+		case typeCond, typeCondOK, typeElse, typeDiv:
+			p.cc--
 		default:
 			// todo check other cases
 		}
 		return dst, offset, true, err
-	case reLoopLBrk.Match(ctl):
+	}
+	if reLoopLBrk.Match(ctl) {
 		r.typ = typeLBreak
 		m := reLoopLBrk.FindSubmatch(ctl)
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
@@ -207,11 +270,15 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case bytes.Equal(ctl, loopLBrk):
+		return dst, offset, false, err
+	}
+	if bytes.Equal(ctl, loopLBrk) {
 		r.typ = typeLBreak
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case reLoopBrk.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reLoopBrk.Match(ctl) {
 		r.typ = typeBreak
 		m := reLoopBrk.FindSubmatch(ctl)
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
@@ -219,15 +286,21 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case bytes.Equal(ctl, loopBrk):
+		return dst, offset, false, err
+	}
+	if bytes.Equal(ctl, loopBrk) {
 		r.typ = typeBreak
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case bytes.Equal(ctl, loopCont):
+		return dst, offset, false, err
+	}
+	if bytes.Equal(ctl, loopCont) {
 		r.typ = typeContinue
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case reAssignV2C.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reAssignV2C.Match(ctl) {
 		// Var-to-ctx expression caught.
 		if m := reAssignV2CAs.FindSubmatch(ctl); m != nil {
 			r.dst = m[1]
@@ -250,7 +323,9 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case reAssignV2V.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reAssignV2V.Match(ctl) {
 		// Var-to-var expression caught.
 		if m := reAssignF2V.FindSubmatch(ctl); m != nil {
 			// Func-to-var expression caught.
@@ -269,7 +344,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			}
 			if r.getter == nil && len(r.mod) == 0 {
 				err = fmt.Errorf("unknown getter nor modifier function '%s' at offset %d", m[2], offset)
-				break
+				return dst, offset, false, err
 			}
 		} else if m = reAssignV2V.FindSubmatch(ctl); m != nil {
 			// Var-to-var ...
@@ -283,7 +358,9 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
-	case reFunction.Match(ctl):
+		return dst, offset, false, err
+	}
+	if reFunction.Match(ctl) {
 		m := reFunction.FindSubmatch(ctl)
 		// Function expression caught.
 		r.src = m[1]
@@ -291,17 +368,104 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		fn := GetCallbackFn(byteconv.B2S(m[1]))
 		if fn == nil {
 			err = fmt.Errorf("unknown callback function '%s' at offset %d", m[1], offset)
-			break
+			return dst, offset, false, err
 		}
 		r.callback = fn
 		r.arg = extractArgs(m[2])
 
 		dst = append(dst, *r)
 		offset += len(ctl)
-	default:
-		return dst, offset, false, fmt.Errorf("unknown node '%s' at position %d", string(ctl), offset)
+		return dst, offset, false, err
 	}
-	return dst, offset, false, err
+	return dst, offset, false, fmt.Errorf("unknown node '%s' at position %d", string(ctl), offset)
+}
+
+func (p *parser) processCond(nodes []node, root *node, ctl []byte, offset int) ([]node, int, error) {
+	var (
+		subNodes []node
+		split    [][]node
+		err      error
+		pos      = offset
+	)
+	// Check complexity of the condition first.
+	if reCondComplex.Match(ctl) {
+		// Check if condition may be handled by the condition helper.
+		if m := reCondHelper.FindSubmatch(ctl); m != nil {
+			root.typ = typeCond
+			root.condHlp = m[1]
+			root.condHlpArg = extractArgs(m[2])
+			root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ctl)
+			switch {
+			case bytes.Equal(root.condHlp, condLen):
+				root.condLC = lcLen
+			case bytes.Equal(root.condHlp, condCap):
+				root.condLC = lcCap
+			}
+
+			t := p.targetSnapshot()
+			p.cc++
+			subNodes, offset, err = p.parse(subNodes, root, pos+len(ctl), t)
+			split = splitNodes(subNodes)
+
+			if len(split) > 0 {
+				nodeTrue := node{typ: typeCondTrue, child: split[0]}
+				root.child = append(root.child, nodeTrue)
+			}
+			if len(split) > 1 {
+				nodeFalse := node{typ: typeCondFalse, child: split[1]}
+				root.child = append(root.child, nodeFalse)
+			}
+			nodes = append(nodes, *root)
+			return nodes, offset, err
+		}
+		return nodes, pos, fmt.Errorf("too complex condition '%s' at offset %d", ctl, pos)
+	}
+	root.typ = typeCond
+	root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ctl)
+
+	// Create new target, increase condition counter and dive deeper.
+	t := p.targetSnapshot()
+	p.cc++
+
+	subNodes, offset, err = p.parse(subNodes, &node{typ: typeCond}, pos+len(ctl), t)
+	split = splitNodes(subNodes)
+
+	if len(split) > 0 {
+		nodeTrue := node{typ: typeCondTrue, child: split[0]}
+		root.child = append(root.child, nodeTrue)
+	}
+	if len(split) > 1 {
+		nodeFalse := node{typ: typeCondFalse, child: split[1]}
+		root.child = append(root.child, nodeFalse)
+	}
+	nodes = append(nodes, *root)
+	return nodes, offset, err
+}
+
+// Parse condition to left/right parts and condition operator.
+func (p *parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl, sr bool, op op) {
+	if m := re.FindSubmatch(expr); m != nil {
+		l = bytealg.Trim(m[1], space)
+		if len(l) > 0 && l[0] == '!' {
+			l = l[1:]
+			r = bTrue
+			sl = false
+			sr = true
+			op = opNq
+		} else {
+			r = bytealg.Trim(m[3], space)
+			sl = isStatic(l)
+			sr = isStatic(r)
+			op = p.parseOp(m[2])
+		}
+		if len(l) > 0 {
+			l = bytealg.Trim(l, quotes)
+		}
+		if len(r) > 0 {
+			r = bytealg.Trim(r, quotes)
+		}
+	}
+	return
 }
 
 func (p *parser) skipFmt(offset int) (int, bool) {
@@ -315,29 +479,48 @@ func (p *parser) skipFmt(offset int) (int, bool) {
 	return n - 1, true
 }
 
-func (p *parser) parseOp(src []byte) Op {
-	var op Op
+func (p *parser) parseOp(src []byte) op {
+	var op_ op
 	switch {
-	case bytes.Equal(src, opEq):
-		op = OpEq
-	case bytes.Equal(src, opNq):
-		op = OpNq
-	case bytes.Equal(src, opGt):
-		op = OpGt
-	case bytes.Equal(src, opGtq):
-		op = OpGtq
-	case bytes.Equal(src, opLt):
-		op = OpLt
-	case bytes.Equal(src, opLtq):
-		op = OpLtq
-	case bytes.Equal(src, opInc):
-		op = OpInc
-	case bytes.Equal(src, opDec):
-		op = OpDec
+	case bytes.Equal(src, opEq_):
+		op_ = opEq
+	case bytes.Equal(src, opNq_):
+		op_ = opNq
+	case bytes.Equal(src, opGt_):
+		op_ = opGt
+	case bytes.Equal(src, opGtq_):
+		op_ = opGtq
+	case bytes.Equal(src, opLt_):
+		op_ = opLt
+	case bytes.Equal(src, opLtq_):
+		op_ = opLtq
+	case bytes.Equal(src, opInc_):
+		op_ = opInc
+	case bytes.Equal(src, opDec_):
+		op_ = opDec
 	default:
-		op = OpUnk
+		op_ = opUnk
 	}
-	return op
+	return op_
+}
+
+// Split nodes by divider node.
+func splitNodes(nodes []node) [][]node {
+	if len(nodes) == 0 {
+		return nil
+	}
+	split := make([][]node, 0)
+	var o int
+	for i, n := range nodes {
+		if n.typ == typeDiv {
+			split = append(split, nodes[o:i])
+			o = i + 1
+		}
+	}
+	if o < len(nodes) {
+		split = append(split, nodes[o:])
+	}
+	return split
 }
 
 func (p *parser) targetSnapshot() *target {

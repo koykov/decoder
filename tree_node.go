@@ -27,9 +27,20 @@ type node struct {
 	loopCnt       []byte
 	loopCntInit   []byte
 	loopCntStatic bool
-	loopCntOp     Op
-	loopCondOp    Op
+	loopCntOp     op
+	loopCondOp    op
 	loopLim       []byte
 	loopLimStatic bool
 	loopBrkD      int
+
+	// Condition stuff.
+	condL, condOKL []byte
+	condR, condOKR []byte
+	condStaticL    bool
+	condStaticR    bool
+	condOp         op
+	condHlp        []byte
+	condHlpArg     []*arg
+	condIns        []byte
+	condLC         lc
 }

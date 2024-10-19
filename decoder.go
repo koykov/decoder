@@ -1,5 +1,11 @@
 package decoder
 
+import (
+	"github.com/koykov/bytealg"
+	"github.com/koykov/byteconv"
+	"github.com/koykov/inspector"
+)
+
 // Decoder represents main decoder object.
 // Decoder contains only parsed ruleset.
 // All temporary and intermediate data should be store in context logic to make using of decoders thread-safe.
@@ -112,19 +118,131 @@ func followRule(r *node, ctx *Ctx) (err error) {
 			return
 		}
 	case r.typ == typeBreak:
-		// todo cover with test after condition implementation
 		// Break the loop.
 		ctx.brkD = r.loopBrkD
 		err = ErrBreakLoop
 	case r.typ == typeLBreak:
-		// todo cover with test after condition implementation
 		// Lazy break the loop.
 		ctx.brkD = r.loopBrkD
 		err = ErrLBreakLoop
 	case r.typ == typeContinue:
-		// todo cover with test after condition implementation
 		// Go to next iteration of loop.
 		err = ErrContLoop
+	case r.typ == typeCondOK:
+		// Condition-OK node evaluates expressions like if-ok with helper.
+		var ok bool
+		// Check condition-OK helper (mandatory at all).
+		if len(r.condHlp) > 0 {
+			fn := GetCondOKFn(byteconv.B2S(r.condHlp))
+			if fn == nil {
+				err = ErrCondHlpNotFound
+				return
+			}
+			// Prepare arguments list.
+			ctx.bufA = ctx.bufA[:0]
+			if n := len(r.condHlpArg); n > 0 {
+				_ = r.condHlpArg[n-1]
+				for i := 0; i < n; i++ {
+					arg_ := r.condHlpArg[i]
+					if arg_.static {
+						ctx.bufA = append(ctx.bufA, &arg_.val)
+					} else {
+						val := ctx.get(arg_.val, arg_.subset)
+						ctx.bufA = append(ctx.bufA, val)
+					}
+				}
+			}
+			// Call condition-ok helper func.
+			fn(ctx, &ctx.bufX, &ctx.bufBl, ctx.bufA)
+			ok = ctx.bufBl
+			// Set var, ok to context.
+			lv, lr := byteconv.B2S(r.condOKL), byteconv.B2S(r.condOKR)
+			insn := byteconv.B2S(r.condIns)
+			if len(insn) == 0 {
+				insn = "static"
+			}
+			ins, err := inspector.GetInspector(insn)
+			if err != nil {
+				return err
+			}
+			raw := ctx.bufX
+			ctx.Set(lv, raw, ins)
+			ctx.SetStatic(lr, ctx.bufBl)
+
+			// Check extended condition (eg: !ok).
+			if len(r.condR) > 0 {
+				ok, err = nodeCmp(r, ctx)
+			}
+			// Evaluate condition.
+			if ok {
+				// True case.
+				if len(r.child) > 0 {
+					err = followRule(&r.child[0], ctx)
+				}
+			} else {
+				// Else case.
+				if len(r.child) > 1 {
+					err = followRule(&r.child[1], ctx)
+				}
+			}
+		}
+	case r.typ == typeCond:
+		// Condition node evaluates condition expressions.
+		var ok bool
+		switch {
+		case len(r.condHlp) > 0 && r.condLC == lcNone:
+			// Condition helper caught (no LC case).
+			fn := GetCondFn(byteconv.B2S(r.condHlp))
+			if fn == nil {
+				err = ErrCondHlpNotFound
+				return
+			}
+			// Prepare arguments list.
+			ctx.bufA = ctx.bufA[:0]
+			if n := len(r.condHlpArg); n > 0 {
+				_ = r.condHlpArg[n-1]
+				for i := 0; i < len(r.condHlpArg); i++ {
+					arg_ := r.condHlpArg[i]
+					if arg_.static {
+						ctx.bufA = append(ctx.bufA, &arg_.val)
+					} else {
+						val := ctx.get(arg_.val, arg_.subset)
+						ctx.bufA = append(ctx.bufA, val)
+					}
+				}
+			}
+			// Call condition helper func.
+			ok = fn(ctx, ctx.bufA)
+		case len(r.condHlp) > 0 && r.condLC > lcNone:
+			// Condition helper in LC mode.
+			if len(r.condHlpArg) == 0 {
+				err = ErrModNoArgs
+				return
+			}
+			ok = ctx.cmpLC(r.condLC, r.condHlpArg[0].val, r.condOp, r.condR)
+		default:
+			ok, err = nodeCmp(r, ctx)
+		}
+		if ctx.Err != nil {
+			err = ctx.Err
+			return
+		}
+		// Evaluate condition.
+		if ok {
+			// True case.
+			if len(r.child) > 0 {
+				err = followRule(&r.child[0], ctx)
+			}
+		} else {
+			// Else case.
+			if len(r.child) > 1 {
+				err = followRule(&r.child[1], ctx)
+			}
+		}
+	case r.typ == typeCondTrue || r.typ == typeCondFalse:
+		if err = DecodeRuleset(r.child, ctx); err != nil {
+			return
+		}
 	case r.callback != nil:
 		// Rule is a callback.
 		// Collect arguments.
@@ -144,7 +262,7 @@ func followRule(r *node, ctx *Ctx) (err error) {
 		// Execute callback func.
 		err = r.callback(ctx, ctx.bufA)
 	case r.getter != nil:
-		// F2V node.
+		// F2V r.
 		// Collect arguments.
 		ctx.bufA = ctx.bufA[:0]
 		if n := len(r.arg); n > 0 {
@@ -212,6 +330,72 @@ func followRule(r *node, ctx *Ctx) (err error) {
 		}
 		// Assign to destination.
 		err = ctx.set(r.dst, raw, r.ins)
+	}
+	return
+}
+
+func (ctx *Ctx) cmpLC(lc lc, path []byte, cond op, right []byte) bool {
+	ctx.Err = nil
+	if ctx.chQB {
+		path = ctx.replaceQB(path)
+	}
+
+	ctx.bufS = ctx.bufS[:0]
+	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
+	if len(ctx.bufS) == 0 {
+		return false
+	}
+
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
+		if v.key == ctx.bufS[0] {
+			switch lc {
+			case lcLen:
+				ctx.Err = v.ins.Length(v.val, &ctx.bufI_, ctx.bufS[1:]...)
+			case lcCap:
+				ctx.Err = v.ins.Capacity(v.val, &ctx.bufI_, ctx.bufS[1:]...)
+			default:
+				return false
+			}
+			if ctx.Err != nil {
+				return false
+			}
+			si := inspector.StaticInspector{}
+			ctx.bufBl = false
+			ctx.Err = si.Compare(ctx.bufI_, inspector.Op(cond), byteconv.B2S(right), &ctx.bufBl)
+			return ctx.bufBl
+		}
+	}
+	return false
+}
+
+// Evaluate condition expressions.
+func nodeCmp(node *node, ctx *Ctx) (r bool, err error) {
+	// Regular comparison.
+	sl := node.condStaticL
+	sr := node.condStaticR
+	if sl && sr {
+		// It's senseless to compare two static values.
+		err = ErrSenselessCond
+		return
+	}
+	if sr {
+		// Right side is static. This is preferred case
+		r = ctx.cmp(node.condL, node.condOp, node.condR)
+	} else if sl {
+		// Left side is static.
+		// dyntpl can't handle expressions like {% if 10 > item.Weight %}...
+		// therefore it inverts condition to {% if item.Weight < 10 %}...
+		r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
+	} else {
+		// Both sides aren't static. This is a bad case, since need to inspect variables twice.
+		ctx.get(node.condR, nil)
+		if ctx.Err == nil {
+			if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
+				return
+			}
+			r = ctx.cmp(node.condL, node.condOp, ctx.BufAcc.StakedBytes())
+		}
 	}
 	return
 }

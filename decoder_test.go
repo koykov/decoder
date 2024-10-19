@@ -13,8 +13,13 @@ func TestDecoder(t *testing.T) {
 	// t.Run("decoder3", func(t *testing.T) { testDecoder(t, "srcNested", scenarioDec3) }) // check decoder_legacy project
 	t.Run("decoder4", func(t *testing.T) { testDecoder(t, "src", scenarioDec4) })
 
-	t.Run("loop0", func(t *testing.T) { testDecoder(t, "src", scenarioNop) })
-	t.Run("loop1", func(t *testing.T) { testDecoder(t, "src", scenarioLoop1) })
+	t.Run("loop_range", func(t *testing.T) { testDecoder(t, "src", scenarioNop) })
+	t.Run("loop_counter", func(t *testing.T) { testDecoder(t, "src", scenarioLoop1) })
+
+	t.Run("cond", func(t *testing.T) { testDecoder(t, "src", scenarioCond) })
+	t.Run("cond_else", func(t *testing.T) { testDecoder(t, "src", scenarioCond1) })
+	t.Run("condOK", func(t *testing.T) { testDecoder(t, "src", scenarioCondOK) })
+	t.Run("condNotOK", func(t *testing.T) { testDecoder(t, "src", scenarioCondOK1) })
 }
 
 func testDecoder(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -29,6 +34,15 @@ func BenchmarkDecoder(b *testing.B) {
 	b.Run("decoder2", func(b *testing.B) { benchDecoder(b, "src", scenarioDec2) })
 	// b.Run("decoder3", func(b *testing.B) { benchDecoder(b, "srcNested", scenarioDec3) }) // check decoder_legacy project
 	b.Run("decoder4", func(b *testing.B) { benchDecoder(b, "src", scenarioDec4) })
+
+	b.Run("loop_range", func(b *testing.B) { benchDecoder(b, "src", scenarioNop) })
+	b.Run("loop_counter", func(b *testing.B) { benchDecoder(b, "src", scenarioLoop1) })
+
+	b.Run("cond", func(b *testing.B) { benchDecoder(b, "src", scenarioCond) })
+	b.Run("cond_else", func(b *testing.B) { benchDecoder(b, "src", scenarioCond1) })
+
+	b.Run("condOK", func(b *testing.B) { benchDecoder(b, "src", scenarioCondOK) })
+	b.Run("condNotOK", func(b *testing.B) { benchDecoder(b, "src", scenarioCondOK1) })
 }
 
 func benchDecoder(b *testing.B, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -87,5 +101,21 @@ func scenarioDec4(t testing.TB, obj *testobj.TestObject) {
 }
 
 func scenarioLoop1(t testing.TB, obj *testobj.TestObject) {
-	assertI32(t, "Status", obj.Status, 66)
+	assertI32(t, "Status", obj.Status, 50)
+}
+
+func scenarioCond(t testing.TB, obj *testobj.TestObject) {
+	assertU64(t, "Ustate", obj.Ustate, 17)
+}
+
+func scenarioCond1(t testing.TB, obj *testobj.TestObject) {
+	assertU64(t, "Ustate", obj.Ustate, 23)
+}
+
+func scenarioCondOK(t testing.TB, obj *testobj.TestObject) {
+	assertS(t, "Id", obj.Id, "15")
+}
+
+func scenarioCondOK1(t testing.TB, obj *testobj.TestObject) {
+	assertB(t, "Name", obj.Name, []byte("N/D"))
 }
