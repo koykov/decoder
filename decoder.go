@@ -132,7 +132,63 @@ func followRule(r *node, ctx *Ctx) (err error) {
 		// Go to next iteration of loop.
 		err = ErrContLoop
 	case r.typ == typeCondOK:
-		// todo implement me
+		// Condition-OK node evaluates expressions like if-ok with helper.
+		var ok bool
+		// Check condition-OK helper (mandatory at all).
+		if len(r.condHlp) > 0 {
+			fn := GetCondOKFn(byteconv.B2S(r.condHlp))
+			if fn == nil {
+				err = ErrCondHlpNotFound
+				return
+			}
+			// Prepare arguments list.
+			ctx.bufA = ctx.bufA[:0]
+			if n := len(r.condHlpArg); n > 0 {
+				_ = r.condHlpArg[n-1]
+				for i := 0; i < n; i++ {
+					arg_ := r.condHlpArg[i]
+					if arg_.static {
+						ctx.bufA = append(ctx.bufA, &arg_.val)
+					} else {
+						val := ctx.get(arg_.val, arg_.subset)
+						ctx.bufA = append(ctx.bufA, val)
+					}
+				}
+			}
+			// Call condition-ok helper func.
+			fn(ctx, &ctx.bufX, &ctx.bufBl, ctx.bufA)
+			ok = ctx.bufBl
+			// Set var, ok to context.
+			lv, lr := byteconv.B2S(r.condOKL), byteconv.B2S(r.condOKR)
+			insn := byteconv.B2S(r.condIns)
+			if len(insn) == 0 {
+				insn = "static"
+			}
+			ins, err := inspector.GetInspector(insn)
+			if err != nil {
+				return err
+			}
+			raw := ctx.bufX
+			ctx.Set(lv, raw, ins)
+			ctx.SetStatic(lr, ctx.bufBl)
+
+			// Check extended condition (eg: !ok).
+			if len(r.condR) > 0 {
+				ok, err = nodeCmp(r, ctx)
+			}
+			// Evaluate condition.
+			if ok {
+				// True case.
+				if len(r.child) > 0 {
+					err = followRule(&r.child[0], ctx)
+				}
+			} else {
+				// Else case.
+				if len(r.child) > 1 {
+					err = followRule(&r.child[1], ctx)
+				}
+			}
+		}
 	case r.typ == typeCond:
 		// Condition node evaluates condition expressions.
 		var ok bool
@@ -153,7 +209,7 @@ func followRule(r *node, ctx *Ctx) (err error) {
 					if arg_.static {
 						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
-						val := ctx.get(arg_.val, nil)
+						val := ctx.get(arg_.val, arg_.subset)
 						ctx.bufA = append(ctx.bufA, val)
 					}
 				}
