@@ -4,6 +4,11 @@
 		<nodes>
 			<node type="8">
 				<nodes>
+					<node dst="obj.Balance" src="-1"/>
+				</nodes>
+			</node>
+			<node type="9">
+				<nodes>
 					<node dst="obj.Balance" src="finance.Amount"/>
 				</nodes>
 			</node>

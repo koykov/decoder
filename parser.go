@@ -226,7 +226,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 
 		var subNodes []node
 		offset += len(ctl)
-		subNodes, offset, err = p.parse(subNodes, r, offset, t)
+		subNodes, offset, err = p.parse(subNodes, &node{typ: typeCondOK}, offset, t)
 		split := splitNodes(subNodes)
 		if len(split) > 0 {
 			nodeTrue := node{typ: typeCondTrue, child: split[0]}
