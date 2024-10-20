@@ -10,7 +10,8 @@ var (
 	ErrCbPoorArgs      = errors.New("arguments list in callback is too small")
 	ErrGetterPoorArgs  = errors.New("arguments list in getter callback is too small")
 
-	ErrUnbalancedCtl = errors.New("unbalanced control structures found")
+	ErrUnbalancedCtl   = errors.New("unbalanced control structures found")
+	ErrUnexpectedClose = errors.New("unexpected close bracket")
 
 	ErrWrongLoopLim  = errors.New("wrong count loop limit argument")
 	ErrWrongLoopCond = errors.New("wrong loop condition operation")

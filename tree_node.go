@@ -43,4 +43,6 @@ type node struct {
 	condHlpArg     []*arg
 	condIns        []byte
 	condLC         lc
+
+	switchArg []byte
 }
