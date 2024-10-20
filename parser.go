@@ -77,6 +77,10 @@ var (
 	reCondExprOK  = regexp.MustCompile(`if .*;\s*([!:\w]+)(.*)(.*)\s*{`)
 	reCondElse    = regexp.MustCompile(`}\s*else\s*{`)
 
+	reSwitch           = regexp.MustCompile(`^switch\s*(.*)\s*{`)
+	reSwitchCase       = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*):`)
+	reSwitchCaseHelper = regexp.MustCompile(`case ([^(]+)\(*([^)]*)\):`)
+
 	crc64Tab = crc64.MakeTable(crc64.ISO)
 
 	// Suppress go vet warning.
@@ -204,6 +208,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		dst = append(dst, *r)
 		return dst, offset, false, err
 	}
+
 	if reCondOK.Match(ctl) {
 		r.typ = typeCondOK
 		var m [][]byte
@@ -250,6 +255,24 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		offset += len(ctl)
 		return dst, offset, false, err
 	}
+
+	if m := reSwitch.FindSubmatch(ctl); m != nil {
+		// Create new target, increase switch counter and dive deeper.
+		t := p.targetSnapshot()
+		p.cs++
+
+		root.typ = typeSwitch
+		if len(m) > 0 {
+			root.switchArg = m[1]
+		}
+		root.child = make([]node, 0)
+		root.child, offset, err = p.parse(root.child, root, offset+len(ctl), t)
+		root.child = rollupSwitchNodes(root.child)
+
+		dst = append(dst, *root)
+		return dst, offset, false, err
+	}
+
 	if ctl[0] == '}' {
 		offset++
 		switch root.typ {
@@ -257,8 +280,10 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			p.cl--
 		case typeCond, typeCondOK, typeElse, typeDiv:
 			p.cc--
+		case typeSwitch:
+			p.cs--
 		default:
-			// todo check other cases
+			err = ErrUnexpectedClose
 		}
 		return dst, offset, true, err
 	}
@@ -606,4 +631,31 @@ func replaceQB(p []byte) []byte {
 	p = bytes.Replace(p, qbO, dot, -1)
 	p = bytes.Replace(p, qbC, empty, -1)
 	return p
+}
+
+func rollupSwitchNodes(nodes []node) []node {
+	if len(nodes) == 0 {
+		return nil
+	}
+	var (
+		r     = make([]node, 0)
+		group = node{typ: -1}
+	)
+	for _, n := range nodes {
+		if n.typ != typeCase && n.typ != typeDefault && group.typ == -1 {
+			continue
+		}
+		if n.typ == typeCase || n.typ == typeDefault {
+			if group.typ != -1 {
+				r = append(r, group)
+			}
+			group = n
+			continue
+		}
+		group.child = append(group.child, n)
+	}
+	if len(group.child) > 0 {
+		r = append(r, group)
+	}
+	return r
 }
