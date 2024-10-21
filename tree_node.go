@@ -45,4 +45,12 @@ type node struct {
 	condLC         lc
 
 	switchArg []byte
+
+	caseL       []byte
+	caseR       []byte
+	caseStaticL bool
+	caseStaticR bool
+	caseOp      op
+	caseHlp     []byte
+	caseHlpArg  []*arg
 }

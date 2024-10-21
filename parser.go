@@ -80,6 +80,7 @@ var (
 	reSwitch           = regexp.MustCompile(`^switch\s*(.*)\s*{`)
 	reSwitchCase       = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*):`)
 	reSwitchCaseHelper = regexp.MustCompile(`case ([^(]+)\(*([^)]*)\):`)
+	reSwitchDefault    = regexp.MustCompile(`default\s*:`)
 
 	crc64Tab = crc64.MakeTable(crc64.ISO)
 
@@ -271,6 +272,30 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 
 		dst = append(dst, *root)
 		return dst, offset, false, err
+	}
+	// Check switch's case with condition helper.
+	if m := reSwitchCaseHelper.FindSubmatch(ctl); m != nil {
+		root.typ = typeCase
+		root.caseHlp = m[1]
+		root.caseHlpArg = extractArgs(m[2])
+		dst = append(dst, *root)
+		offset = offset + len(ctl)
+		return dst, offset, false, err
+	}
+	// Check switch's case with simple condition.
+	if reSwitchCase.Match(ctl) {
+		root.typ = typeCase
+		root.caseL, root.caseR, root.caseStaticL, root.caseStaticR, root.caseOp = p.parseCaseExpr(ctl)
+		dst = append(dst, *root)
+		offset = offset + len(ctl)
+		return dst, offset, false, err
+	}
+	// Check switch's default.
+	if reSwitchDefault.Match(ctl) {
+		root.typ = typeDefault
+		dst = append(dst, *root)
+		offset = offset + len(ctl)
+		return dst, offset, true, err
 	}
 
 	if ctl[0] == '}' {
@@ -488,6 +513,20 @@ func (p *parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl,
 		}
 		if len(r) > 0 {
 			r = bytealg.Trim(r, quotes)
+		}
+	}
+	return
+}
+
+// Parse case condition similar to condition parsing.
+func (p *parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op op) {
+	if m := reSwitchCase.FindSubmatch(expr); m != nil {
+		l = bytealg.Trim(m[1], space)
+		sl = isStatic(l)
+		if len(m) > 1 {
+			op = p.parseOp(m[2])
+			r = bytealg.Trim(m[3], space)
+			sr = isStatic(r)
 		}
 	}
 	return
