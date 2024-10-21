@@ -262,38 +262,38 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		t := p.targetSnapshot()
 		p.cs++
 
-		root.typ = typeSwitch
+		r.typ = typeSwitch
 		if len(m) > 0 {
-			root.switchArg = m[1]
+			r.switchArg = m[1]
 		}
-		root.child = make([]node, 0)
-		root.child, offset, err = p.parse(root.child, root, offset+len(ctl), t)
-		root.child = rollupSwitchNodes(root.child)
+		r.child = make([]node, 0)
+		r.child, offset, err = p.parse(r.child, root, offset+len(ctl), t)
+		r.child = rollupSwitchNodes(r.child)
 
-		dst = append(dst, *root)
+		dst = append(dst, *r)
 		return dst, offset, false, err
 	}
 	// Check switch's case with condition helper.
 	if m := reSwitchCaseHelper.FindSubmatch(ctl); m != nil {
-		root.typ = typeCase
-		root.caseHlp = m[1]
-		root.caseHlpArg = extractArgs(m[2])
-		dst = append(dst, *root)
+		r.typ = typeCase
+		r.caseHlp = m[1]
+		r.caseHlpArg = extractArgs(m[2])
+		dst = append(dst, *r)
 		offset = offset + len(ctl)
 		return dst, offset, false, err
 	}
 	// Check switch's case with simple condition.
 	if reSwitchCase.Match(ctl) {
-		root.typ = typeCase
-		root.caseL, root.caseR, root.caseStaticL, root.caseStaticR, root.caseOp = p.parseCaseExpr(ctl)
-		dst = append(dst, *root)
+		r.typ = typeCase
+		r.caseL, r.caseR, r.caseStaticL, r.caseStaticR, r.caseOp = p.parseCaseExpr(ctl)
+		dst = append(dst, *r)
 		offset = offset + len(ctl)
 		return dst, offset, false, err
 	}
 	// Check switch's default.
 	if reSwitchDefault.Match(ctl) {
-		root.typ = typeDefault
-		dst = append(dst, *root)
+		r.typ = typeDefault
+		dst = append(dst, *r)
 		offset = offset + len(ctl)
 		return dst, offset, true, err
 	}
