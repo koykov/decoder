@@ -1,0 +1,10 @@
+obj.Id = 1
+switch jso.status {
+case "approved":
+  obj.Status = 1
+case "denied":
+  obj.Status = -1
+case "unknown":
+  obj.Block = true
+}
+obj.Balance = -1
