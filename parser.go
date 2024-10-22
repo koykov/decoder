@@ -267,7 +267,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			r.switchArg = m[1]
 		}
 		r.child = make([]node, 0)
-		r.child, offset, err = p.parse(r.child, root, offset+len(ctl), t)
+		r.child, offset, err = p.parse(r.child, r, offset+len(ctl), t)
 		r.child = rollupSwitchNodes(r.child)
 
 		dst = append(dst, *r)
@@ -295,7 +295,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		r.typ = typeDefault
 		dst = append(dst, *r)
 		offset = offset + len(ctl)
-		return dst, offset, true, err
+		return dst, offset, false, err
 	}
 
 	if ctl[0] == '}' {
