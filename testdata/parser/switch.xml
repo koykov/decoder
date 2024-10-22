@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="0" dst="obj.Id" src="1" static="1"/>
+	<node type="12">
+		<nodes>
+			<node type="13" left="&quot;approved&quot;" leftStatic="1" op="unk">
+				<nodes>
+					<node dst="obj.Status" src="1" static="1"/>
+				</nodes>
+			</node>
+			<node type="13" left="&quot;denied&quot;" leftStatic="1" op="unk">
+				<nodes>
+					<node dst="obj.Status" src="-1"/>
+				</nodes>
+			</node>
+			<node type="13" left="&quot;unknown&quot;" leftStatic="1" op="unk">
+				<nodes>
+					<node dst="obj.Block" src="true" static="1"/>
+				</nodes>
+			</node>
+			<node type="14">
+				<nodes>
+					<node dst="obj.Status" src="0" static="1"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="0" dst="obj.Balance" src="-1"/>
+</nodes>
