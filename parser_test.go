@@ -28,6 +28,7 @@ func TestParser(t *testing.T) {
 
 	t.Run("switch", testParser)
 	t.Run("switch_no_cond", testParser)
+	t.Run("switch_no_cond_helper", testParser)
 }
 
 func testParser(t *testing.T) {
