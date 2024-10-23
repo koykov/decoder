@@ -77,7 +77,7 @@ var (
 	reCondExprOK  = regexp.MustCompile(`if .*;\s*([!:\w]+)(.*)(.*)\s*{`)
 	reCondElse    = regexp.MustCompile(`}\s*else\s*{`)
 
-	reSwitch           = regexp.MustCompile(`^switch\s*(.*)\s*{`)
+	reSwitch           = regexp.MustCompile(`^switch\s*([^\s^{]*)\s*{`)
 	reSwitchCase       = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*):`)
 	reSwitchCaseHelper = regexp.MustCompile(`case ([^(]+)\(*([^)]*)\):`)
 	reSwitchDefault    = regexp.MustCompile(`default\s*:`)
