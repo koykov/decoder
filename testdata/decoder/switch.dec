@@ -1,0 +1,10 @@
+switch jso.person.read_f {
+case 1:
+  obj.Status = 0
+case 2:
+  obj.Status = 1
+case 4:
+  obj.Status = 2
+default:
+  obj.Status = -1
+}

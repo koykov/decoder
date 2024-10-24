@@ -239,9 +239,106 @@ func followRule(r *node, ctx *Ctx) (err error) {
 				err = followRule(&r.child[1], ctx)
 			}
 		}
-	case r.typ == typeCondTrue || r.typ == typeCondFalse:
+	case r.typ == typeCondTrue || r.typ == typeCondFalse || r.typ == typeCase || r.typ == typeDefault:
 		if err = DecodeRuleset(r.child, ctx); err != nil {
 			return
+		}
+	case r.typ == typeSwitch:
+		// Switch magic...
+		var ok bool
+		if len(r.switchArg) > 0 {
+			// Classic switch case.
+			for i := 0; i < len(r.child); i++ {
+				ch := &r.child[i]
+				if ch.typ == typeCase {
+					if ch.caseStaticL {
+						ok = ctx.cmp(r.switchArg, opEq, ch.caseL)
+					} else {
+						ctx.get(ch.caseL, nil)
+						if ctx.Err == nil {
+							if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
+								return
+							}
+							ok = ctx.cmp(r.switchArg, opEq, ctx.BufAcc.StakedBytes())
+						}
+					}
+				}
+				if ok {
+					err = followRule(ch, ctx)
+					break
+				}
+			}
+		} else {
+			// Switch without condition case.
+			for i := 0; i < len(r.child); i++ {
+				ch := &r.child[i]
+				if ch.typ == typeCase {
+					if len(ch.caseHlp) > 0 {
+						// Case condition helper caught.
+						fn := GetCondFn(byteconv.B2S(ch.caseHlp))
+						if fn == nil {
+							err = ErrCondHlpNotFound
+							return
+						}
+						// Prepare arguments list.
+						ctx.bufA = ctx.bufA[:0]
+						if n := len(ch.caseHlpArg); n > 0 {
+							_ = ch.caseHlpArg[n-1]
+							for j := 0; j < n; j++ {
+								arg_ := ch.caseHlpArg[j]
+								if arg_.static {
+									ctx.bufA = append(ctx.bufA, &arg_.val)
+								} else {
+									val := ctx.get(arg_.val, arg_.subset)
+									ctx.bufA = append(ctx.bufA, val)
+								}
+							}
+						}
+						// Call condition helper func.
+						ok = fn(ctx, ctx.bufA)
+					} else {
+						sl := ch.caseStaticL
+						sr := ch.caseStaticR
+						if sl && sr {
+							err = ErrSenselessCond
+							return
+						}
+						if sr {
+							// Right side is static.
+							ok = ctx.cmp(ch.caseL, ch.caseOp, ch.caseR)
+						} else if sl {
+							// Left side is static.
+							ok = ctx.cmp(ch.caseR, ch.caseOp.Swap(), ch.caseL)
+						} else {
+							// Both sides aren't static.
+							ctx.get(ch.caseR, nil)
+							if ctx.Err == nil {
+								if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
+									return
+								}
+								ok = ctx.cmp(ch.caseL, ch.caseOp, ctx.BufAcc.StakedBytes())
+							}
+						}
+					}
+					if ctx.Err != nil {
+						err = ctx.Err
+						return
+					}
+					if ok {
+						err = followRule(ch, ctx)
+						break
+					}
+				}
+			}
+		}
+		if !ok {
+			for i := 0; i < len(r.child); i++ {
+				ch := &r.child[i]
+				if ch.typ == typeDefault {
+					err = followRule(ch, ctx)
+					break
+				}
+			}
 		}
 	case r.callback != nil:
 		// Rule is a callback.

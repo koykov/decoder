@@ -77,6 +77,11 @@ var (
 	reCondExprOK  = regexp.MustCompile(`if .*;\s*([!:\w]+)(.*)(.*)\s*{`)
 	reCondElse    = regexp.MustCompile(`}\s*else\s*{`)
 
+	reSwitch           = regexp.MustCompile(`^switch\s*([^\s^{]*)\s*{`)
+	reSwitchCase       = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*):`)
+	reSwitchCaseHelper = regexp.MustCompile(`case ([^(]+)\(*([^)]*)\):`)
+	reSwitchDefault    = regexp.MustCompile(`default\s*:`)
+
 	crc64Tab = crc64.MakeTable(crc64.ISO)
 
 	// Suppress go vet warning.
@@ -204,6 +209,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		dst = append(dst, *r)
 		return dst, offset, false, err
 	}
+
 	if reCondOK.Match(ctl) {
 		r.typ = typeCondOK
 		var m [][]byte
@@ -250,6 +256,48 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		offset += len(ctl)
 		return dst, offset, false, err
 	}
+
+	if m := reSwitch.FindSubmatch(ctl); m != nil {
+		// Create new target, increase switch counter and dive deeper.
+		t := p.targetSnapshot()
+		p.cs++
+
+		r.typ = typeSwitch
+		if len(m) > 0 {
+			r.switchArg = m[1]
+		}
+		r.child = make([]node, 0)
+		r.child, offset, err = p.parse(r.child, r, offset+len(ctl), t)
+		r.child = rollupSwitchNodes(r.child)
+
+		dst = append(dst, *r)
+		return dst, offset, false, err
+	}
+	// Check switch's case with condition helper.
+	if m := reSwitchCaseHelper.FindSubmatch(ctl); m != nil {
+		r.typ = typeCase
+		r.caseHlp = m[1]
+		r.caseHlpArg = extractArgs(m[2])
+		dst = append(dst, *r)
+		offset = offset + len(ctl)
+		return dst, offset, false, err
+	}
+	// Check switch's case with simple condition.
+	if reSwitchCase.Match(ctl) {
+		r.typ = typeCase
+		r.caseL, r.caseR, r.caseStaticL, r.caseStaticR, r.caseOp = p.parseCaseExpr(ctl)
+		dst = append(dst, *r)
+		offset = offset + len(ctl)
+		return dst, offset, false, err
+	}
+	// Check switch's default.
+	if reSwitchDefault.Match(ctl) {
+		r.typ = typeDefault
+		dst = append(dst, *r)
+		offset = offset + len(ctl)
+		return dst, offset, false, err
+	}
+
 	if ctl[0] == '}' {
 		offset++
 		switch root.typ {
@@ -257,8 +305,10 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			p.cl--
 		case typeCond, typeCondOK, typeElse, typeDiv:
 			p.cc--
+		case typeSwitch:
+			p.cs--
 		default:
-			// todo check other cases
+			err = ErrUnexpectedClose
 		}
 		return dst, offset, true, err
 	}
@@ -468,6 +518,20 @@ func (p *parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl,
 	return
 }
 
+// Parse case condition similar to condition parsing.
+func (p *parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op op) {
+	if m := reSwitchCase.FindSubmatch(expr); m != nil {
+		l = bytealg.Trim(m[1], space)
+		sl = isStatic(l)
+		if len(m) > 1 {
+			op = p.parseOp(m[2])
+			r = bytealg.Trim(m[3], space)
+			sr = isStatic(r)
+		}
+	}
+	return
+}
+
 func (p *parser) skipFmt(offset int) (int, bool) {
 	n := len(p.body)
 	for i := offset; i < n; i++ {
@@ -606,4 +670,31 @@ func replaceQB(p []byte) []byte {
 	p = bytes.Replace(p, qbO, dot, -1)
 	p = bytes.Replace(p, qbC, empty, -1)
 	return p
+}
+
+func rollupSwitchNodes(nodes []node) []node {
+	if len(nodes) == 0 {
+		return nil
+	}
+	var (
+		r     = make([]node, 0)
+		group = node{typ: -1}
+	)
+	for _, n := range nodes {
+		if n.typ != typeCase && n.typ != typeDefault && group.typ == -1 {
+			continue
+		}
+		if n.typ == typeCase || n.typ == typeDefault {
+			if group.typ != -1 {
+				r = append(r, group)
+			}
+			group = n
+			continue
+		}
+		group.child = append(group.child, n)
+	}
+	if len(group.child) > 0 {
+		r = append(r, group)
+	}
+	return r
 }

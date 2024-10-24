@@ -20,6 +20,9 @@ func TestDecoder(t *testing.T) {
 	t.Run("cond_else", func(t *testing.T) { testDecoder(t, "src", scenarioCond1) })
 	t.Run("condOK", func(t *testing.T) { testDecoder(t, "src", scenarioCondOK) })
 	t.Run("condNotOK", func(t *testing.T) { testDecoder(t, "src", scenarioCondOK1) })
+
+	t.Run("switch", func(t *testing.T) { testDecoder(t, "src", scenarioSwitch) })
+	t.Run("switch_no_cond", func(t *testing.T) { testDecoder(t, "src", scenarioSwitch) })
 }
 
 func testDecoder(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -43,6 +46,9 @@ func BenchmarkDecoder(b *testing.B) {
 
 	b.Run("condOK", func(b *testing.B) { benchDecoder(b, "src", scenarioCondOK) })
 	b.Run("condNotOK", func(b *testing.B) { benchDecoder(b, "src", scenarioCondOK1) })
+
+	b.Run("switch", func(b *testing.B) { benchDecoder(b, "src", scenarioSwitch) })
+	b.Run("switch_no_cond", func(b *testing.B) { benchDecoder(b, "src", scenarioSwitch) })
 }
 
 func benchDecoder(b *testing.B, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {
@@ -118,4 +124,8 @@ func scenarioCondOK(t testing.TB, obj *testobj.TestObject) {
 
 func scenarioCondOK1(t testing.TB, obj *testobj.TestObject) {
 	assertB(t, "Name", obj.Name, []byte("N/D"))
+}
+
+func scenarioSwitch(t testing.TB, obj *testobj.TestObject) {
+	assertI32(t, "Status", obj.Status, 2)
 }

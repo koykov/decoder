@@ -146,6 +146,29 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []node, depth int) {
 			}
 		}
 
+		if n.typ == typeCase {
+			t.attrB(buf, "left", n.caseL)
+			t.attrBl(buf, "leftStatic", n.caseStaticL)
+			t.attrS(buf, "op", n.caseOp.String())
+			t.attrB(buf, "right", n.caseR)
+			t.attrBl(buf, "rightStatic", n.caseStaticR)
+			t.attrB(buf, "hlp", n.caseHlp)
+			if len(n.caseHlpArg) > 0 {
+				for j, a := range n.caseHlpArg {
+					pfx := "arg"
+					if a.static {
+						pfx = "sarg"
+					}
+					buf.WriteByte(' ').
+						WriteString(pfx).
+						WriteInt(int64(j)).
+						WriteString(`="`).
+						Write(a.val).
+						WriteByte('"')
+				}
+			}
+		}
+
 		if n.typ == typeLoopCount || n.typ == typeLoopRange {
 			t.attrB(buf, "key", n.loopKey)
 			t.attrB(buf, "val", n.loopVal)
@@ -235,6 +258,14 @@ func (t *Tree) attrB(buf *bytebuf.Chain, key string, p []byte) {
 
 func (t *Tree) attrS(buf *bytebuf.Chain, key, s string) {
 	t.attrB(buf, key, byteconv.S2B(s))
+}
+
+func (t *Tree) attrBl(buf *bytebuf.Chain, key string, b bool) {
+	v := "1"
+	if !b {
+		v = ""
+	}
+	t.attrB(buf, key, byteconv.S2B(v))
 }
 
 func (t *Tree) attrI(buf *bytebuf.Chain, key string, i int) {

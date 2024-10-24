@@ -1,0 +1,12 @@
+obj.Id = 1
+switch {
+case condHelper0(jso.status, "1", true):
+  obj.Status = 1
+case condHelper1(false, jso.status, 0):
+  obj.Status = -1
+case condHelper2(3.1415, "foobar", jso.finance.balance):
+  obj.Block = true
+default:
+  obj.Status = 0
+}
+obj.Balance = -1

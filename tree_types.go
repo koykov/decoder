@@ -16,6 +16,9 @@ const (
 	typeCondFalse
 	typeElse
 	typeDiv
+	typeSwitch
+	typeCase
+	typeDefault
 )
 
 // op represents a type of the operation in conditions and loops.

@@ -1,0 +1,12 @@
+switch {
+case jso.person.read_f == 1:
+  obj.Status = 0
+case jso.person.read_f == 2:
+  obj.Status = 1
+case jso.person.write_f <= 10:
+  obj.Status = 2
+case jso.person.read_f == 4:
+  obj.Status = 4
+default:
+  obj.Status = -1
+}

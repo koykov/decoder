@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="0" dst="obj.Id" src="1" static="1"/>
+	<node type="12">
+		<nodes>
+			<node type="13" op="unk" hlp="condHelper0" arg0="jso.status" sarg1="1" sarg2="true">
+				<nodes>
+					<node dst="obj.Status" src="1" static="1"/>
+				</nodes>
+			</node>
+			<node type="13" op="unk" hlp="condHelper1" sarg0="false" arg1="jso.status" sarg2="0">
+				<nodes>
+					<node dst="obj.Status" src="-1"/>
+				</nodes>
+			</node>
+			<node type="13" op="unk" hlp="condHelper2" sarg0="3.1415" sarg1="foobar" arg2="jso.finance.balance">
+				<nodes>
+					<node dst="obj.Block" src="true" static="1"/>
+				</nodes>
+			</node>
+			<node type="14">
+				<nodes>
+					<node dst="obj.Status" src="0" static="1"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="0" dst="obj.Balance" src="-1"/>
+</nodes>
