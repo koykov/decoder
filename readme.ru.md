@@ -57,7 +57,7 @@ var (
 	response = []byte(`{"identifier":"xf44e","person":{"full_name":"Marquis Warren","status":67},"finance":{"balance":"164.5962"","is_active":true}}`)
 	decBody  = []byte(`data.Id = resp.identifier
 data.Name = resp.person.full_name
-data.Status = resp.person.status|default(-1")
+data.Status = resp.person.status|default(-1)
 data.Finance.Balance = atof(resp.finance.balance)`)
 )
 
