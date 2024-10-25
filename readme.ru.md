@@ -93,3 +93,25 @@ func main() {
 источника, например БД).
 
 Содержимое функции main это пример использования декодеров в хайлоаде.
+
+## Синтаксис
+
+### Присваивание
+
+Базовой операцией при декодировании является присваивание данных из переменной-источника к пременной-приёмнику. Это
+обеспечивается типичнной операцией присваивания `=` и имеет вид `lvalue.field1 = rvalue.field2`. Из примера использования выше:
+```
+data.Id = resp.identifier
+data.Name = resp.person.full_name
+```
+, где `data` это `lvalue` (или переменная-приёмник), а `resp` это `rvalue` (или переменная-источник).
+
+Здесь важно понять что присходит неявно для пользователя. За каждой из переменных закреплён свой инспектор:
+* `data` - [testobj_ins.TestObjectInspector](https://github.com/koykov/inspector/blob/master/testobj_ins/testobject_ins.go#L19)
+* `resp` - [vector_inspector.VectorInspector](https://github.com/koykov/vector_inspector/blob/master/inspector.go#L12) (задаётся неявно вызовом [Ctx::SetVector](https://github.com/koykov/decoder/blob/master/ctx.go#L120) или [Ctx::SetVectorNode](https://github.com/koykov/decoder/blob/master/ctx.go#L128))
+
+Когда декодеру необходимо произвести присваивание `data.Name = resp.person.full_name`, то процесс делится на два этапа:
+* экземпляр `VectorInspector`-а с помощью метода [`GetTo`](https://github.com/koykov/vector_inspector/blob/master/inspector.go#L26) читает из `resp` данные по пути `person.full_name`
+* экземпляр `TestObjectInspector`-а с помощью метода [`SetWithBuffer`](https://github.com/koykov/inspector/blob/master/testobj_ins/testobject_ins.go#L750) записывает данные в `data` по пути `Name`
+
+В итоге данные перенесены (или скопированы с буфферизацией) из `rvalue` в `lvalue`.
