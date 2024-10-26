@@ -96,6 +96,9 @@ func main() {
 
 ## Синтаксис
 
+Синтаксис наследуется у Go, но также поддерживаются дополнительные возможности, такие как модификаторы и coalesce
+оператор для обращения к полям переменной-источника. Они будут рассмотрены ниже.
+
 ### Присваивание
 
 Базовой операцией при декодировании является присваивание данных из переменной-источника к пременной-приёмнику. Это
@@ -114,4 +117,5 @@ data.Name = resp.person.full_name
 * экземпляр `VectorInspector`-а с помощью метода [`GetTo`](https://github.com/koykov/vector_inspector/blob/master/inspector.go#L26) читает из `resp` данные по пути `person.full_name`
 * экземпляр `TestObjectInspector`-а с помощью метода [`SetWithBuffer`](https://github.com/koykov/inspector/blob/master/testobj_ins/testobject_ins.go#L750) записывает данные в `data` по пути `Name`
 
-В итоге данные перенесены (или скопированы с буфферизацией) из `rvalue` в `lvalue`.
+В итоге данные скопированы (с буфферизацией если необходимо) из `rvalue` в `lvalue`.
+
