@@ -165,7 +165,7 @@ type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 Функции одинаковы, но NS-версия позволяет указать пространство имён, где будет находиться ваш модификатор. В таком случае
 обращаться к нему надо будет с указанием namespace:
 ```
-Print using ns: {%= varName|namespaceName::modifier() %}
+dst.Field = src.Field|namespaceName::modifier()
 ```
 
 Также можно указать псевдоним (alias) имени модификатора, чтобы к нему можно было обращаться с альтернативным именем.
