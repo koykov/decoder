@@ -216,3 +216,13 @@ if helperName(user.Id, user.Finance.Balance) {...}
 if len(user.Name) > 0 {...}
 ```
 , тогда как обычные пользовательские функции не допускают никакие сравнения.
+
+### Switch
+
+Для цепочки сравнений декодеры поддерживают switch оператор, примеры:
+* [классический switch](testdata/parser/switch.dec)
+* [switch без условия](testdata/parser/switch_no_cond.dec)
+* [switch без условия и с helper-ми](testdata/parser/switch_no_cond_helper.dec)
+
+switch имеет те же самые ограничения для условий, что и обычное условие. Поэтому необходимо заменять сложные условия
+helper-ми.
