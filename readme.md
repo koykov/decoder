@@ -35,6 +35,60 @@ to another struct as fast as it possible and with zero allocations". The first p
 decision to extend inspectors with possibility to write data to destination structs. Thus, the problem became like
 "using one inspector, read data from source struct and, using another inspector, write it to destination struct".
 
+## Usage
+
+The typical usage of decoders looks like this:
+```go
+package main
+
+import (
+	"github.com/koykov/decoder"
+	"github.com/koykov/inspector/testobj"
+	"github.com/koykov/inspector/testobj_ins"
+	"github.com/koykov/jsonvector"
+)
+
+var (
+	data     testobj.TestObject
+	response = []byte(`{"identifier":"xf44e","person":{"full_name":"Marquis Warren","status":67},"finance":{"balance":"164.5962"","is_active":true}}`)
+	decBody  = []byte(`data.Id = resp.identifier
+data.Name = resp.person.full_name
+data.Status = resp.person.status|default(-1)
+data.Finance.Balance = atof(resp.finance.balance)`)
+)
+
+func init() {
+	// Parse decoder body and register it.
+	dec, _ := decoder.Parse(decBody)
+	decoder.RegisterDecoderKey("myDecoder", dec)
+}
+
+func main() {
+	// Prepare response as vector object.
+	vec := jsonvector.Acquire()
+	defer jsonvector.Release(vec)
+	_ = vec.Parse(response)
+
+	ctx := decoder.AcquireCtx()
+	defer decoder.ReleaseCtx(ctx)
+	
+	// Prepare context.
+	ctx.SetVector("resp", vec)
+	ctx.Set("data", &data, testobj_ins.TestObjectInspector{})
+	// Execute the decoder.
+	err := decoder.Decode("myDecoder", ctx)
+	println(err)                  // nil
+	println(data.Id)              // xf44e
+	println(data.Name)            // []byte("Marquis Warren")
+	println(data.Status)          // 67
+	println(data.Finance.Balance) // 164.5962
+}
+```
+
+Content of init() function should be executed once (or periodically on the fly from some source, eg DB).
+
+Content of main() function is how to use decoders in a general way in highload.
+
 ---
 
 ## Syntax
