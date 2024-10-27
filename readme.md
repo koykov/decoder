@@ -13,6 +13,28 @@ reflection - the convertation must work very fast, make zero allocations nd supp
 This package was developed as an answer to this challenge. It provides a possibility to describe decoding rules in
 Go-like meta-language with full dynamic support - registering new decoders (or edit en existing) may on the fly.
 
+## How it works
+
+Decoders are similar to [dyntpl](https://github.com/koykov/dyntpl) package in opposite - dyntpl makes a text from
+structures but decoders parses text and assign data to structures.
+
+Similar to dyntpl, decoding divides to two phases - parsing and decoding. The parsing phase builds from decoder's body
+a tree (like AST) and registers it in decoders registry by unique name afterward. This phase isn't intended to be used in
+highload conditions due to high pressure to cpu/mem. The second phase - decoding, against intended to use in highload.
+
+Decoding phase required a preparation to pass data to the decoder. There is a special object [Ctx](ctx.go), that collects
+variables to use in decoder. Each variable must have three params:
+* unique name
+* data - anything you need to use in template
+* inspector type
+
+What is the inspector describes [here](https://github.com/koykov/inspector), but need an extra explanation how it works
+together with decoders. In general, decoding problem sounds like "grab an arbitrary data from one struct and write it
+to another struct as fast as it possible and with zero allocations". The first part of the problem was solved in
+[dyntpl using inspectors,](https://github.com/koykov/inspector/tree/master?tab=readme-ov-file#intro) and it was a good
+decision to extend inspectors with possibility to write data to destination structs. Thus, the problem became like
+"using one inspector, read data from source struct and, using another inspector, write it to destination struct".
+
 ---
 
 ## Syntax
