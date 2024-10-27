@@ -1,19 +1,19 @@
 # Decoder
 
 Dynamic decoders based on [inspector](https://github.com/koykov/inspector) framework
-and vector packages, like [jsonvector](https://github.com/koykov/jsonvector).
+and [vector parsers](https://github.com/koykov/vector).
 
-## Basics
+## Retrospective
 
 One of the major the problems we ran into was a necessity to convert tons of different response formats from external
-services into our internal response format. Also, there was a requirement to connect new services at runtime and provide
-a possibility to decode their responses without rebooting the application.
+services into internal response format. The problem became hardener due to new external services with own response
+formats may appear at any time. Due to highload conditions there is no way to use standard dynamic approaches like
+reflection - the convertation must work very fast, make zero allocations nd support dynamic to avoid application deploys.
 
-This package provides a possibility to describe decoding rules in Go-like meta-language and add new decoders or edit
-existing at runtime.
+This package was developed as an answer to this challenge. It provides a possibility to describe decoding rules in
+Go-like meta-language with full dynamic support - registering new decoders (or edit en existing) may on the fly.
 
-Decoders is a context-based and all variables should be preliminarily registered in special [context](ctx.go) before
-decoding.
+---
 
 ## Syntax
 
