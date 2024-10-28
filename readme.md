@@ -5,35 +5,35 @@ and [vector parsers](https://github.com/koykov/vector).
 
 ## Retrospective
 
-One of the major the problems we ran into was a necessity to convert tons of different response formats from external
-services into internal response format. The problem became hardener due to new external services with own response
-formats may appear at any time. Due to highload conditions there is no way to use standard dynamic approaches like
-reflection - the convertation must work very fast, make zero allocations nd support dynamic to avoid application deploys.
+One of the major problems we ran into was a necessity to convert tons of different response formats from external
+services into an internal response format. The problem became harder due to new external services with their own response
+formats may appear at any time. Due to highload conditions, there is no way to use standard dynamic approaches like
+reflection - the convertation must work very fast, make zero allocations and support dynamic to avoid application deploys.
 
 This package was developed as an answer to this challenge. It provides a possibility to describe decoding rules in
-Go-like meta-language with full dynamic support - registering new decoders (or edit en existing) may on the fly.
+Go-like meta-language with full dynamic support - registering new decoders (or edit an existing) may on the fly.
 
 ## How it works
 
 Decoders are similar to [dyntpl](https://github.com/koykov/dyntpl) package in opposite - dyntpl makes a text from
 structures but decoders parses text and assign data to structures.
 
-Similar to dyntpl, decoding divides to two phases - parsing and decoding. The parsing phase builds from decoder's body
+Similar to dyntpl, decoding divides into two phases - parsing and decoding. The parsing phase builds from decoder's body
 a tree (like AST) and registers it in decoders registry by unique name afterward. This phase isn't intended to be used in
 highload conditions due to high pressure to cpu/mem. The second phase - decoding, against intended to use in highload.
 
 Decoding phase required a preparation to pass data to the decoder. There is a special object [Ctx](ctx.go), that collects
 variables to use in decoder. Each variable must have three params:
 * unique name
-* data - anything you need to use in template
+* data - anything you need to use in decoder
 * inspector type
 
-What is the inspector describes [here](https://github.com/koykov/inspector), but need an extra explanation how it works
+What is the inspector describes [here](https://github.com/koykov/inspector), but need an extra explanation of how it works
 together with decoders. In general, decoding problem sounds like "grab an arbitrary data from one struct and write it
 to another struct as fast as it possible and with zero allocations". The first part of the problem was solved in
-[dyntpl using inspectors,](https://github.com/koykov/inspector/tree/master?tab=readme-ov-file#intro) and it was a good
+[dyntpl using inspectors](https://github.com/koykov/inspector/tree/master?tab=readme-ov-file#intro), and it was a good
 decision to extend inspectors with possibility to write data to destination structs. Thus, the problem became like
-"using one inspector, read data from source struct and, using another inspector, write it to destination struct".
+"using one inspector, read data from the source struct and, using another inspector, write it to the destination struct".
 
 ## Usage
 
@@ -132,7 +132,7 @@ data.Name = src.FullName|default("N\D")|toUpper()
 Modifiers may collect in chain with variadic length. In that case, each modifier will take to input the result of
 previous modifier. Each modifier may take an arbitrary count of arguments.
 
-Modifier is a Go function with special signature:
+Modifier is a Go function with a special signature:
 ```go
 type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 ```
@@ -175,13 +175,13 @@ with signature:
 type CondFn func(ctx *Ctx, args []any) bool
 ```
 , where you may pass an arbitrary amount of arguments and these functions will return bool to choose the right execution branch.
-These function are user-defined, like modifiers, and you may write your own and then register it using one of the functions:
+These functions are user-defined, like modifiers, and you may write your own and then register it using one of the functions:
 ```go
 func RegisterCondFn(name string, cond CondFn)
 func RegisterCondFnNS(namespace, name string, cond CondFn) // namespace version
 ```
 
-Then condition helper will be accessible inside templates and you may use it using the name:
+Then condition helper will be accessible inside decoders and you may use it using the name:
 ```
 if helperName(user.Id, user.Finance.Balance) {...}
 ```
@@ -214,7 +214,7 @@ for _, v := list
 }
 ```
 
-These instructions works as intended, but they required condition wrapper and that's bulky. Therefore, decoders provide
+These instructions works as intended, but they required condition a wrapper and that's bulky. Therefore, decoders provide
 combined `break if` and `continue if` that works the same:
 ```
 for _, v := list {
@@ -223,7 +223,7 @@ for _, v := list {
 }
 ```
 
-The both examples are equal, but the second is more compact.
+Both examples are equal, but the second is more compact.
 
 #### Lazy breaks
 
@@ -233,7 +233,7 @@ iteration works till the end.
 
 ### Extensions
 
-Decoders may be extended by including modules to the project. Currently supported modules:
+Decoders may be extended by including modules in the project. Currently supported modules:
 * [decoder_vector](https://github.com/koykov/decoder_vector) provide support of vector parsers.
 * [decoder_i18n](https://github.com/koykov/decoder_legacy) allows legacy features in the project.
 
