@@ -231,7 +231,7 @@ Imagine the case - you've decided in the middle of iteration that loop requires 
 work the end. For that case, decoders supports special instruction `lazybreak`. It breaks the loop but allows current
 iteration works till the end.
 
-## Extensions
+### Extensions
 
 Decoders may be extended by including modules to the project. Currently supported modules:
 * [decoder_vector](https://github.com/koykov/decoder_vector) provide support of vector parsers.
@@ -247,3 +247,9 @@ and vector's [features](https://github.com/koykov/decoder_vector) will be availa
 
 Feel free to develop your own extensions. Strongly recommend to register new modifiers using namespaces, like
 [this](https://github.com/koykov/decoder_vector/blob/master/init.go#L15).
+
+### Conclusion
+
+Due to two phases (parsing and decoding) in using decoders it isn't handy to use in simple cases, especially outside
+highload. The good condition to use it is a highload project and dynamic support requirement. Use decoders in proper
+conditions and wish you happy decoding.
