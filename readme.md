@@ -152,7 +152,7 @@ in modifiers call:
 dst.Field = src.Field|namespaceName::modifier()
 ```
 
-#### Conditions
+### Conditions
 
 Decoders supports classic syntax of conditions:
 ```
@@ -190,6 +190,15 @@ For multiple conditions, you can use `switch` statement, examples:
 * [classic switch](testdata/parser/switch.dec)
 * [no-condition switch](testdata/parser/switch_no_cond.dec)
 * [no-condition switch with helpers](testdata/parser/switch_no_cond_helper.dec)
+
+### Loops
+
+Decoders supports both types of loops:
+* counter loops, like `for i:=0; i<5; i++ {...}`
+* range-loop, like `for k, v := range obj.Items {...}`
+
+Edge cases like `for k < 2000 {...}` or `for ; i < 10 ; {...}` isn't supported.
+Also, you can't make an infinite loop by using `for {...}`.
 
 ## Extensions
 
