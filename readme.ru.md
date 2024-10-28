@@ -159,8 +159,8 @@ type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 * args - список всех параметров, переданных в модификатор
 
 Написав свой пользовательский модификатор, следует зарегистрировать его с помощью одной из функций:
-* RegisterModFn(name, alias string, mod ModFn)
-* RegisterModFnNS(namespace, name, alias string, mod ModFn)
+* `RegisterModFn(name, alias string, mod ModFn)`
+* `RegisterModFnNS(namespace, name, alias string, mod ModFn)`
 
 Функции одинаковы, но NS-версия позволяет указать пространство имён, где будет находиться ваш модификатор. В таком случае
 обращаться к нему надо будет с указанием namespace:

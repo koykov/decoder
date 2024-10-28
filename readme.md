@@ -89,76 +89,68 @@ Content of init() function should be executed once (or periodically on the fly f
 
 Content of main() function is how to use decoders in a general way in highload.
 
----
-
 ## Syntax
 
-Recommend reading [inspector](https://github.com/koykov/inspector) first.
+Decoders inherits Go syntax, but provides an extra features like modifiers and coalesce operator (see below).
 
-Each decoder consists of name and body. Name uses only as index and may contain any symbols. There is only one
-requirement - name should be unique.
+### Assigning
 
-Decoder's body is a multi-line string (that calls ruleset) and each line (rule) has the following format
+The base decoding operation is assigning the data from source variable to destination variable. The syntax is typical
+`lvalue.Field1 = rvalue.Field2`. From [example](#usage):
 ```
-<destination path> = [<source path>|<callback>]
+data.Id = resp.identifier
+data.Name = resp.person.full_name
 ```
+where `data` represents `lvalue` (source variable) and `resp` - `rvalue` (destination variable).
 
-Both `<source path>` and `<destination path>` describes a source/destination fields accessed using a dot, example:
-```
-dstObj.Name = user.FullName
-```
-As mentioned above, both `dstObj` and `user` variables should be preliminarily registered in the context like this
-```go
-ctx := decoder.AcquireCtx()
-ctx.Set("dstObj", dst, DstInspector{})
-ctx.Set("user", user, UserInspector{})
-```
-In this example user is a Go struct, but you may use as source raw response, example in JSON
-```go
-import _ "github.com/koykov/decoder_vector"
-...
-jsonResponse = []byte(`{"a":"foo"}`)
-ctx := decoder.AcquireCtx()
-ctx.SetStatic("raw", jsonResponse)
-// in decoder body:
-// ctx.response = vector::parseJSON(raw)
-// dstObj.Name = response.a
-```
+### Coalesce operator
 
-In this way, decoder provides a possibility to describe where source data should be taken and where it should be came.
-
-Enough easy, isn't it?
+Decoders provide a possibility to read one-of-many fields when read nested fields from struct:
+```
+dst.Field = src.Nested.{Field1|Field2|Field3|...}
+```
+The first non-empty field between curly brackets will be read as data to assign. This syntax sugar allows to avoid tons
+of comparisons or build chain of `default` modifiers. Example of usage see [here](testdata/decoder/decoder4.dec).
 
 ### Modifiers
 
-Sometimes, isn't enough just specify source data address, but need to modify it before assigning to destination.
-
-Especially for that cases was added support of source modifiers. The syntax:
+Decoders supports user-defined modifiers, which applies additional logic to data before assigning. It may be helpful for
+edge cases (no data, conditional assignment, etc.). Modifiers usage syntax is typical - after source of data, using `|`
+symbol, modifier calls as function call:
 ```
-<destination path> = <source path>|<modifier name>(<arg0>, <arg1>, ...)
-```
-Example
-```
-dstObj.Balance = user.Finance.Rest|default(0)
+dst.Field = src.Field|modifier0(arg0, arg1, ...)|modifier1(arg0, arg1, ...)|...
 ```
 
-Default is a built-in modifier, but you may register your own modifiers using modifiers registry:
+Example:
+```
+data.Status = src.Nested.Blocked|ifThenElse(src.Nested.State, -1)
+                                ^ simple modifier
+data.Name = src.FullName|default("N\D")|toUpper()
+                        ^ first mod    ^ second modifier
+```
+
+Modifiers may collect in chain with variadic length. In that case, each modifier will take to input the result of
+previous modifier. Each modifier may take an arbitrary count of arguments.
+
+Modifier is a Go function with special signature:
 ```go
-func modMyCustomMod(ctx *Ctx, buf *any, val any, args []any) error {
-    // ...
-}
-
-decoder.RegisterModFn("myCustomMod", "customMod", modMyCustomMod)
+type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 ```
+where:
+* ctx - context of the decoder
+* buf - pointer to return the result
+* val - value to pass to the modifier (value of `varName` in example `varName|modifier()`) 
+* args - list of all arguments
 
-Modifier arguments:
-* `ctx` is a storage of variables/buffers you may use.
-* `buf` is a type-free buffer that receives result of modifier's work. Please note the type `*any` is an
-alloc-free trick.
-* `val` if a value of variable from left side of modifier separator (`|`).
-* `args` array of modifier arguments, specified in rule.
+You should register your modifier using one of the functions:
+* `RegisterModFn(name, alias string, mod ModFn)`
+* `RegisterModFnNS(namespace, name, alias string, mod ModFn)`
 
-See [mod.go](mod.go) for details and [mod_builtin.go](mod_builtin.go) for more example of modifiers.
+They are the same, but NS version allows to specify the namespace of the function. In that case, you should specify namespace
+in modifiers call:
+```
+dst.Field = src.Field|namespaceName::modifier()
+```
 
 ## Extensions
 
