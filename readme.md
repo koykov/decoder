@@ -152,6 +152,45 @@ in modifiers call:
 dst.Field = src.Field|namespaceName::modifier()
 ```
 
+#### Conditions
+
+Decoders supports classic syntax of conditions:
+```
+if leftVar [==|!=|>|>=|<|<=] rightVar {
+    true branch
+} else {
+    false branch
+}
+```
+
+Examples: [1](testdata/parser/cond.dec), [2](testdata/parser/cond_else.dec), [3](testdata/parser/condOK.dec).
+
+Decoders can't handle complicated conditions containing more than one comparison, like:
+```
+if user.Id == 0 || user.Finance.Balance == 0 {...}
+```
+In the future this problem will be solved, but now you can make nested conditions or use conditions helpers - functions
+with signature:
+```go
+type CondFn func(ctx *Ctx, args []any) bool
+```
+, where you may pass an arbitrary amount of arguments and these functions will return bool to choose the right execution branch.
+These function are user-defined, like modifiers, and you may write your own and then register it using one of the functions:
+```go
+func RegisterCondFn(name string, cond CondFn)
+func RegisterCondFnNS(namespace, name string, cond CondFn) // namespace version
+```
+
+Then condition helper will be accessible inside templates and you may use it using the name:
+```
+if helperName(user.Id, user.Finance.Balance) {...}
+```
+
+For multiple conditions, you can use `switch` statement, examples:
+* [classic switch](testdata/parser/switch.dec)
+* [no-condition switch](testdata/parser/switch_no_cond.dec)
+* [no-condition switch with helpers](testdata/parser/switch_no_cond_helper.dec)
+
 ## Extensions
 
 Decoders may be extended by including modules to the project. Currently supported modules:
