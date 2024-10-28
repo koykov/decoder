@@ -200,6 +200,37 @@ Decoders supports both types of loops:
 Edge cases like `for k < 2000 {...}` or `for ; i < 10 ; {...}` isn't supported.
 Also, you can't make an infinite loop by using `for {...}`.
 
+#### Loop breaking
+
+Decoders supports default instructions `break` and `continue` to break loop/iteration, example:
+```
+for _, v := list
+  if v.ID == 0 {
+    continue
+  }
+  if v.Status == -1 {
+    break
+  }
+}
+```
+
+These instructions works as intended, but they required condition wrapper and that's bulky. Therefore, decoders provide
+combined `break if` and `continue if` that works the same:
+```
+for _, v := list {
+  continue if v.ID == 0
+  break if v.Status == -1
+}
+```
+
+The both examples are equal, but the second is more compact.
+
+#### Lazy breaks
+
+Imagine the case - you've decided in the middle of iteration that loop requires a break, but the iteration must finish its
+work the end. For that case, decoders supports special instruction `lazybreak`. It breaks the loop but allows current
+iteration works till the end.
+
 ## Extensions
 
 Decoders may be extended by including modules to the project. Currently supported modules:
