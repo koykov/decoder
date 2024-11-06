@@ -186,6 +186,26 @@ Then condition helper will be accessible inside decoders and you may use it usin
 if helperName(user.Id, user.Finance.Balance) {...}
 ```
 
+Decoders supports ternary operator for most primitive cases of assigning. Conditions like this:
+```
+if x.a == 123 {
+    dst.Field1 = src.Field2
+} else {
+    dst.Field1 = "N/D
+}
+```
+may be shortener using ternary operator:
+```
+dst.Field1 = x.a == 123 ? src.Field2 : "N/D"
+```
+
+Condition helpers also supported:
+```
+obj.Id = testns::check(obj.Id, 15.123, "foobar", false) ? 225 : src.{status|state}
+```
+
+#### switch
+
 For multiple conditions, you can use `switch` statement, examples:
 * [classic switch](testdata/parser/switch.dec)
 * [no-condition switch](testdata/parser/switch_no_cond.dec)

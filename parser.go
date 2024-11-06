@@ -61,6 +61,10 @@ var (
 	reMod       = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 	reSet       = regexp.MustCompile(`(.*)\.{([^}]+)}`)
 
+	reTernary         = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
+	reTernaryHelper   = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
+	reTernaryCondExpr = regexp.MustCompile(`(?i)[\w\d\\.\[\]]+\s*=\s*(.*)\s*(==|!=|>=|<=|>|<)([^?]+)`)
+
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*\{` + "")
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*\{`)
@@ -377,7 +381,37 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 	}
 	if reAssignV2V.Match(ctl) {
 		// Var-to-var expression caught.
-		if m := reAssignF2V.FindSubmatch(ctl); m != nil {
+		var m [][]byte
+		if m = reTernary.FindSubmatch(ctl); m != nil {
+			r.typ = typeCond
+			r.condL, r.condR, r.condStaticL, r.condStaticR, r.condOp = p.parseCondExpr(reTernaryCondExpr, ctl)
+
+			raw, subset := extractSet(bytealg.Trim(m[5], space))
+			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			r.child = append(r.child, nodeTrue)
+
+			raw, subset = extractSet(bytealg.Trim(m[6], space))
+			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			r.child = append(r.child, nodeFalse)
+		} else if m = reTernaryHelper.FindSubmatch(ctl); m != nil {
+			r.typ = typeCond
+			r.condHlp = m[2]
+			r.condHlpArg = extractArgs(m[3])
+			switch {
+			case bytes.Equal(r.condHlp, condLen):
+				r.condLC = lcLen
+			case bytes.Equal(r.condHlp, condCap):
+				r.condLC = lcCap
+			}
+
+			raw, subset := extractSet(bytealg.Trim(m[4], space))
+			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			r.child = append(r.child, nodeTrue)
+
+			raw, subset = extractSet(bytealg.Trim(m[5], space))
+			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			r.child = append(r.child, nodeFalse)
+		} else if m = reAssignF2V.FindSubmatch(ctl); m != nil {
 			// Func-to-var expression caught.
 			r.dst = replaceQB(m[1])
 			r.src = replaceQB(m[2])
@@ -444,7 +478,6 @@ func (p *parser) processCond(nodes []node, root *node, ctl []byte, offset int) (
 			root.typ = typeCond
 			root.condHlp = m[1]
 			root.condHlpArg = extractArgs(m[2])
-			root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ctl)
 			switch {
 			case bytes.Equal(root.condHlp, condLen):
 				root.condLC = lcLen

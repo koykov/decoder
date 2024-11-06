@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="6" left="src.status" op="==" right="1">
+		<nodes>
+			<node type="8">
+				<nodes>
+					<node dst="dst.Status" src="src.RealState"/>
+				</nodes>
+			</node>
+			<node type="9">
+				<nodes>
+					<node dst="dst.Status" src="false"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="6" left="src.Active" op="==" right="true">
+		<nodes>
+			<node type="8">
+				<nodes>
+					<node dst="dst.Hash" src="src.{id, title, descr}"/>
+				</nodes>
+			</node>
+			<node type="9">
+				<nodes>
+					<node dst="dst.Hash" src="&quot;N/D&quot;"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>
