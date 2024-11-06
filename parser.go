@@ -63,7 +63,7 @@ var (
 
 	reTernary         = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
 	reTernaryHelper   = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
-	reTernaryCondExpr = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)\s*(==|!=|>=|<=|>|<)([^?]+)`)
+	reTernaryCondExpr = regexp.MustCompile(`(?i)[\w\d\\.\[\]]+\s*=\s*(.*)\s*(==|!=|>=|<=|>|<)([^?]+)`)
 
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*\{` + "")
@@ -383,7 +383,16 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		// Var-to-var expression caught.
 		var m [][]byte
 		if m = reTernary.FindSubmatch(ctl); m != nil {
-			// todo implement me
+			r.typ = typeCond
+			r.condL, r.condR, r.condStaticL, r.condStaticR, r.condOp = p.parseCondExpr(reTernaryCondExpr, ctl)
+
+			raw, subset := extractSet(bytealg.Trim(m[5], space))
+			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeOperator, dst: raw, src: m[1], subset: subset}}}
+			r.child = append(r.child, nodeTrue)
+
+			raw, subset = extractSet(bytealg.Trim(m[6], space))
+			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			r.child = append(r.child, nodeFalse)
 		} else if m = reTernaryHelper.FindSubmatch(ctl); m != nil {
 			// todo implement me
 		} else if m = reAssignF2V.FindSubmatch(ctl); m != nil {

@@ -1,0 +1,2 @@
+dst.Status = src.status == 1 ? src.RealState : false
+dst.Hash = src.Active == true ? src.{id|title|descr} : "N/D"

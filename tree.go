@@ -214,6 +214,9 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []node, depth int) {
 
 // Human readable helper for value.
 func (t *Tree) hrVal(buf *bytebuf.Chain, v []byte, set [][]byte) {
+	if bytes.IndexByte(v, '"') != -1 {
+		v = bytes.ReplaceAll(v, hrQ, hrQR)
+	}
 	buf.Write(v)
 	if len(set) > 0 {
 		buf.WriteString(".{")
