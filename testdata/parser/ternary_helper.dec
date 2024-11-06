@@ -1,0 +1,1 @@
+obj.Id = testns::check(obj.Id, 15.123, "foobar", false) ? 225 : src.{status|state}

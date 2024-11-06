@@ -4,7 +4,7 @@
 		<nodes>
 			<node type="8">
 				<nodes>
-					<node dst="src.RealState" src="dst.Status"/>
+					<node dst="dst.Status" src="src.RealState"/>
 				</nodes>
 			</node>
 			<node type="9">
@@ -18,7 +18,7 @@
 		<nodes>
 			<node type="8">
 				<nodes>
-					<node dst="src" src="dst.Hash.{id, title, descr}"/>
+					<node dst="dst.Hash" src="src.{id, title, descr}"/>
 				</nodes>
 			</node>
 			<node type="9">

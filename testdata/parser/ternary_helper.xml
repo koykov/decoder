@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="6" helper="testns::check" arg0="obj.Id" sarg1="15.123" sarg2="foobar" sarg3="false">
+		<nodes>
+			<node type="8">
+				<nodes>
+					<node dst="obj.Id" src="225"/>
+				</nodes>
+			</node>
+			<node type="9">
+				<nodes>
+					<node dst="obj.Id" src="src.{status, state}"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>

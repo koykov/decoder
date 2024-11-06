@@ -31,6 +31,7 @@ func TestParser(t *testing.T) {
 	t.Run("switch_no_cond_helper", testParser)
 
 	t.Run("ternary", testParser)
+	t.Run("ternary_helper", testParser)
 }
 
 func testParser(t *testing.T) {
