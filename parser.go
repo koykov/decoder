@@ -61,6 +61,10 @@ var (
 	reMod       = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 	reSet       = regexp.MustCompile(`(.*)\.{([^}]+)}`)
 
+	reTernary         = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
+	reTernaryHelper   = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
+	reTernaryCondExpr = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)\s*(==|!=|>=|<=|>|<)([^?]+)`)
+
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*\{` + "")
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*\{`)
@@ -377,7 +381,12 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 	}
 	if reAssignV2V.Match(ctl) {
 		// Var-to-var expression caught.
-		if m := reAssignF2V.FindSubmatch(ctl); m != nil {
+		var m [][]byte
+		if m = reTernary.FindSubmatch(ctl); m != nil {
+			// todo implement me
+		} else if m = reTernaryHelper.FindSubmatch(ctl); m != nil {
+			// todo implement me
+		} else if m = reAssignF2V.FindSubmatch(ctl); m != nil {
 			// Func-to-var expression caught.
 			r.dst = replaceQB(m[1])
 			r.src = replaceQB(m[2])
