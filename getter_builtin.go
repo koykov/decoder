@@ -31,19 +31,18 @@ func getterCrc32(ctx *Ctx, buf *any, args []any) (err error) {
 	_ = args[n-1]
 	for i := 0; i < n; i++ {
 		a := args[i]
-		switch a.(type) {
+		switch x := a.(type) {
 		case []byte:
-			ctx.BufAcc.Write(a.([]byte))
+			ctx.BufAcc.Write(x)
 		case *[]byte:
-			ctx.BufAcc.Write(*a.(*[]byte))
+			ctx.BufAcc.Write(*x)
 		case string:
-			ctx.BufAcc.WriteString(a.(string))
+			ctx.BufAcc.WriteString(x)
 		case *string:
-			ctx.BufAcc.WriteString(*a.(*string))
+			ctx.BufAcc.WriteString(*x)
 		case *vector.Node:
-			node := a.(*vector.Node)
-			if node != nil {
-				ctx.BufAcc.Write(node.Bytes())
+			if x != nil {
+				ctx.BufAcc.Write(x.Bytes())
 			}
 		}
 	}
@@ -81,17 +80,17 @@ func atox(ctx *Ctx, buf *any, args []any, target atoxT) (err error) {
 	}
 	var raw string
 	ok := true
-	switch args[0].(type) {
+	switch x := args[0].(type) {
 	case *vector.Node:
-		raw = args[0].(*vector.Node).String()
+		raw = x.String()
 	case string:
-		raw = args[0].(string)
+		raw = x
 	case *string:
-		raw = *args[0].(*string)
+		raw = *x
 	case *[]byte:
-		raw = byteconv.B2S(*args[0].(*[]byte))
+		raw = byteconv.B2S(*x)
 	case []byte:
-		raw = byteconv.B2S(args[0].([]byte))
+		raw = byteconv.B2S(x)
 	default:
 		ok = false
 	}
@@ -159,17 +158,17 @@ func getterAppendTestHistory(_ *Ctx, buf *any, args []any) (err error) {
 			h = &[]testobj.TestHistory{}
 		}
 		hr := testobj.TestHistory{DateUnix: time.Now().Unix()}
-		switch args[1].(type) {
+		switch x := args[1].(type) {
 		case *[]byte:
-			hr.Cost, _ = strconv.ParseFloat(byteconv.B2S(*args[1].(*[]byte)), 64)
+			hr.Cost, _ = strconv.ParseFloat(byteconv.B2S(*x), 64)
 		case *vector.Node:
-			hr.Cost, _ = args[1].(*vector.Node).Float()
+			hr.Cost, _ = x.Float()
 		}
-		switch args[2].(type) {
+		switch x := args[2].(type) {
 		case *[]byte:
-			hr.Comment = *args[2].(*[]byte)
+			hr.Comment = *x
 		case *vector.Node:
-			hr.Comment = args[2].(*vector.Node).Bytes()
+			hr.Comment = x.Bytes()
 		}
 		*h = append(*h, hr)
 		*buf = h

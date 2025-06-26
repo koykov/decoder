@@ -14,69 +14,73 @@ type intConverter interface {
 // Convert interface value with arbitrary underlying type to integer value.
 func iface2int(raw any) (r int64, ok bool) {
 	ok = true
-	switch raw.(type) {
+	switch x := raw.(type) {
 	case int:
-		r = int64(raw.(int))
+		r = int64(x)
 	case *int:
-		r = int64(*raw.(*int))
+		r = int64(*x)
 	case int8:
-		r = int64(raw.(int8))
+		r = int64(x)
 	case *int8:
-		r = int64(*raw.(*int8))
+		r = int64(*x)
 	case int16:
-		r = int64(raw.(int16))
+		r = int64(x)
 	case *int16:
-		r = int64(*raw.(*int16))
+		r = int64(*x)
 	case int32:
-		r = int64(raw.(int32))
+		r = int64(x)
 	case *int32:
-		r = int64(*raw.(*int32))
+		r = int64(*x)
 	case int64:
-		r = raw.(int64)
+		r = x
 	case *int64:
-		r = *raw.(*int64)
+		r = *x
 	case uint:
-		r = int64(raw.(uint))
+		r = int64(x)
 	case *uint:
-		r = int64(*raw.(*uint))
+		r = int64(*x)
 	case uint8:
-		r = int64(raw.(uint8))
+		r = int64(x)
 	case *uint8:
-		r = int64(*raw.(*uint8))
+		r = int64(*x)
 	case uint16:
-		r = int64(raw.(uint16))
+		r = int64(x)
 	case *uint16:
-		r = int64(*raw.(*uint16))
+		r = int64(*x)
 	case uint32:
-		r = int64(raw.(uint32))
+		r = int64(x)
 	case *uint32:
-		r = int64(*raw.(*uint32))
+		r = int64(*x)
 	case uint64:
-		r = int64(raw.(uint64))
+		r = int64(x)
 	case *uint64:
-		r = int64(*raw.(*uint64))
+		r = int64(*x)
 	case []byte:
-		if len(raw.([]byte)) > 0 {
-			r, _ = strconv.ParseInt(byteconv.B2S(raw.([]byte)), 0, 0)
+		if len(x) > 0 {
+			r, _ = strconv.ParseInt(byteconv.B2S(x), 0, 0)
 		}
 	case *[]byte:
-		if len(*raw.(*[]byte)) > 0 {
-			r, _ = strconv.ParseInt(byteconv.B2S(*raw.(*[]byte)), 0, 0)
+		if len(*x) > 0 {
+			r, _ = strconv.ParseInt(byteconv.B2S(*x), 0, 0)
 		}
 	case string:
-		if len(raw.(string)) > 0 {
-			r, _ = strconv.ParseInt(raw.(string), 0, 0)
+		if len(x) > 0 {
+			r, _ = strconv.ParseInt(x, 0, 0)
 		}
 	case *string:
-		if len(*raw.(*string)) > 0 {
-			r, _ = strconv.ParseInt(*raw.(*string), 0, 0)
+		if len(*x) > 0 {
+			r, _ = strconv.ParseInt(*x, 0, 0)
 		}
 	case *bytebuf.Chain:
-		if (*raw.(*bytebuf.Chain)).Len() > 0 {
-			r, _ = strconv.ParseInt((*raw.(*bytebuf.Chain)).String(), 0, 0)
+		if x.Len() > 0 {
+			r, _ = strconv.ParseInt(x.String(), 0, 0)
+		}
+	case *bytebuf.Accumulative:
+		if x.Len() > 0 {
+			r, _ = strconv.ParseInt(x.StakedString(), 0, 0)
 		}
 	case intConverter:
-		if i, err := raw.(intConverter).Int(); err == nil {
+		if i, err := x.Int(); err == nil {
 			return i, true
 		}
 	default:
