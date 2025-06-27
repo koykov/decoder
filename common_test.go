@@ -51,6 +51,9 @@ func init() {
 				st.key = dir + "/" + st.key
 
 				st.origin, _ = os.ReadFile(path)
+				if raw, err := os.ReadFile(strings.Replace(path, ".dec", ".txt", 1)); err == nil {
+					st.expect = raw
+				}
 				rules, _ := Parse(st.origin)
 				RegisterDecoderKey(st.key, rules)
 
@@ -59,6 +62,20 @@ func init() {
 			return nil
 		})
 	}
+	_ = filepath.Walk("testdata/fmt", func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(path) == ".dec" {
+			st := stage{}
+			st.key = strings.Replace(filepath.Base(path), ".dec", "", 1)
+			st.key = "fmt/" + st.key
+
+			st.origin, _ = os.ReadFile(path)
+			rules, _ := Parse(st.origin)
+			RegisterDecoderKey(st.key, rules)
+
+			stages = append(stages, st)
+		}
+		return nil
+	})
 	_ = filepath.Walk("testdata/json", func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) == ".json" {
 			key := strings.Replace(filepath.Base(path), ".json", "", 1)
