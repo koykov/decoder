@@ -23,6 +23,13 @@ obj.Status = jso.person.state|default(1)`)
 	RegisterModFnNS("bar", "baz", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
 		WithDescription("Testing stuff: don't use in production.")
 
+	// Register fmt modifiers.
+	RegisterModFnNS("fmt", "format", "f", modFmtFormat).
+		WithDescription("Modifier `fmt::format` formats according to a format specifier and returns the resulting string.").
+		WithParam("format string", "").
+		WithParam("args ...any", "").
+		WithExample("obj.StringField = fmt::format(\"Welcome %s\", user.Name)")
+
 	// Register builtin getter callbacks.
 	RegisterGetterFn("crc32", "", getterCrc32).
 		WithParam("args ...any", "Arguments to concatenate.").
