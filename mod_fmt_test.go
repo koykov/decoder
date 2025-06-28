@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/koykov/bytebuf"
 )
 
 var (
@@ -692,6 +694,32 @@ func TestModFmt(t *testing.T) {
 		t.Run(fmt.Sprintf("fmt%d", i), func(t *testing.T) {
 			testModFmt(t, fmtStages[i])
 		})
+	}
+}
+
+func BenchmarkModFmt(b *testing.B) {
+	var (
+		bb     bytebuf.Chain
+		lvalue []byte
+	)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for j := 0; j < b.N; j++ {
+		key := bb.Reset().WriteString("fmt/fmt").WriteInt(int64(j % len(fmtStages))).String()
+		st := getStage(key)
+		if st == nil {
+			b.Error("stage not found")
+			return
+		}
+
+		ctx := AcquireCtx()
+		ctx.SetStatic("lvalue", &lvalue)
+		ctx.SetStatic("fmtVar", fmtStages[j%len(fmtStages)])
+		err := Decode(key, ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		ReleaseCtx(ctx)
 	}
 }
 
