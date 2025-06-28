@@ -69,6 +69,7 @@ func init() {
 			st.key = "fmt/" + st.key
 
 			st.origin, _ = os.ReadFile(path)
+			st.expect, _ = os.ReadFile(strings.Replace(path, ".dec", ".txt", 1))
 			rules, _ := Parse(st.origin)
 			RegisterDecoderKey(st.key, rules)
 
