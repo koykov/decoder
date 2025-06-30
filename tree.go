@@ -23,6 +23,8 @@ type arg struct {
 	subset [][]byte
 	// Flag that indicates if value is a static value.
 	static bool
+	// Flag that indicates if value is a global variable.
+	global bool
 }
 
 var (

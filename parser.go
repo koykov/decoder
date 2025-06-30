@@ -684,6 +684,7 @@ func extractArgs(l []byte) []*arg {
 			val:    a,
 			subset: set,
 			static: static,
+			global: GetGlobal(byteconv.B2S(a)) != nil,
 		})
 	}
 	return r

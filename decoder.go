@@ -144,7 +144,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 				_ = r.condHlpArg[n-1]
 				for i := 0; i < n; i++ {
 					arg_ := r.condHlpArg[i]
-					if arg_.static {
+					if arg_.global {
+						ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(arg_.val)))
+					} else if arg_.static {
 						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
 						val := ctx.get(arg_.val, arg_.subset)
@@ -203,7 +205,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 				_ = r.condHlpArg[n-1]
 				for i := 0; i < len(r.condHlpArg); i++ {
 					arg_ := r.condHlpArg[i]
-					if arg_.static {
+					if arg_.global {
+						ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(arg_.val)))
+					} else if arg_.static {
 						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
 						val := ctx.get(arg_.val, arg_.subset)
@@ -286,7 +290,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 							_ = ch.caseHlpArg[n-1]
 							for j := 0; j < n; j++ {
 								arg_ := ch.caseHlpArg[j]
-								if arg_.static {
+								if arg_.global {
+									ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(arg_.val)))
+								} else if arg_.static {
 									ctx.bufA = append(ctx.bufA, &arg_.val)
 								} else {
 									val := ctx.get(arg_.val, arg_.subset)
@@ -348,7 +354,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 			_ = r.arg[n-1]
 			for i := 0; i < n; i++ {
 				a := r.arg[i]
-				if a.static {
+				if a.global {
+					ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(a.val)))
+				} else if a.static {
 					ctx.bufA = append(ctx.bufA, &a.val)
 				} else {
 					val := ctx.get(a.val, a.subset)
@@ -366,7 +374,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 			_ = r.arg[n-1]
 			for i := 0; i < n; i++ {
 				a := r.arg[i]
-				if a.static {
+				if a.global {
+					ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(a.val)))
+				} else if a.static {
 					ctx.bufA = append(ctx.bufA, &a.val)
 				} else {
 					val := ctx.get(a.val, a.subset)
@@ -405,7 +415,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 					_ = m.arg[k-1]
 					for j := 0; j < k; j++ {
 						a := m.arg[j]
-						if a.static {
+						if a.global {
+							ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(a.val)))
+						} else if a.static {
 							ctx.bufA = append(ctx.bufA, &a.val)
 						} else {
 							val := ctx.get(a.val, a.subset)

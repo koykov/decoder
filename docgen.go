@@ -51,6 +51,13 @@ func writeDocgenMarkdown(w io.Writer) error {
 		_ = tuple.write(w, DocgenFormatMarkdown, false)
 	}
 
+	_, _ = w.Write([]byte("## Global variables\n\n"))
+	for i := 0; i < len(globBuf); i++ {
+		tuple := &globBuf[i]
+		_ = tuple.write(w, DocgenFormatMarkdown, true)
+	}
+	_, _ = w.Write([]byte("\n"))
+
 	_, _ = w.Write([]byte("## Callbacks\n\n"))
 	for i := 0; i < len(callbackBuf); i++ {
 		tuple := &callbackBuf[i]
@@ -85,6 +92,13 @@ func writeDocgenHTML(w io.Writer) error {
 		_ = tuple.write(w, DocgenFormatHTML, false)
 	}
 
+	_, _ = w.Write([]byte(`<a name="global"></a><h2>Global variables</h2>`))
+	for i := 0; i < len(globBuf); i++ {
+		tuple := &globBuf[i]
+		_ = tuple.write(w, DocgenFormatHTML, true)
+	}
+	_, _ = w.Write([]byte("\n"))
+
 	_, _ = w.Write([]byte("</body></html>"))
 	return nil
 }
@@ -117,6 +131,9 @@ func writeDocgenJSON(w io.Writer) error {
 	}
 	for i := 0; i < len(callbackBuf); i++ {
 		x.Callbacks = append(x.Callbacks, cpy(&callbackBuf[i].docgen))
+	}
+	for i := 0; i < len(globBuf); i++ {
+		x.GlobalVariables = append(x.GlobalVariables, cpy(&globBuf[i].docgen))
 	}
 	b, err := json.Marshal(&x)
 	_, _ = w.Write(b)
@@ -304,8 +321,9 @@ type (
 		Desc string `json:"desc,omitempty"`
 	}
 	docgenContainerJSON struct {
-		Modifiers []docgenJSON `json:"modifiers,omitempty"`
-		Getters   []docgenJSON `json:"conditionHelpers,omitempty"`
-		Callbacks []docgenJSON `json:"conditionOKHelpers,omitempty"`
+		Modifiers       []docgenJSON `json:"modifiers,omitempty"`
+		Getters         []docgenJSON `json:"conditionHelpers,omitempty"`
+		Callbacks       []docgenJSON `json:"conditionOKHelpers,omitempty"`
+		GlobalVariables []docgenJSON `json:"globalVariables,omitempty"`
 	}
 )
