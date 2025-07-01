@@ -1,0 +1,3 @@
+lvalue = date|time::add("+1 M")|time::date(time::StampNano)
+lvalue1 = date|time::add("+1 month")|time::date(time::StampNano)
+lvalue2 = date|time::add("-2 months")|time::date(time::StampNano)
