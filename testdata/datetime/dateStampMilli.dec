@@ -1,1 +1,1 @@
-lvalue = date|time::date(time::StampMilli) %}
+lvalue = date|time::date(time::StampMilli)
