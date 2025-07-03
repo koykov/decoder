@@ -651,6 +651,9 @@ func extractMods(p []byte) ([]byte, []mod) {
 				})
 			}
 		}
+		if modNoVar {
+			return nil, mods
+		}
 		return chunks[0], mods
 	} else {
 		return p, nil

@@ -53,7 +53,6 @@ func init() {
 				st.key = dir + "/" + st.key
 
 				st.origin, _ = os.ReadFile(path)
-				st.expect, _ = os.ReadFile(strings.Replace(path, ".dec", ".txt", 1))
 				if raw, err := os.ReadFile(strings.Replace(path, ".dec", ".txt", 1)); err == nil {
 					st.expect = raw
 				}
