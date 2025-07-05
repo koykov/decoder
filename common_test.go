@@ -54,6 +54,7 @@ func init() {
 
 				st.origin, _ = os.ReadFile(path)
 				if raw, err := os.ReadFile(strings.Replace(path, ".dec", ".txt", 1)); err == nil {
+					raw = bytes.TrimRight(raw, "\n")
 					st.expect = raw
 				}
 				rules, _ := Parse(st.origin)
