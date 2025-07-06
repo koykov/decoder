@@ -7,7 +7,7 @@ require (
 	github.com/koykov/bytebuf v1.1.1
 	github.com/koykov/byteconv v1.0.1
 	github.com/koykov/clock v1.1.6
-	github.com/koykov/inspector v1.4.9
+	github.com/koykov/inspector v1.4.10
 	github.com/koykov/jsonvector v1.2.5
 	github.com/koykov/vector v1.2.6
 	github.com/koykov/vector_inspector v1.0.7
