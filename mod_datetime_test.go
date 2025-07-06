@@ -125,10 +125,25 @@ func TestModDatetime(t *testing.T) {
 }
 
 func BenchmarkModDatetime(b *testing.B) {
-	// b.Run("now", benchMod)
-	//
-	// b.Run("dateComplexR", func(b *testing.B) { benchModWA(b, modArgs{"date": dt0}) })
-	// b.Run("dateStampNano", func(b *testing.B) { benchModWA(b, modArgs{"date": dtNative}) })
-	//
-	// b.Run("addMixedBench", func(b *testing.B) { benchModWA(b, modArgs{"date": dtAdd}) })
+	benchfn := func(b *testing.B, dt time.Time) {
+		key := "datetime/" + getTBName(b)
+		lvalue := make([]byte, 0)
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			ctx := AcquireCtx()
+			ctx.SetStatic("lvalue", &lvalue)
+			ctx.SetStatic("date", &dt)
+			err := Decode(key, ctx)
+			if err != nil {
+				b.Error(err)
+			}
+			ReleaseCtx(ctx)
+		}
+	}
+	b.Run("now", func(b *testing.B) { benchfn(b, dt0) })
+
+	b.Run("dateComplexR", func(b *testing.B) { benchfn(b, dt0) })
+	b.Run("dateStampNano", func(b *testing.B) { benchfn(b, dtNative) })
+
+	b.Run("addMixedBench", func(b *testing.B) { benchfn(b, dtAdd) })
 }
