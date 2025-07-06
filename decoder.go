@@ -396,13 +396,16 @@ func followRule(r *node, ctx *Ctx) (err error) {
 		// Just assign the source it to destination.
 		ctx.buf = append(ctx.buf[:0], r.src...)
 		err = ctx.set(r.dst, &ctx.buf, r.ins)
-	case len(r.dst) > 0 && len(r.src) > 0 && !r.static:
+	case len(r.dst) > 0 && (len(r.src) > 0 || len(r.mod) > 0) && !r.static:
 		// V2V node with dynamic source.
 		// Get source value.
-		raw := ctx.get(r.src, r.subset)
-		if ctx.Err != nil {
-			err = ctx.Err
-			return
+		var raw any
+		if len(r.src) > 0 {
+			raw = ctx.get(r.src, r.subset)
+			if ctx.Err != nil {
+				err = ctx.Err
+				return
+			}
 		}
 		// Apply modifiers.
 		if n := len(r.mod); n > 0 {

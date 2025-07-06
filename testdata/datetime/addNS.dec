@@ -1,0 +1,2 @@
+lvalue = date|time::add("+1 ns")|time::date(time::StampNano)
+lvalue1 = date|time::add("+1 nsec")|time::date(time::StampNano)

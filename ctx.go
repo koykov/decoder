@@ -3,6 +3,7 @@ package decoder
 import (
 	"bytes"
 	"strings"
+	"time"
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/bytebuf"
@@ -34,6 +35,7 @@ type Ctx struct {
 	bufU  uint64
 	bufF  float64
 	bufBl bool
+	BufT  time.Time
 	bufX  any
 	bufA  []any
 	bufLC []int64
@@ -453,6 +455,7 @@ func (ctx *Ctx) Reset() {
 
 	ctx.Err = nil
 	ctx.bufX = nil
+	ctx.BufT = time.Time{}
 	ctx.accB = ctx.accB[:0]
 	ctx.buf = ctx.buf[:0]
 	ctx.bufS = ctx.bufS[:0]

@@ -1,0 +1,1 @@
+lvalue = time::now("stuck")

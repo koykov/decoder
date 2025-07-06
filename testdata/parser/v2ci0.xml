@@ -4,7 +4,7 @@
 	<node type="0" dst="ctx.finance" src="response.fin" ins="Finance"/>
 	<node type="0" dst="ctx.perm" src="response.permission" ins="testns::Permission"/>
 	<node type="0" dst="obj.Balance" src="finance.Amount"/>
-	<node type="0" dst="ctx.foo" src="bar::baz(response.x)">
+	<node type="0" dst="ctx.foo">
 		<mods>
 			<mod name="bar::baz" arg0="response.x"/>
 		</mods>
