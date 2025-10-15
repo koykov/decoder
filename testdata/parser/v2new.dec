@@ -1,0 +1,5 @@
+var x = new(TestObject)
+x.Id = "foobar"
+
+var y = bufferize(TestFinance)
+y.Balance = 3.1415

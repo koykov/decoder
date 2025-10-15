@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="0" dst="ctx.x" ins="TestObject">
+		<mods>
+			<mod name="new" sarg0="TestObject"/>
+		</mods>
+	</node>
+	<node type="0" dst="x.Id" src="foobar" static="1"/>
+	<node type="0" dst="ctx.y" ins="TestFinance">
+		<mods>
+			<mod name="bufferize" sarg0="TestFinance"/>
+		</mods>
+	</node>
+	<node type="0" dst="y.Balance" src="3.1415" static="1"/>
+</nodes>
