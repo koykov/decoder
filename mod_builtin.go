@@ -160,7 +160,12 @@ func modDefault(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	return
 }
 
-func modNewHidden(_ *Ctx, buf *any, val any, args []any) (err error) {
+func modNew(ctx *Ctx, buf *any, _ any, args []any) (err error) {
+	// todo implement me
+	return
+}
+
+func modBufferize(ctx *Ctx, buf *any, _ any, args []any) (err error) {
 	// todo implement me
 	return
 }

@@ -21,6 +21,14 @@ obj.Status = jso.person.state|default(1)`)
 		WithParam("arg0 any", "").
 		WithParam("arg1 any", "").
 		WithExample(`obj.Name = jso.finance.is_active|ifThenElse("Rich men", "Poor men")`)
+	RegisterModFn("new", "", modNew).
+		WithDescription("Make new instance of given type and return it. This function makes an allocation, use `bufferize` to alloc-free instantiation.").
+		WithParam("name type", "name of type (literal, not string - see example section)").
+		WithExample(`var x = new(TestObject) // typeof(x) == *TestObject`)
+	RegisterModFn("bufferize", "", modBufferize).
+		WithDescription("Return instance of given type. This function bufferizes instantiation, tus is alloc-free. Default `new` function also is available, but it produces an allocation.").
+		WithParam("name type", "name of type (literal, not string - see example section)").
+		WithExample(`var x = bufferize(TestObject) // typeof(x) == *TestObject`)
 	RegisterModFnNS("bar", "baz", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
 		WithDescription("Testing stuff: don't use in production.")
 
