@@ -3,6 +3,8 @@ package decoder
 import (
 	"bytes"
 
+	"github.com/koykov/byteconv"
+	"github.com/koykov/inspector"
 	"github.com/koykov/vector"
 )
 
@@ -160,13 +162,43 @@ func modDefault(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	return
 }
 
-func modNew(ctx *Ctx, buf *any, _ any, args []any) (err error) {
-	// todo implement me
-	return
+func modNew(_ *Ctx, buf *any, _ any, args []any) error {
+	insName, err := nbIns(args)
+	if err != nil {
+		return err
+	}
+	ins, err := inspector.GetInspector(insName)
+	if err != nil {
+		return nil // suppress errors
+	}
+	*buf = ins.Instance(true)
+	return nil
 }
 
-func modBufferize(ctx *Ctx, buf *any, _ any, args []any) (err error) {
-	// todo implement me
+func modBufferize(ctx *Ctx, buf *any, _ any, args []any) error {
+	insName, err := nbIns(args)
+	if err != nil {
+		return err
+	}
+	*buf, err = ctx.ibuf.get(insName)
+	return nil
+}
+
+func nbIns(args []any) (insName string, err error) {
+	if len(args) == 0 {
+		err = ErrModNoArgs
+		return
+	}
+	switch x := args[0].(type) {
+	case string:
+		insName = x
+	case *string:
+		insName = *x
+	case []byte:
+		insName = byteconv.B2S(x)
+	case *[]byte:
+		insName = byteconv.B2S(*x)
+	}
 	return
 }
 

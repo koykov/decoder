@@ -690,9 +690,28 @@ var (
 )
 
 func TestModFmt(t *testing.T) {
+	testfn := func(t *testing.T, rvalue any) {
+		var lvalue []byte
+		ctx := NewCtx()
+		ctx.SetStatic("lvalue", &lvalue)
+		ctx.SetStatic("fmtVar", rvalue)
+
+		key := "fmt/" + getTBName(t)
+		err := Decode(key, ctx)
+		if err != nil {
+			t.Error(err)
+		}
+
+		st := getStage(key)
+		if !bytes.Equal(lvalue, st.expect) {
+			if !bytes.Contains(st.expect, bPTR) {
+				t.Errorf("expected %q, got %q", st.expect, lvalue)
+			}
+		}
+	}
 	for i := 0; i < len(fmtStages); i++ {
 		t.Run(fmt.Sprintf("fmt%d", i), func(t *testing.T) {
-			testModFmt(t, fmtStages[i])
+			testfn(t, fmtStages[i])
 		})
 	}
 }
@@ -720,26 +739,6 @@ func BenchmarkModFmt(b *testing.B) {
 			b.Error(err)
 		}
 		ReleaseCtx(ctx)
-	}
-}
-
-func testModFmt(t *testing.T, rvalue any) {
-	var lvalue []byte
-	ctx := NewCtx()
-	ctx.SetStatic("lvalue", &lvalue)
-	ctx.SetStatic("fmtVar", rvalue)
-
-	key := "fmt/" + getTBName(t)
-	err := Decode(key, ctx)
-	if err != nil {
-		t.Error(err)
-	}
-
-	st := getStage(key)
-	if !bytes.Equal(lvalue, st.expect) {
-		if !bytes.Contains(st.expect, bPTR) {
-			t.Errorf("expected %q, got %q", st.expect, lvalue)
-		}
 	}
 }
 
