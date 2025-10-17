@@ -3,80 +3,82 @@ package decoder
 import (
 	"bytes"
 
+	"github.com/koykov/byteconv"
+	"github.com/koykov/inspector"
 	"github.com/koykov/vector"
 )
 
 // Replace empty val with default value.
 func modDefault(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	// Check val is empty.
-	var empty bool
+	var empty_ bool
 	switch x := val.(type) {
 	case *[]byte:
-		empty = len(*x) == 0
+		empty_ = len(*x) == 0
 	case []byte:
-		empty = len(x) == 0
+		empty_ = len(x) == 0
 	case *string:
-		empty = len(*x) == 0
+		empty_ = len(*x) == 0
 	case string:
-		empty = len(x) == 0
+		empty_ = len(x) == 0
 	case *bool:
-		empty = !(*x)
+		empty_ = !(*x)
 	case bool:
-		empty = !x
+		empty_ = !x
 	case int:
-		empty = x == 0
+		empty_ = x == 0
 	case *int:
-		empty = *x == 0
+		empty_ = *x == 0
 	case int8:
-		empty = x == 0
+		empty_ = x == 0
 	case *int8:
-		empty = *x == 0
+		empty_ = *x == 0
 	case int16:
-		empty = x == 0
+		empty_ = x == 0
 	case *int16:
-		empty = *x == 0
+		empty_ = *x == 0
 	case int32:
-		empty = x == 0
+		empty_ = x == 0
 	case *int32:
-		empty = *x == 0
+		empty_ = *x == 0
 	case int64:
-		empty = x == 0
+		empty_ = x == 0
 	case *int64:
-		empty = *x == 0
+		empty_ = *x == 0
 	case uint:
-		empty = x == 0
+		empty_ = x == 0
 	case *uint:
-		empty = *x == 0
+		empty_ = *x == 0
 	case uint8:
-		empty = x == 0
+		empty_ = x == 0
 	case *uint8:
-		empty = *x == 0
+		empty_ = *x == 0
 	case uint16:
-		empty = x == 0
+		empty_ = x == 0
 	case *uint16:
-		empty = *x == 0
+		empty_ = *x == 0
 	case uint32:
-		empty = x == 0
+		empty_ = x == 0
 	case *uint32:
-		empty = *x == 0
+		empty_ = *x == 0
 	case uint64:
-		empty = x == 0
+		empty_ = x == 0
 	case *uint64:
-		empty = *x == 0
+		empty_ = *x == 0
 	case float32:
-		empty = x == 0
+		empty_ = x == 0
 	case *float32:
-		empty = *x == 0
+		empty_ = *x == 0
 	case float64:
-		empty = x == 0
+		empty_ = x == 0
 	case *float64:
-		empty = *x == 0
+		empty_ = *x == 0
 	case *vector.Node:
-		empty = x.Type() == vector.TypeNull || x.Limit() == 0
+		empty_ = x.Type() == vector.TypeNull || x.Limit() == 0
 	default:
-		empty = false
+		empty_ = false
 	}
-	if !empty {
+	if !empty_ {
 		// Non-empty case - exiting.
 		return
 	}
@@ -156,6 +158,46 @@ func modDefault(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		}
 	default:
 		*buf = nil
+	}
+	return
+}
+
+func modNew(_ *Ctx, buf *any, _ any, args []any) error {
+	insName, err := nbIns(args)
+	if err != nil {
+		return err
+	}
+	ins, err := inspector.GetInspector(insName)
+	if err != nil {
+		return nil // suppress errors
+	}
+	*buf = ins.Instance(true)
+	return nil
+}
+
+func modBufferize(ctx *Ctx, buf *any, _ any, args []any) error {
+	insName, err := nbIns(args)
+	if err != nil {
+		return err
+	}
+	*buf, err = ctx.ibuf.get(insName)
+	return nil
+}
+
+func nbIns(args []any) (insName string, err error) {
+	if len(args) == 0 {
+		err = ErrModNoArgs
+		return
+	}
+	switch x := args[0].(type) {
+	case string:
+		insName = x
+	case *string:
+		insName = *x
+	case []byte:
+		insName = byteconv.B2S(x)
+	case *[]byte:
+		insName = byteconv.B2S(*x)
 	}
 	return
 }

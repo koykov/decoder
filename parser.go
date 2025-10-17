@@ -40,6 +40,10 @@ var (
 	condCap  = []byte("cap")
 	_, _     = nl, noFmt
 
+	replVar2Ctx = []byte("ctx.$2")
+	replNew     = []byte("new(\"$1\").($1)")
+	replBuf     = []byte("bufferize(\"$1\").($1)")
+
 	// Operation constants.
 	opEq_  = []byte("==")
 	opNq_  = []byte("!=")
@@ -51,9 +55,13 @@ var (
 	opDec_ = []byte("--")
 
 	// Regexp to parse expressions.
-	reAssignV2CAs  = regexp.MustCompile(`((?:context|ctx)\.[\w\d\\.\[\]]+)\s*=\s*(.*) as ([:\w]*)`)
-	reAssignV2CDot = regexp.MustCompile(`((?:context|ctx)\.[\w\d\\.\[\]]+)\s*=\s*(.*).\(([:\w]*)\)`)
-	reAssignV2C    = regexp.MustCompile(`((?:context|ctx)\.[\w\d\\.\[\]]+)\s*=\s*(.*)`)
+	reAssignV2CAs  = regexp.MustCompile(`((?:context\.|ctx\.|var\s+)[\w\d\\.\[\]]+)\s*=\s*(.*) as ([:\w]*)`)
+	reAssignV2CDot = regexp.MustCompile(`((?:context\.|ctx\.|var\s+)[\w\d\\.\[\]]+)\s*=\s*(.*).\(([:\w]*)\)`)
+	reAssignV2C    = regexp.MustCompile(`((?:context\.|ctx\.|var\s+)[\w\d\\.\[\]]+)\s*=\s*(.*)`)
+
+	reReplVar = regexp.MustCompile(`(var\s+)(.*)`)
+	reReplNew = regexp.MustCompile(`new\(([^)]+)\)`)
+	reReplBuf = regexp.MustCompile(`bufferize\(([^)]+)\)`)
 
 	reAssignV2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)`)
 	reAssignF2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(|]+)\(([^)]*)\)`)
@@ -356,15 +364,18 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 	}
 	if reAssignV2C.Match(ctl) {
 		// Var-to-ctx expression caught.
-		if m := reAssignV2CAs.FindSubmatch(ctl); m != nil {
+		ctl1 := reReplVar.ReplaceAll(ctl, replVar2Ctx)
+		ctl1 = reReplNew.ReplaceAll(ctl1, replNew)
+		ctl1 = reReplBuf.ReplaceAll(ctl1, replBuf)
+		if m := reAssignV2CAs.FindSubmatch(ctl1); m != nil {
 			r.dst = m[1]
 			r.src = m[2]
 			r.ins = m[3]
-		} else if m = reAssignV2CDot.FindSubmatch(ctl); m != nil {
+		} else if m = reAssignV2CDot.FindSubmatch(ctl1); m != nil {
 			r.dst = m[1]
 			r.src = m[2]
 			r.ins = m[3]
-		} else if m = reAssignV2C.FindSubmatch(ctl); m != nil {
+		} else if m = reAssignV2C.FindSubmatch(ctl1); m != nil {
 			r.dst = m[1]
 			r.src = m[2]
 		}

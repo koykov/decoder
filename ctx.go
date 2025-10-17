@@ -49,6 +49,8 @@ type Ctx struct {
 	ipv  []ipoolVar
 	ipvl int
 
+	ibuf ibufs
+
 	// External buffers to use in modifier and condition helpers.
 	BufAcc bytebuf.Accumulative
 	// todo remove as unused later
@@ -270,7 +272,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 //
 // Set val to destination by address path.
 func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
-	if len(path) == 0 || ctx.ln == 0 {
+	if len(path) == 0 {
 		return nil
 	}
 	ctx.bufS = ctx.bufS[:0]
@@ -452,6 +454,8 @@ func (ctx *Ctx) Reset() {
 		ctx.ipv[i].key, ctx.ipv[i].val = "", nil
 	}
 	ctx.ipvl = 0
+
+	ctx.ibuf.reset()
 
 	ctx.Err = nil
 	ctx.bufX = nil

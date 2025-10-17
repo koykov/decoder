@@ -12,6 +12,7 @@ func TestParser(t *testing.T) {
 	t.Run("f2v0", testParser)
 	t.Run("v2c0", testParser)
 	t.Run("v2ci0", testParser)
+	t.Run("v2new", testParser)
 	t.Run("cb0", testParser)
 
 	t.Run("loop_counter", testParser)
