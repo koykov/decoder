@@ -202,6 +202,35 @@ func nbIns(args []any) (insName string, err error) {
 	return
 }
 
+func modAppend(ctx *Ctx, buf *any, _ any, args []any) error {
+	if len(args) < 2 {
+		return ErrModPoorArgs
+	}
+	var path []byte
+	switch x := args[0].(type) {
+	case string:
+		path = byteconv.S2B(x)
+	case *string:
+		path = byteconv.S2B(*x)
+	case []byte:
+		path = x
+	case *[]byte:
+		path = *x
+	default:
+		return nil // cannot check path
+	}
+
+	ctx.splitPath(byteconv.B2S(path), ".")
+	if len(ctx.bufS) == 0 {
+		return nil
+	}
+
+	var err error
+	src, ins := ctx.get2(ctx.bufS[:1], nil)
+	*buf, err = ins.Append(src, args[1], ctx.bufS[1:]...)
+	return err
+}
+
 // Conditional assignment modifier.
 func modIfThen(_ *Ctx, buf *any, val any, args []any) (err error) {
 	if len(args) == 0 {

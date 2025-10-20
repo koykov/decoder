@@ -1,0 +1,1 @@
+user.Finance.History = append(user.Finance.History, x)

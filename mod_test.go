@@ -10,6 +10,11 @@ func TestMod(t *testing.T) {
 	t.Run("default", func(t *testing.T) { testMod(t, "src", scenarioModDefault) })
 	t.Run("ifThen", func(t *testing.T) { testMod(t, "src", scenarioModIfThenElse) })
 	t.Run("ifThenElse", func(t *testing.T) { testMod(t, "src", scenarioModIfThenElse) })
+	t.Run("append", func(t *testing.T) {
+		testMod(t, "src", func(t testing.TB, obj *testobj.TestObject) {
+			// todo implement me
+		})
+	})
 }
 
 func testMod(t *testing.T, jsonKey string, assertFn func(t testing.TB, obj *testobj.TestObject)) {

@@ -1,0 +1,5 @@
+var hist = bufferize(TestHistory)
+hist.DateUnix = 111
+hist.Comment = "foobar"
+
+obj.Finance.History = append(obj.Finance.History, hist)
