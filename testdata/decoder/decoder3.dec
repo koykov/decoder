@@ -1,4 +1,0 @@
-obj.Id = jso.id
-obj.Name = jso.nickname
-jsonParseAs(jso.prop, "properties")
-obj.Cost = properties.price
