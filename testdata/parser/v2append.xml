@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="0" dst="user.Finance.History">
+		<mods>
+			<mod name="append" sarg0="user.Finance.History" arg1="x"/>
+		</mods>
+	</node>
+</nodes>

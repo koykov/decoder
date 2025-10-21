@@ -94,12 +94,6 @@ func scenarioDec2(t testing.TB, obj *testobj.TestObject) {
 	assertF64(t, "Finance.History[1].Cost", obj.Finance.History[1].Cost, 164.5962)
 }
 
-// check decoder_legacy project
-// func scenarioDec3(t testing.TB, obj *testobj.TestObject) {
-// 	assertS(t, "Id", obj.Id, "xFF45")
-// 	assertF64(t, "Cost", obj.Cost, 123)
-// }
-
 func scenarioDec4(t testing.TB, obj *testobj.TestObject) {
 	assertB(t, "Name", obj.Name, []byte(`2677594116`))
 }

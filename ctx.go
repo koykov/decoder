@@ -202,18 +202,22 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 	if len(path) == 0 || ctx.ln == 0 {
 		return nil
 	}
-
 	// Split path to separate words using dot as separator.
 	ctx.splitPath(byteconv.B2S(path), ".")
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
+	val, _ := ctx.get2(ctx.bufS, subset)
+	return val
+}
 
+// Internal getter (returns inspector as well).
+func (ctx *Ctx) get2(path []string, subset [][]byte) (any, inspector.Inspector) {
 	// Look for first path chunk in vars.
 	_ = ctx.vars[ctx.ln-1]
 	for i := 0; i < ctx.ln; i++ {
 		v := &ctx.vars[i]
-		if v.key == ctx.bufS[0] {
+		if v.key == path[0] {
 			// Var found.
 			// Check var is vector or node.
 			var (
@@ -236,13 +240,13 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 				if n := len(subset); n > 0 {
 					// List of subsets provided.
 					// Preserve item in []str buffer to check each key separately.
-					ctx.bufS = append(ctx.bufS, "")
+					path = append(path, "")
 					_ = subset[n-1]
 					for j := 0; j < n; j++ {
 						if tail := subset[j]; len(tail) > 0 {
 							// Fill preserved item with subset's value.
-							ctx.bufS[len(ctx.bufS)-1] = byteconv.B2S(tail)
-							ctx.bufX = node.Get(ctx.bufS[1:]...)
+							path[len(path)-1] = byteconv.B2S(tail)
+							ctx.bufX = node.Get(path[1:]...)
 							if cn, ok := ctx.bufX.(*vector.Node); ok && cn.Type() != vector.TypeNull {
 								// Successful hunt.
 								break
@@ -250,22 +254,22 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 						}
 					}
 				} else {
-					ctx.bufX = node.Get(ctx.bufS[1:]...)
+					ctx.bufX = node.Get(path[1:]...)
 				}
-				return ctx.bufX
+				return ctx.bufX, vector_inspector.VectorInspector{}
 			}
 			if v.ins != nil {
 				// Variable is covered by inspector.
-				ctx.Err = v.ins.GetTo(v.val, &ctx.bufX, ctx.bufS[1:]...)
+				ctx.Err = v.ins.GetTo(v.val, &ctx.bufX, path[1:]...)
 				if ctx.Err != nil {
-					return nil
+					return nil, inspector.StaticInspector{}
 				}
-				return ctx.bufX
+				return ctx.bufX, v.ins
 			}
-			return v.val
+			return v.val, v.ins
 		}
 	}
-	return nil
+	return nil, inspector.StaticInspector{}
 }
 
 // Internal setter.

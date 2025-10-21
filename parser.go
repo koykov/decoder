@@ -43,6 +43,7 @@ var (
 	replVar2Ctx = []byte("ctx.$2")
 	replNew     = []byte("new(\"$1\").($1)")
 	replBuf     = []byte("bufferize(\"$1\").($1)")
+	replAppend  = []byte("append(\"$1\", $2)")
 
 	// Operation constants.
 	opEq_  = []byte("==")
@@ -59,9 +60,10 @@ var (
 	reAssignV2CDot = regexp.MustCompile(`((?:context\.|ctx\.|var\s+)[\w\d\\.\[\]]+)\s*=\s*(.*).\(([:\w]*)\)`)
 	reAssignV2C    = regexp.MustCompile(`((?:context\.|ctx\.|var\s+)[\w\d\\.\[\]]+)\s*=\s*(.*)`)
 
-	reReplVar = regexp.MustCompile(`(var\s+)(.*)`)
-	reReplNew = regexp.MustCompile(`new\(([^)]+)\)`)
-	reReplBuf = regexp.MustCompile(`bufferize\(([^)]+)\)`)
+	reReplVar    = regexp.MustCompile(`(var\s+)(.*)`)
+	reReplNew    = regexp.MustCompile(`new\(([^)]+)\)`)
+	reReplBuf    = regexp.MustCompile(`bufferize\(([^)]+)\)`)
+	reReplAppend = regexp.MustCompile(`append\(\s*["']*([^,"']+)["']*\s*,\s*(.*)\)`)
 
 	reAssignV2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)`)
 	reAssignF2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(|]+)\(([^)]*)\)`)
@@ -639,6 +641,7 @@ func (p *parser) targetSnapshot() *target {
 // Split expression to variable and mods list.
 func extractMods(p []byte) ([]byte, []mod) {
 	hasVline := bytes.Contains(p, vline)
+	p = reReplAppend.ReplaceAll(p, replAppend)
 	hasSet := reSet.Match(p)
 	modNoVar := reFunction.Match(p) && !hasVline
 	if (hasVline && !hasSet) || modNoVar {
