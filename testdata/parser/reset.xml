@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="0" callback="reset" sarg0="&quot;user.Finance.History.0&quot;"/>
+	<node type="0" callback="reset" sarg0="&quot;user.Flags.Visit&quot;"/>
+</nodes>

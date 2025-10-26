@@ -44,6 +44,7 @@ var (
 	replNew     = []byte("new(\"$1\").($1)")
 	replBuf     = []byte("bufferize(\"$1\").($1)")
 	replAppend  = []byte("append(\"$1\", $2)")
+	replReset   = []byte("reset(\"$1\")")
 
 	// Operation constants.
 	opEq_  = []byte("==")
@@ -64,6 +65,7 @@ var (
 	reReplNew    = regexp.MustCompile(`new\(([^)]+)\)`)
 	reReplBuf    = regexp.MustCompile(`bufferize\(([^)]+)\)`)
 	reReplAppend = regexp.MustCompile(`append\(\s*["']*([^,"']+)["']*\s*,\s*(.*)\)`)
+	reReplReset  = regexp.MustCompile(`reset\(\s*["']*([^,"')]+)["']*\)`)
 
 	reAssignV2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*(.*)`)
 	reAssignF2V = regexp.MustCompile(`(?i)([\w\d\\.\[\]]+)\s*=\s*([^(|]+)\(([^)]*)\)`)
@@ -458,7 +460,8 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		return dst, offset, false, err
 	}
 	if reFunction.Match(ctl) {
-		m := reFunction.FindSubmatch(ctl)
+		ctl1 := reReplReset.ReplaceAll(ctl, replReset)
+		m := reFunction.FindSubmatch(ctl1)
 		// Function expression caught.
 		r.src = m[1]
 		// Parse callback.
@@ -468,7 +471,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			return dst, offset, false, err
 		}
 		r.callback = fn
-		r.arg = extractArgs(m[2])
+		r.arg = extractArgs2(m[2], reReplReset.Match(ctl))
 
 		dst = append(dst, *r)
 		offset += len(ctl)
@@ -683,6 +686,10 @@ func extractMods(p []byte) ([]byte, []mod) {
 //
 // _________^          ^
 func extractArgs(l []byte) []*arg {
+	return extractArgs2(l, false)
+}
+
+func extractArgs2(l []byte, forceReplQB bool) []*arg {
 	r := make([]*arg, 0)
 	if len(l) == 0 {
 		return r
@@ -692,7 +699,7 @@ func extractArgs(l []byte) []*arg {
 		var set [][]byte
 		a = bytealg.Trim(a, space)
 		static := isStatic(a)
-		if !static {
+		if !static || forceReplQB {
 			a, set = extractSet(a)
 		} else {
 			a = bytealg.Trim(a, quotes)
