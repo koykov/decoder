@@ -29,10 +29,11 @@ obj.Status = jso.person.state|default(1)`)
 		WithDescription("Return instance of given type. This function bufferizes instantiation, thus is alloc-free. Default `new` function also is available, but it produces an allocation.").
 		WithParam("name type", "name of type (literal, not string - see example section)").
 		WithExample(`var x = bufferize(TestObject) // typeof(x) == *TestObject`)
-	RegisterModFn("append", "", modAppend) /*.
-	WithDescription("Return instance of given type. This function bufferizes instantiation, thus is alloc-free. Default `new` function also is available, but it produces an allocation.").
-	WithParam("name type", "name of type (literal, not string - see example section)").
-	WithExample(`var x = bufferize(TestObject) // typeof(x) == *TestObject`)*/
+	RegisterModFn("append", "", modAppend).
+		WithDescription("Append value to the end of a slice").
+		WithParam("slice array", "name of array (slice) variable or field").
+		WithParam("value type", "value to add to the slice").
+		WithExample(`news.Tags = append(news.Tags, "foobar")`)
 	RegisterModFnNS("bar", "baz", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
 		WithDescription("Testing stuff: don't use in production.")
 
@@ -98,6 +99,10 @@ lvalue = date|time::add("+1 minutes")|time::date(time::StampNano)	// Jan 21 20:0
 		WithDescription("Testing stuff: don't use in production.")
 
 	// Register builtin callbacks.
+	RegisterCallbackFn("reset", "", cbReset).
+		WithDescription("Reset variable of field.").
+		WithParam("arg path", "Path to variable/field to reset.").
+		WithExample("reset(user.Related[0].Age)")
 	RegisterCallbackFnNS("fmt", "print", "", cbPrint).
 		WithParam("args ...any", "Arguments to print.").
 		WithDescription("Print args to console.")

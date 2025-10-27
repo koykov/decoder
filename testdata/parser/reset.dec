@@ -1,0 +1,2 @@
+reset(user.Finance.History[0])
+reset(user.Flags[Visit])
