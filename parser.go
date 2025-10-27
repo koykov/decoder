@@ -700,6 +700,9 @@ func extractArgs2(l []byte, forceReplQB bool) []*arg {
 		a = bytealg.Trim(a, space)
 		static := isStatic(a)
 		if !static || forceReplQB {
+			if forceReplQB {
+				a = bytealg.Trim(a, quotes)
+			}
 			a, set = extractSet(a)
 		} else {
 			a = bytealg.Trim(a, quotes)
