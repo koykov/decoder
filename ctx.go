@@ -240,7 +240,9 @@ func (ctx *Ctx) get2(path []string, subset [][]byte) (any, inspector.Inspector) 
 				if n := len(subset); n > 0 {
 					// List of subsets provided.
 					// Preserve item in []str buffer to check each key separately.
-					path = append(path, "")
+					ctx.bufS = append(ctx.bufS[:0], path...)
+					ctx.bufS = append(ctx.bufS, "")
+					path = ctx.bufS
 					_ = subset[n-1]
 					for j := 0; j < n; j++ {
 						if tail := subset[j]; len(tail) > 0 {
