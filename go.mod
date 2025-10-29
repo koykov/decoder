@@ -7,10 +7,10 @@ require (
 	github.com/koykov/bytebuf v1.1.1
 	github.com/koykov/byteconv v1.0.1
 	github.com/koykov/clock v1.1.6
-	github.com/koykov/inspector v1.4.11-0.20251014203133-3c569d7d6226
+	github.com/koykov/inspector v1.4.11
 	github.com/koykov/jsonvector v1.2.5
 	github.com/koykov/vector v1.2.6
-	github.com/koykov/vector_inspector v1.0.7
+	github.com/koykov/vector_inspector v1.0.9
 	github.com/koykov/x2bytes v1.0.4
 )
 
@@ -20,6 +20,6 @@ require (
 	github.com/koykov/byteseq v1.0.1 // indirect
 	github.com/koykov/entry v1.0.2 // indirect
 	github.com/koykov/indirect v1.0.1 // indirect
-	github.com/koykov/openrt v0.0.0-20240411200908-3abd933415e1 // indirect
+	github.com/koykov/openrt v0.0.0-20240728195600-ccc3242946f9 // indirect
 	golang.org/x/tools v0.24.0 // indirect
 )
