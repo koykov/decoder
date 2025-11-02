@@ -8,16 +8,16 @@ require (
 	github.com/koykov/byteconv v1.0.1
 	github.com/koykov/clock v1.1.6
 	github.com/koykov/inspector v1.4.11
-	github.com/koykov/jsonvector v1.2.5
-	github.com/koykov/vector v1.2.6
-	github.com/koykov/vector_inspector v1.0.9
+	github.com/koykov/jsonvector v1.2.6
+	github.com/koykov/vector v1.2.7
+	github.com/koykov/vector_inspector v1.0.10
 	github.com/koykov/x2bytes v1.0.4
 )
 
 require (
 	github.com/koykov/bitset v1.0.0 // indirect
 	github.com/koykov/byteptr v1.0.0 // indirect
-	github.com/koykov/byteseq v1.0.1 // indirect
+	github.com/koykov/byteseq v1.0.2 // indirect
 	github.com/koykov/entry v1.0.2 // indirect
 	github.com/koykov/indirect v1.0.1 // indirect
 	github.com/koykov/openrt v0.0.0-20240728195600-ccc3242946f9 // indirect
