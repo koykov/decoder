@@ -5,7 +5,7 @@ type node struct {
 	typ rtype
 	// Destination/source pair.
 	dst, src, ins []byte
-	dsta, srca    [][]byte
+	dsta, srca    []string
 	// List of keys, that need to check sequentially in the source object.
 	subset [][]byte
 	// Getter callback, for sources like "dst = getFoo(var0, ...)"
