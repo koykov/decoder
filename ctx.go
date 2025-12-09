@@ -281,18 +281,21 @@ func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
 	if len(path) == 0 {
 		return nil
 	}
-	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
-	if len(ctx.bufS) == 0 {
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS[:0], byteconv.B2S(path), ".", -1)
+	return ctx.set2(ctx.bufS, val, insName)
+}
+
+func (ctx *Ctx) set2(path []string, val any, insName []byte) error {
+	if len(path) == 0 {
 		return nil
 	}
-	if ctx.bufS[0] == "ctx" || ctx.bufS[0] == "context" {
-		if len(ctx.bufS) == 1 {
+	if path[0] == "ctx" || path[0] == "context" {
+		if len(path) == 1 {
 			// Attempt to overwrite the whole context object caught.
 			return nil
 		}
 		// Var-to-ctx case.
-		ctxPath := byteconv.B2S(path[len(ctx.bufS[0])+1:])
+		ctxPath := path[1]
 		if len(insName) > 0 {
 			ins, err := inspector.GetInspector(byteconv.B2S(insName))
 			if err != nil {
@@ -310,10 +313,10 @@ func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
 	_ = ctx.vars[ctx.ln-1]
 	for i := 0; i < ctx.ln; i++ {
 		v := &ctx.vars[i]
-		if v.key == ctx.bufS[0] {
+		if v.key == path[0] {
 			if v.ins != nil {
 				ctx.bufX = val
-				ctx.Err = v.ins.SetWithBuffer(v.val, ctx.bufX, ctx, ctx.bufS[1:]...)
+				ctx.Err = v.ins.SetWithBuffer(v.val, ctx.bufX, ctx, path[1:]...)
 				if ctx.Err != nil {
 					return ctx.Err
 				}

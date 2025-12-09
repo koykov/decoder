@@ -390,12 +390,12 @@ func followRule(r *node, ctx *Ctx) (err error) {
 			return
 		}
 		// Assign result to destination.
-		err = ctx.set(r.dst, ctx.bufX, r.ins)
+		err = ctx.set2(r.dsta, ctx.bufX, r.ins)
 	case len(r.dst) > 0 && len(r.src) > 0 && r.static:
 		// V2V node with static source.
 		// Just assign the source it to destination.
 		ctx.buf = append(ctx.buf[:0], r.src...)
-		err = ctx.set(r.dst, &ctx.buf, r.ins)
+		err = ctx.set2(r.dsta, &ctx.buf, r.ins)
 	case len(r.dst) > 0 && (len(r.src) > 0 || len(r.mod) > 0) && !r.static:
 		// V2V node with dynamic source.
 		// Get source value.
@@ -441,7 +441,7 @@ func followRule(r *node, ctx *Ctx) (err error) {
 			return
 		}
 		// Assign to destination.
-		err = ctx.set(r.dst, raw, r.ins)
+		err = ctx.set2(r.dsta, raw, r.ins)
 	}
 	return
 }
