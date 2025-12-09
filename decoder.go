@@ -401,7 +401,7 @@ func followRule(r *node, ctx *Ctx) (err error) {
 		// Get source value.
 		var raw any
 		if len(r.src) > 0 {
-			raw = ctx.get(r.src, r.subset)
+			raw, _ = ctx.get2(r.srca, r.subset)
 			if ctx.Err != nil {
 				err = ctx.Err
 				return
