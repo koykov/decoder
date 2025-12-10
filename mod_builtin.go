@@ -198,6 +198,14 @@ func nbIns(args []any) (insName string, err error) {
 		insName = byteconv.B2S(x)
 	case *[]byte:
 		insName = byteconv.B2S(*x)
+	case []string:
+		if len(x) > 0 {
+			insName = x[0]
+		}
+	case *[]string:
+		if len(*x) > 0 {
+			insName = (*x)[0]
+		}
 	}
 	return
 }
