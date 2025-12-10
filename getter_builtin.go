@@ -40,6 +40,14 @@ func getterCrc32(ctx *Ctx, buf *any, args []any) (err error) {
 			ctx.BufAcc.WriteString(x)
 		case *string:
 			ctx.BufAcc.WriteString(*x)
+		case []string:
+			if len(x) > 0 {
+				ctx.BufAcc.WriteString(x[0])
+			}
+		case *[]string:
+			if len(*x) > 0 {
+				ctx.BufAcc.WriteString((*x)[0])
+			}
 		case *vector.Node:
 			if x != nil {
 				ctx.BufAcc.Write(x.Bytes())
@@ -91,6 +99,14 @@ func atox(ctx *Ctx, buf *any, args []any, target atoxT) (err error) {
 		raw = byteconv.B2S(*x)
 	case []byte:
 		raw = byteconv.B2S(x)
+	case []string:
+		if len(x) > 0 {
+			raw = x[0]
+		}
+	case *[]string:
+		if len(*x) > 0 {
+			raw = (*x)[0]
+		}
 	default:
 		ok = false
 	}
