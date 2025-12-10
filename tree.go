@@ -18,7 +18,8 @@ type Tree struct {
 // Argument for getter/callback/modifier.
 type arg struct {
 	// Value argument.
-	val []byte
+	val  []byte
+	vala []string
 	// List of keys, that need to check sequentially in the value object.
 	subset [][]byte
 	// Flag that indicates if value is a static value.

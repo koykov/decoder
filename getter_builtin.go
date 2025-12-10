@@ -161,6 +161,10 @@ func getterAppendTestHistory(_ *Ctx, buf *any, args []any) (err error) {
 		switch x := args[1].(type) {
 		case *[]byte:
 			hr.Cost, _ = strconv.ParseFloat(byteconv.B2S(*x), 64)
+		case *[]string:
+			if len(*x) > 0 {
+				hr.Cost, _ = strconv.ParseFloat((*x)[0], 64)
+			}
 		case *vector.Node:
 			hr.Cost, _ = x.Float()
 		}

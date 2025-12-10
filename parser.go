@@ -723,12 +723,17 @@ func extractArgs2(l []byte, forceReplQB bool) []*arg {
 		} else {
 			a = bytealg.Trim(a, quotes)
 		}
-		r = append(r, &arg{
+		arg_ := &arg{
 			val:    a,
+			vala:   []string{byteconv.B2S(a)},
 			subset: set,
 			static: static,
 			global: GetGlobal(byteconv.B2S(a)) != nil,
-		})
+		}
+		if !static {
+			arg_.vala = tokenize(nil, byteconv.B2S(a))
+		}
+		r = append(r, arg_)
 	}
 	return r
 }
