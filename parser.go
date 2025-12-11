@@ -390,6 +390,8 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			r.src, r.mod = extractMods(r.src)
 			r.src, r.subset = extractSet(r.src)
 		}
+		r.dsta = tokenize(r.dsta, byteconv.B2S(r.dst))
+		r.srca = tokenize(r.srca, byteconv.B2S(r.src))
 		dst = append(dst, *r)
 		offset += len(ctl)
 		return dst, offset, false, err
@@ -403,10 +405,14 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 
 			raw, subset := extractSet(bytealg.Trim(m[5], space))
 			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			nodeTrue.dsta = tokenize(nodeTrue.dsta, byteconv.B2S(m[1]))
+			nodeTrue.srca = tokenize(nodeTrue.srca, byteconv.B2S(raw))
 			r.child = append(r.child, nodeTrue)
 
 			raw, subset = extractSet(bytealg.Trim(m[6], space))
 			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			nodeFalse.dsta = tokenize(nodeTrue.dsta, byteconv.B2S(m[1]))
+			nodeFalse.srca = tokenize(nodeTrue.srca, byteconv.B2S(raw))
 			r.child = append(r.child, nodeFalse)
 		} else if m = reTernaryHelper.FindSubmatch(ctl); m != nil {
 			r.typ = typeCond
@@ -421,10 +427,14 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 
 			raw, subset := extractSet(bytealg.Trim(m[4], space))
 			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			nodeTrue.dsta = tokenize(nodeTrue.dsta, byteconv.B2S(m[1]))
+			nodeTrue.srca = tokenize(nodeTrue.srca, byteconv.B2S(raw))
 			r.child = append(r.child, nodeTrue)
 
 			raw, subset = extractSet(bytealg.Trim(m[5], space))
 			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeOperator, dst: m[1], src: raw, subset: subset}}}
+			nodeFalse.srca = tokenize(nodeFalse.srca, byteconv.B2S(m[1]))
+			nodeFalse.dsta = tokenize(nodeFalse.dsta, byteconv.B2S(raw))
 			r.child = append(r.child, nodeFalse)
 		} else if m = reAssignF2V.FindSubmatch(ctl); m != nil {
 			// Func-to-var expression caught.
@@ -445,6 +455,8 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 				err = fmt.Errorf("unknown getter nor modifier function '%s' at offset %d", m[2], offset)
 				return dst, offset, false, err
 			}
+			r.dsta = tokenize(r.dsta, byteconv.B2S(r.dst))
+			r.srca = tokenize(r.srca, byteconv.B2S(r.src))
 		} else if m = reAssignV2V.FindSubmatch(ctl); m != nil {
 			// Var-to-var ...
 			r.dst = replaceQB(m[1])
@@ -454,6 +466,8 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 				r.src, r.mod = extractMods(m[2])
 				r.src, r.subset = extractSet(r.src)
 			}
+			r.dsta = tokenize(r.dsta, byteconv.B2S(r.dst))
+			r.srca = tokenize(r.srca, byteconv.B2S(r.src))
 		}
 		dst = append(dst, *r)
 		offset += len(ctl)
@@ -464,6 +478,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 		m := reFunction.FindSubmatch(ctl1)
 		// Function expression caught.
 		r.src = m[1]
+		r.srca = tokenize(r.srca, byteconv.B2S(r.src))
 		// Parse callback.
 		fn := GetCallbackFn(byteconv.B2S(m[1]))
 		if fn == nil {
@@ -707,12 +722,13 @@ func extractArgs2(l []byte, forceReplQB bool) []*arg {
 		} else {
 			a = bytealg.Trim(a, quotes)
 		}
-		r = append(r, &arg{
+		arg_ := &arg{
 			val:    a,
 			subset: set,
 			static: static,
 			global: GetGlobal(byteconv.B2S(a)) != nil,
-		})
+		}
+		r = append(r, arg_)
 	}
 	return r
 }
@@ -728,6 +744,8 @@ func extractSet(p []byte) ([]byte, [][]byte) {
 
 // Replace square brackets in expression like this a[key] -> a.key
 func replaceQB(p []byte) []byte {
+	return p
+	// todo remove me
 	p = bytes.Replace(p, qbO, dot, -1)
 	p = bytes.Replace(p, qbC, empty, -1)
 	return p

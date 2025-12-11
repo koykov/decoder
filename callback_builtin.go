@@ -20,21 +20,21 @@ func cbReset(ctx *Ctx, args []any) error {
 	if len(args) == 0 {
 		return ErrModNoArgs
 	}
-	var path []byte
+	var path string
 	switch x := args[0].(type) {
 	case string:
-		path = byteconv.S2B(x)
-	case *string:
-		path = byteconv.S2B(*x)
-	case []byte:
 		path = x
-	case *[]byte:
+	case *string:
 		path = *x
+	case []byte:
+		path = byteconv.B2S(x)
+	case *[]byte:
+		path = byteconv.B2S(*x)
 	default:
 		return nil // cannot check path
 	}
 
-	ctx.splitPath(byteconv.B2S(path), ".")
+	ctx.bufS = tokenize(ctx.bufS[:0], path)
 	if len(ctx.bufS) == 0 {
 		return nil
 	}

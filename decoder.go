@@ -1,7 +1,6 @@
 package decoder
 
 import (
-	"github.com/koykov/bytealg"
 	"github.com/koykov/byteconv"
 	"github.com/koykov/inspector"
 )
@@ -390,18 +389,18 @@ func followRule(r *node, ctx *Ctx) (err error) {
 			return
 		}
 		// Assign result to destination.
-		err = ctx.set(r.dst, ctx.bufX, r.ins)
+		err = ctx.set2(r.dsta, ctx.bufX, r.ins)
 	case len(r.dst) > 0 && len(r.src) > 0 && r.static:
 		// V2V node with static source.
 		// Just assign the source it to destination.
 		ctx.buf = append(ctx.buf[:0], r.src...)
-		err = ctx.set(r.dst, &ctx.buf, r.ins)
+		err = ctx.set2(r.dsta, &ctx.buf, r.ins)
 	case len(r.dst) > 0 && (len(r.src) > 0 || len(r.mod) > 0) && !r.static:
 		// V2V node with dynamic source.
 		// Get source value.
 		var raw any
 		if len(r.src) > 0 {
-			raw = ctx.get(r.src, r.subset)
+			raw, _ = ctx.get2(r.srca, r.subset)
 			if ctx.Err != nil {
 				err = ctx.Err
 				return
@@ -441,7 +440,7 @@ func followRule(r *node, ctx *Ctx) (err error) {
 			return
 		}
 		// Assign to destination.
-		err = ctx.set(r.dst, raw, r.ins)
+		err = ctx.set2(r.dsta, raw, r.ins)
 	}
 	return
 }
@@ -452,8 +451,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond op, right []byte) bool {
 		path = ctx.replaceQB(path)
 	}
 
-	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
+	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
 	if len(ctx.bufS) == 0 {
 		return false
 	}
