@@ -1,7 +1,6 @@
 package decoder
 
 import (
-	"github.com/koykov/bytealg"
 	"github.com/koykov/byteconv"
 	"github.com/koykov/inspector"
 )
@@ -452,8 +451,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond op, right []byte) bool {
 		path = ctx.replaceQB(path)
 	}
 
-	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
+	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
 	if len(ctx.bufS) == 0 {
 		return false
 	}

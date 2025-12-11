@@ -2,10 +2,8 @@ package decoder
 
 import (
 	"bytes"
-	"strings"
 	"time"
 
-	"github.com/koykov/bytealg"
 	"github.com/koykov/bytebuf"
 	"github.com/koykov/byteconv"
 	"github.com/koykov/inspector"
@@ -203,7 +201,7 @@ func (ctx *Ctx) get(path []byte, subset [][]byte) any {
 		return nil
 	}
 	// Split path to separate words using dot as separator.
-	ctx.splitPath(byteconv.B2S(path), ".")
+	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
@@ -281,7 +279,7 @@ func (ctx *Ctx) set(path []byte, val any, insName []byte) error {
 	if len(path) == 0 {
 		return nil
 	}
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS[:0], byteconv.B2S(path), ".", -1)
+	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
 	return ctx.set2(ctx.bufS, val, insName)
 }
 
@@ -327,28 +325,8 @@ func (ctx *Ctx) set2(path []string, val any, insName []byte) error {
 	return nil
 }
 
-// Split path to separate words using dot as separator.
-// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
-func (ctx *Ctx) splitPath(path, separator string) {
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS[:0], path, separator, -1)
-	ti := len(ctx.bufS) - 1
-	if ti < 0 {
-		return
-	}
-	tail := ctx.bufS[ti]
-	if p := strings.IndexByte(tail, '@'); p != -1 {
-		if p > 0 {
-			if len(tail[p:]) > 1 {
-				ctx.bufS = append(ctx.bufS, tail[p:])
-			}
-			ctx.bufS[ti] = ctx.bufS[ti][:p]
-		}
-	}
-}
-
 func (ctx *Ctx) rloop(path []byte, r *node, nodes []node) {
-	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
+	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
 	if len(ctx.bufS) == 0 {
 		return
 	}
@@ -423,8 +401,7 @@ func (ctx *Ctx) replaceQB(path []byte) []byte {
 // Compare method.
 func (ctx *Ctx) cmp(path []byte, cond op, right []byte) bool {
 	// Split path.
-	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
+	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
 	if len(ctx.bufS) == 0 {
 		return false
 	}

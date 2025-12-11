@@ -228,7 +228,7 @@ func modAppend(ctx *Ctx, buf *any, _ any, args []any) error {
 		return nil // cannot check path
 	}
 
-	ctx.splitPath(byteconv.B2S(path), ".")
+	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
