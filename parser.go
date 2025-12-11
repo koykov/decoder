@@ -438,8 +438,8 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			r.child = append(r.child, nodeFalse)
 		} else if m = reAssignF2V.FindSubmatch(ctl); m != nil {
 			// Func-to-var expression caught.
-			r.dst = replaceQB(m[1])
-			r.src = replaceQB(m[2])
+			r.dst = m[1]
+			r.src = m[2]
 			// Parse getter callback.
 			fn := GetGetterFn(byteconv.B2S(m[2]))
 			if fn != nil {
@@ -459,7 +459,7 @@ func (p *parser) processCtl(dst []node, root, r *node, ctl []byte, offset int) (
 			r.srca = tokenize(r.srca, byteconv.B2S(r.src))
 		} else if m = reAssignV2V.FindSubmatch(ctl); m != nil {
 			// Var-to-var ...
-			r.dst = replaceQB(m[1])
+			r.dst = m[1]
 			if r.static = isStatic(m[2]); r.static {
 				r.src = bytealg.Trim(m[2], quotes)
 			} else {
@@ -735,20 +735,10 @@ func extractArgs2(l []byte, forceReplQB bool) []*arg {
 
 // Get list of certain keys that should be checked sequentially.
 func extractSet(p []byte) ([]byte, [][]byte) {
-	p = replaceQB(p)
 	if m := reSet.FindSubmatch(p); m != nil {
 		return m[1], bytes.Split(m[2], vline)
 	}
 	return p, nil
-}
-
-// Replace square brackets in expression like this a[key] -> a.key
-func replaceQB(p []byte) []byte {
-	return p
-	// todo remove me
-	p = bytes.Replace(p, qbO, dot, -1)
-	p = bytes.Replace(p, qbC, empty, -1)
-	return p
 }
 
 func rollupSwitchNodes(nodes []node) []node {
