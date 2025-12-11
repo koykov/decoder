@@ -20,40 +20,27 @@ func cbReset(ctx *Ctx, args []any) error {
 	if len(args) == 0 {
 		return ErrModNoArgs
 	}
-	var (
-		raw  []byte
-		path []string
-	)
+	var path []byte
 	switch x := args[0].(type) {
 	case string:
-		raw = byteconv.S2B(x)
+		path = byteconv.S2B(x)
 	case *string:
-		raw = byteconv.S2B(*x)
+		path = byteconv.S2B(*x)
 	case []byte:
-		raw = x
-	case *[]byte:
-		raw = *x
-	case []string:
 		path = x
-	case *[]string:
+	case *[]byte:
 		path = *x
 	default:
 		return nil // cannot check path
 	}
 
-	if len(path) == 0 && len(raw) > 0 {
-		ctx.splitPath(byteconv.B2S(raw), ".")
-		if len(ctx.bufS) == 0 {
-			return nil
-		}
-		path = ctx.bufS
-	}
-	if len(path) == 0 {
+	ctx.splitPath(byteconv.B2S(path), ".")
+	if len(ctx.bufS) == 0 {
 		return nil
 	}
 
 	var err error
-	src, ins := ctx.get2(path[:1], nil)
-	err = ins.Reset(src, path[1:]...)
+	src, ins := ctx.get2(ctx.bufS[:1], nil)
+	err = ins.Reset(src, ctx.bufS[1:]...)
 	return err
 }

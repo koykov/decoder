@@ -147,9 +147,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 					if arg_.global {
 						ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(arg_.val)))
 					} else if arg_.static {
-						ctx.bufA = append(ctx.bufA, &arg_.vala)
+						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
-						val, _ := ctx.get2(arg_.vala, arg_.subset)
+						val := ctx.get(arg_.val, arg_.subset)
 						ctx.bufA = append(ctx.bufA, val)
 					}
 				}
@@ -208,9 +208,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 					if arg_.global {
 						ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(arg_.val)))
 					} else if arg_.static {
-						ctx.bufA = append(ctx.bufA, &arg_.vala)
+						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
-						val, _ := ctx.get2(arg_.vala, arg_.subset)
+						val := ctx.get(arg_.val, arg_.subset)
 						ctx.bufA = append(ctx.bufA, val)
 					}
 				}
@@ -223,7 +223,7 @@ func followRule(r *node, ctx *Ctx) (err error) {
 				err = ErrModNoArgs
 				return
 			}
-			ok = ctx.cmpLC2(r.condLC, r.condHlpArg[0].vala, r.condOp, r.condR)
+			ok = ctx.cmpLC(r.condLC, r.condHlpArg[0].val, r.condOp, r.condR)
 		default:
 			ok, err = nodeCmp(r, ctx)
 		}
@@ -293,9 +293,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 								if arg_.global {
 									ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(arg_.val)))
 								} else if arg_.static {
-									ctx.bufA = append(ctx.bufA, &arg_.vala)
+									ctx.bufA = append(ctx.bufA, &arg_.val)
 								} else {
-									val, _ := ctx.get2(arg_.vala, arg_.subset)
+									val := ctx.get(arg_.val, arg_.subset)
 									ctx.bufA = append(ctx.bufA, val)
 								}
 							}
@@ -357,9 +357,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 				if a.global {
 					ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(a.val)))
 				} else if a.static {
-					ctx.bufA = append(ctx.bufA, &a.vala)
+					ctx.bufA = append(ctx.bufA, &a.val)
 				} else {
-					val, _ := ctx.get2(a.vala, a.subset)
+					val := ctx.get(a.val, a.subset)
 					ctx.bufA = append(ctx.bufA, val)
 				}
 			}
@@ -377,9 +377,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 				if a.global {
 					ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(a.val)))
 				} else if a.static {
-					ctx.bufA = append(ctx.bufA, &a.vala)
+					ctx.bufA = append(ctx.bufA, &a.val)
 				} else {
-					val, _ := ctx.get2(a.vala, a.subset)
+					val := ctx.get(a.val, a.subset)
 					ctx.bufA = append(ctx.bufA, val)
 				}
 			}
@@ -421,9 +421,9 @@ func followRule(r *node, ctx *Ctx) (err error) {
 						if a.global {
 							ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(a.val)))
 						} else if a.static {
-							ctx.bufA = append(ctx.bufA, &a.vala)
+							ctx.bufA = append(ctx.bufA, &a.val)
 						} else {
-							val, _ := ctx.get2(a.vala, a.subset)
+							val := ctx.get(a.val, a.subset)
 							ctx.bufA = append(ctx.bufA, val)
 						}
 					}
@@ -466,35 +466,6 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond op, right []byte) bool {
 				ctx.Err = v.ins.Length(v.val, &ctx.bufI_, ctx.bufS[1:]...)
 			case lcCap:
 				ctx.Err = v.ins.Capacity(v.val, &ctx.bufI_, ctx.bufS[1:]...)
-			default:
-				return false
-			}
-			if ctx.Err != nil {
-				return false
-			}
-			si := inspector.StaticInspector{}
-			ctx.bufBl = false
-			ctx.Err = si.Compare(ctx.bufI_, inspector.Op(cond), byteconv.B2S(right), &ctx.bufBl)
-			return ctx.bufBl
-		}
-	}
-	return false
-}
-
-func (ctx *Ctx) cmpLC2(lc lc, path []string, cond op, right []byte) bool {
-	ctx.Err = nil
-	if len(path) == 0 {
-		return false
-	}
-
-	for i := 0; i < ctx.ln; i++ {
-		v := &ctx.vars[i]
-		if v.key == path[0] {
-			switch lc {
-			case lcLen:
-				ctx.Err = v.ins.Length(v.val, &ctx.bufI_, path[1:]...)
-			case lcCap:
-				ctx.Err = v.ins.Capacity(v.val, &ctx.bufI_, path[1:]...)
 			default:
 				return false
 			}
