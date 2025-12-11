@@ -10,7 +10,6 @@ import (
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/byteconv"
-	"github.com/koykov/simd/indextoken"
 )
 
 type parser struct {
@@ -777,15 +776,4 @@ func rollupSwitchNodes(nodes []node) []node {
 		r = append(r, group)
 	}
 	return r
-}
-
-func tokenize(dst []string, s string) []string {
-	var tkn indextoken.Tokenizer[string]
-	for {
-		t := tkn.Next(s)
-		if len(t) == 0 {
-			return dst
-		}
-		dst = append(dst, t)
-	}
 }
